@@ -583,6 +583,12 @@ body::before{
 }
 .list-head h1, .queue-head h1{ color:var(--lg-ink); letter-spacing:.01em; }
 .list-head p, .queue-head p{ color:var(--lg-ink-soft); }
+/* บนธีมกระจกเหลว หัวคิวเป็นพื้นสว่าง — ปรับปุ่มปิด/ไอคอน/ปุ่ม ghost ให้มองเห็นชัด */
+.queue-head .queue-head-icon{ background:rgba(109,93,246,.14); color:var(--lg-tint-deep); box-shadow:inset 0 1px 0 var(--lg-edge); }
+.queue-head .queue-head-close{ background:rgba(50,70,100,.10); color:var(--lg-ink); box-shadow:inset 0 0 0 1px rgba(50,70,100,.12); }
+.queue-head .queue-head-close:hover{ background:rgba(50,70,100,.20); }
+.queue-head .queue-head-actions .btn-ghost{ background:rgba(255,255,255,.55); color:var(--lg-ink-soft); box-shadow:inset 0 1px 0 var(--lg-edge), inset 0 0 0 1px rgba(255,255,255,.45), 0 3px 10px rgba(50,70,100,.08); }
+.queue-head .queue-head-actions .btn-ghost:hover{ background:rgba(255,255,255,.75); }
 .list-head-icon{ background:rgba(255,255,255,.66); border:none; box-shadow:inset 0 1px 0 var(--lg-edge), 0 6px 16px rgba(50,70,100,.16); }
 
 /* ── แถบตัวกรอง ── */
