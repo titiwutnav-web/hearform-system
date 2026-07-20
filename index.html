@@ -244,7 +244,7 @@ svg.audio { width:100%; height:auto; max-width:390px; cursor:crosshair; touch-ac
 .sp-m, .sp-n { vertical-align:super; font-size:0.72em; font-weight:700; }
 .sp-m { margin-right:.3px; } .sp-n { margin-left:.3px; }
 #sidebar .device-card { background: #FBFAFF; border: 1px solid #EDEBFB; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
-#sidebar .device-card select { width: 100%; height: 42px; padding: 0 10px; border: 1.5px solid #E5E2F7; border-radius: 8px; font-family: inherit; font-size: 14px; background: #FFFFFF; color: #241F47; margin-top: 4px; }
+#sidebar .device-card select, #sidebar .device-card input.result-in { width: 100%; height: 42px; padding: 0 10px; border: 1.5px solid #E5E2F7; border-radius: 8px; font-family: inherit; font-size: 14px; background: #FFFFFF; color: #241F47; margin-top: 4px; box-sizing: border-box; }
 #sidebar .device-card select:disabled { background: #F0EEF9; color: #B4AFCB; }
 #sidebar .device-label { font-size: 12.5px; font-weight: 700; color: #241F47; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
 #sidebar .device-row { display: flex; gap: 12px; margin-bottom: 8px; }
@@ -1822,7 +1822,7 @@ function sec7html_1(){
       ${brandLevelBlock}
       ${modelBlock}
       ${snBlock}
-      <div><span class="d-lbl">ผลการทดลอง</span><select id="sel_result1"><option value="">— เลือกผล —</option>${R1.map(o=>`<option value="${o}"${o===S.s7_resound_result?' selected':''}>${o}</option>`).join('')}</select></div>
+      <div><span class="d-lbl">ผลการทดลอง</span><select id="sel_result1"><option value="">— เลือกผล —</option>${R1.map(o=>`<option value="${o}"${o===S.s7_resound_result?' selected':''}>${o}</option>`).join('')}<option value="__custom__"${(S.s7_resound_result&&!R1.includes(S.s7_resound_result))?' selected':''}>✏️ พิมพ์เอง…</option></select><input type="text" id="sel_result1_custom" class="result-in" autocomplete="off" placeholder="พิมพ์ผลการทดลองเอง" style="${(S.s7_resound_result&&!R1.includes(S.s7_resound_result))?'':'display:none'}" value="${(S.s7_resound_result&&!R1.includes(S.s7_resound_result))?String(S.s7_resound_result).replace(/"/g,'&quot;'):''}"></div>
     </div>`;
 }
 function sec7html(){
@@ -1847,7 +1847,7 @@ function sec7html(){
       <div class="device-label">7.2 เครื่องที่ 2 (คู่เทียบ) <span id="b2_level_hint" style="font-weight:400;color:#64748b;font-size:11px">${hint}</span></div>
       <div style="margin-bottom:8px"><span class="d-lbl">ยี่ห้อ (ต่างยี่ห้อจาก 7.1)</span><select id="sel_brand2"><option value="">— เลือกยี่ห้อ —</option>${b2opts.map(b=>`<option value="${b}"${b===b2?' selected':''}>${b}</option>`).join('')}</select></div>
       ${modelBlock2}
-      <div><span class="d-lbl">ผลการทดลอง</span><select id="sel_result2"><option value="">— เลือกผล —</option>${R2.map(o=>`<option value="${o}"${o===S.s7_am_result?' selected':''}>${o}</option>`).join('')}</select></div>
+      <div><span class="d-lbl">ผลการทดลอง</span><select id="sel_result2"><option value="">— เลือกผล —</option>${R2.map(o=>`<option value="${o}"${o===S.s7_am_result?' selected':''}>${o}</option>`).join('')}<option value="__custom__"${(S.s7_am_result&&!R2.includes(S.s7_am_result))?' selected':''}>✏️ พิมพ์เอง…</option></select><input type="text" id="sel_result2_custom" class="result-in" autocomplete="off" placeholder="พิมพ์ผลการทดลองเอง" style="${(S.s7_am_result&&!R2.includes(S.s7_am_result))?'':'display:none'}" value="${(S.s7_am_result&&!R2.includes(S.s7_am_result))?String(S.s7_am_result).replace(/"/g,'&quot;'):''}"></div>
     </div>`;
 }
 
@@ -2588,10 +2588,8 @@ function bindCascades(){
   [['sel_brand1','s7_resound'],['sel_level1','s7_resound_level'],
    ['sel_level1_L','s7_resound_level_L'],['sel_level1_R','s7_resound_level_R'],
    ['sel_model1','s7_resound_model'],['sel_model1_L','s7_resound_model_L'],['sel_model1_R','s7_resound_model_R'],
-   ['sel_result1','s7_resound_result'],
    ['sel_brand2','s7_am'],
-   ['sel_model2','s7_am_model'],['sel_model2_L','s7_am_model_L'],['sel_model2_R','s7_am_model_R'],
-   ['sel_result2','s7_am_result']
+   ['sel_model2','s7_am_model'],['sel_model2_L','s7_am_model_L'],['sel_model2_R','s7_am_model_R']
   ].forEach(([id,field])=>{
     const el=document.getElementById(id); if(!el) return;
     el.addEventListener('change', ()=>{
@@ -2600,6 +2598,23 @@ function bindCascades(){
       onAnyChange();
     });
   });
+  bindResultCombo('sel_result1','sel_result1_custom','s7_resound_result');
+  bindResultCombo('sel_result2','sel_result2_custom','s7_am_result');
+}
+/* dropdown ผลการทดลอง + ตัวเลือก "พิมพ์เอง…" เปิดช่องพิมพ์อิสระ */
+function bindResultCombo(selId, inputId, field){
+  const sel=document.getElementById(selId), inp=document.getElementById(inputId);
+  if(!sel) return;
+  sel.addEventListener('change', ()=>{
+    if(sel.value==='__custom__'){
+      if(inp){ inp.style.display=''; S[field]=inp.value; inp.focus(); }
+    } else {
+      if(inp) inp.style.display='none';
+      S[field]=sel.value;
+    }
+    onAnyChange();
+  });
+  if(inp) inp.addEventListener('input', ()=>{ S[field]=inp.value; onAnyChange(); });
 }
 
 /* ── การ์ดเลือกเครื่องช่วยฟัง (7.1/7.2) ต้องสร้างใหม่เมื่อสลับ "หู" ระหว่างข้างเดียว/สองข้าง ── */
@@ -2701,8 +2716,18 @@ function reflectInputs(){
   if(b1) b1.value=S.s7_resound||''; if(l1) l1.value=S.s7_resound_level||'M';
   updateCascades();
   syncAddrCascade();
-  const r1=document.getElementById('sel_result1'), r2=document.getElementById('sel_result2');
-  if(r1) r1.value=S.s7_resound_result||''; if(r2) r2.value=S.s7_am_result||'';
+  reflectResultCombo('sel_result1','sel_result1_custom',S.s7_resound_result,R1);
+  reflectResultCombo('sel_result2','sel_result2_custom',S.s7_am_result,R2);
+}
+function reflectResultCombo(selId, inputId, val, list){
+  const sel=document.getElementById(selId), inp=document.getElementById(inputId);
+  if(!sel) return;
+  const isCustom = !!val && !list.includes(val);
+  sel.value = isCustom ? '__custom__' : (val||'');
+  if(inp){
+    inp.style.display = isCustom ? '' : 'none';
+    inp.value = isCustom ? val : '';
+  }
 }
 
 /* ── storage ───────────────────────────────────────────────────── */
