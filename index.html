@@ -3942,6 +3942,102 @@ function init(){
     closeExcelFieldModal();
     exportListToExcel(sel);
   });
+  /* สร้างชีตสรุปจำนวนเครื่องช่วยฟังตามรุ่น เพื่อใช้ในการจัดซื้อ */
+  function buildPurchaseSummarySheet(wb, expRows, FONT, C){
+    const { C_NAVY, C_NAVY_SOFT, C_GOLD, C_GOLD_SOFT, C_TITLE_BG, C_INK, C_BAND_A, C_BAND_B, thin, border } = C;
+    /* จัดกลุ่มตามยี่ห้อ + รุ่น, นับจำนวนเครื่อง (1 แถว = 1 เครื่อง) */
+    const tally = new Map();
+    expRows.forEach(er=>{
+      const brand = String(er.r.brand||'').trim() || '(ไม่ระบุยี่ห้อ)';
+      const model = String(er.model||'').trim() || '(ไม่ระบุรุ่น)';
+      const key = brand + ' ' + model;
+      if(!tally.has(key)) tally.set(key, {brand, model, count:0});
+      tally.get(key).count++;
+    });
+    const rows = Array.from(tally.values())
+      .sort((a,b)=> a.brand===b.brand ? (b.count-a.count || a.model.localeCompare(b.model,'th')) : a.brand.localeCompare(b.brand,'th'));
+    const total = expRows.length;
+
+    const ws = wb.addWorksheet('สรุปจัดซื้อ', {
+      pageSetup:{ paperSize:9, orientation:'portrait', fitToPage:true, fitToWidth:1, fitToHeight:0,
+        horizontalCentered:true, margins:{left:0.5,right:0.5,top:0.6,bottom:0.6,header:0.3,footer:0.3}, printTitlesRow:'1:3' },
+      headerFooter:{ oddFooter:'&L🦻 สรุปจัดซื้อเครื่องช่วยฟัง&Cหน้า &P / &N&Rพิมพ์ &D' },
+      properties:{ tabColor:{argb:C_GOLD} }
+    });
+    const headers = ['ลำดับ','ยี่ห้อ','รุ่น','จำนวน (เครื่อง)'];
+    const widths  = [8, 20, 26, 16];
+    widths.forEach((w,i)=> ws.getColumn(i+1).width=w);
+    const nCols = headers.length, lastCol='D';
+    ws.views = [{state:'frozen', ySplit:3, showGridLines:false}];
+    ws.properties.defaultRowHeight = 20;
+
+    ws.mergeCells('A1:'+lastCol+'1');
+    const t1 = ws.getCell('A1');
+    t1.value='🦻 สรุปจำนวนเครื่องช่วยฟังตามรุ่น (สำหรับจัดซื้อ)';
+    t1.font={name:FONT, size:20, bold:true, color:{argb:C_NAVY}};
+    t1.alignment={horizontal:'center', vertical:'middle'};
+    for(let i=1;i<=nCols;i++) ws.getCell(1,i).fill={type:'pattern', pattern:'solid', fgColor:{argb:C_TITLE_BG}};
+    ws.getRow(1).height=30;
+
+    ws.mergeCells('A2:'+lastCol+'2');
+    const t2 = ws.getCell('A2');
+    t2.value='พิมพ์วันที่ '+new Date().toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'})+' • '+rows.length+' รุ่น • รวม '+total+' เครื่อง';
+    t2.font={name:FONT, size:12.5, italic:true, color:{argb:C_NAVY_SOFT}};
+    t2.alignment={horizontal:'center', vertical:'middle'};
+    t2.fill={type:'pattern', pattern:'solid', fgColor:{argb:C_TITLE_BG}};
+    for(let i=1;i<=nCols;i++) ws.getCell(2,i).border={bottom:{style:'medium', color:{argb:C_GOLD}}};
+    ws.getRow(2).height=22;
+
+    const hr = ws.getRow(3);
+    headers.forEach((h,i)=>{
+      const c=hr.getCell(i+1); c.value=h;
+      c.font={name:FONT, size:14, bold:true, color:{argb:'FFFFFFFF'}};
+      c.fill={type:'pattern', pattern:'solid', fgColor:{argb:C_NAVY}};
+      c.alignment={horizontal:'center', vertical:'middle'};
+      c.border={top:thin, left:{style:'thin',color:{argb:C_NAVY}}, right:{style:'thin',color:{argb:C_NAVY}}, bottom:{style:'medium',color:{argb:C_GOLD}}};
+    });
+    hr.height=30;
+    ws.autoFilter={from:{row:3,column:1}, to:{row:3,column:nCols}};
+
+    rows.forEach((rw,idx)=>{
+      const row=ws.getRow(4+idx);
+      const band = idx%2===0 ? C_BAND_A : C_BAND_B;
+      const vals=[idx+1, rw.brand, rw.model, rw.count];
+      vals.forEach((v,i)=>{
+        const c=row.getCell(i+1); c.value=v;
+        c.font={name:FONT, size:14, color:{argb:C_INK}, bold:(i===3)};
+        c.alignment={horizontal:(i===1||i===2)?'left':'center', vertical:'middle', indent:(i===1||i===2)?1:0};
+        c.border=border;
+        c.fill={type:'pattern', pattern:'solid', fgColor:{argb:band}};
+      });
+      row.height=24;
+    });
+
+    const sumIdx = 4 + rows.length;
+    ws.mergeCells('A'+sumIdx+':C'+sumIdx);
+    const sc=ws.getCell('A'+sumIdx);
+    sc.value='รวมทั้งหมด';
+    sc.font={name:FONT, size:14, bold:true, color:{argb:C_NAVY}};
+    sc.alignment={horizontal:'right', vertical:'middle', indent:1};
+    sc.fill={type:'pattern', pattern:'solid', fgColor:{argb:C_GOLD_SOFT}};
+    const tc=ws.getCell('D'+sumIdx);
+    tc.value=total;
+    tc.font={name:FONT, size:14, bold:true, color:{argb:C_NAVY}};
+    tc.alignment={horizontal:'center', vertical:'middle'};
+    tc.fill={type:'pattern', pattern:'solid', fgColor:{argb:C_GOLD_SOFT}};
+    for(let i=1;i<=nCols;i++){ const c=ws.getCell(sumIdx,i); c.border={top:{style:'medium',color:{argb:C_GOLD}}, bottom:{style:'medium',color:{argb:C_GOLD}}}; }
+    ws.getRow(sumIdx).height=26;
+
+    /* กรอบนอกสีทอง */
+    for(let c=1;c<=nCols;c++){
+      const topC=ws.getCell(1,c); topC.border=Object.assign({}, topC.border, {top:{style:'medium',color:{argb:C_GOLD}}});
+      const botC=ws.getCell(sumIdx,c); botC.border=Object.assign({}, botC.border, {bottom:{style:'medium',color:{argb:C_GOLD}}});
+    }
+    for(let r=1;r<=sumIdx;r++){
+      const l=ws.getCell(r,1); l.border=Object.assign({}, l.border, {left:{style:'medium',color:{argb:C_GOLD}}});
+      const rr=ws.getCell(r,nCols); rr.border=Object.assign({}, rr.border, {right:{style:'medium',color:{argb:C_GOLD}}});
+    }
+  }
   async function exportListToExcel(selectedKeys){
     const list = getFilteredRecords();
     if(!list.length){ alert('ไม่มีรายการที่ตรงตามตัวกรองให้ส่งออก'); return; }
@@ -4122,6 +4218,10 @@ function init(){
         const leftC = ws.getCell(r,1); leftC.border = Object.assign({}, leftC.border, {left:{style:'medium', color:{argb:C_GOLD}}});
         const rightC = ws.getCell(r,nCols); rightC.border = Object.assign({}, rightC.border, {right:{style:'medium', color:{argb:C_GOLD}}});
       }
+
+      /* ── ชีตที่ 2: สรุปจำนวนเครื่องช่วยฟังตามรุ่น (เพื่อการจัดซื้อ) ──
+         นับ 1 แถว = 1 เครื่อง (คนไข้ใส่สองข้างนับเป็น 2 เครื่อง) จัดกลุ่มตามยี่ห้อ+รุ่น */
+      buildPurchaseSummarySheet(wb, expRows, FONT, {C_NAVY, C_NAVY_SOFT, C_GOLD, C_GOLD_SOFT, C_TITLE_BG, C_INK, C_BAND_A, C_BAND_B, C_LINE, thin, border});
 
       const buf = await wb.xlsx.writeBuffer();
       const blob = new Blob([buf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
