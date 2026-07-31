@@ -4050,30 +4050,81 @@ function init(){
       const [{map, offline}] = await Promise.all([fetchExportDetails(), loadExcelJS()]);
       if(offline) console.warn('ส่งออกแบบออฟไลน์ — บางรายการอาจไม่มีเบอร์โทร/ข้างที่ใส่/S/N');
       /* ── คอลัมน์ที่ต้องใช้ข้อมูลเต็ม (ที่อยู่/สิทธิ์/เบอร์โทร): รายการไหนยังไม่มีข้อมูล
-            ให้ดึงตัวเต็มจากเซิร์ฟเวอร์มาเติมก่อนสร้างไฟล์ — แก้ปัญหาติ๊กแล้วคอลัมน์ว่าง ── */
+            ให้ดึงตัวเต็มจากเซิร์ฟเวอร์มาเติมก่อนสร้างไฟล์ — แก้ปัญหาติ๊กแล้วคอลัมน์ว่าง
+
+            ⚡ เร่งความเร็ว: เดิมยิงคำสั่ง getRecord ทีละรายเรียงกัน (คนไข้ 300 ราย = 300 รอบ
+            เรียก Apps Script ต่อกัน ~1-3 วิ/รอบ ⇒ รอเป็นสิบนาที) ตอนนี้เปลี่ยนเป็น
+            ยิงครั้งเดียวแบบเป็นชุด (getRecordsBulk) และเขียนแคชในเครื่องครั้งเดียวตอนจบ
+            ถ้าเซิร์ฟเวอร์ยังเป็นเวอร์ชันเก่า (ไม่รู้จักคำสั่งชุด) จะถอยไปดึงทีละราย
+            แต่ยิงพร้อมกันหลายเส้นแทนการรอทีละรอบ ── */
       const needDetail = fields.some(f=>['address','rightType','phone','fu1','fu2','fu3','note'].indexOf(f.key)>=0);
       if(needDetail && !offline && window.hcsApi){
         const t = localStorage.getItem('hcs_token');
-        const missing = list.filter(r=>{ const m=map[r._id]||{}; return !(m.address && m.rightType && m.phone); });
-        for(let i=0;i<missing.length;i++){
-          btn.textContent = `⏳ ดึงข้อมูล ${i+1}/${missing.length}...`;
-          try{
-            const res = await window.hcsApi.postAction('getRecord', {token:t, id:missing[i]._id});
-            if(res && res.status==='ok' && res.record){
-              const l = res.record; upsertFullCache(l);
-              const m = map[l._id] || (map[l._id] = {});
-              if(!m.phone)   m.phone   = l.phone||'';
-              if(!m.address) m.address = l.address||'';
-              if(!m.rightType) m.rightType = l.rightType||'';
-              if(!m.sn)      m.sn      = l.sn||'';
-              if(!m.snL)     m.snL     = l.sn_L||l.snL||'';
-              if(!m.snR)     m.snR     = l.sn_R||l.snR||'';
-              if(!m.fu1_date) m.fu1_date = l.fu1_date||'';
-              if(!m.fu2_date) m.fu2_date = l.fu2_date||'';
-              if(!m.fu3_date) m.fu3_date = l.fu3_date||'';
-              if(!m.note)    m.note    = l.note||'';
-            }
-          }catch(e){}
+        /* เช็คเฉพาะคอลัมน์ที่ผู้ใช้ติ๊กจริง — ไม่ต้องวิ่งดึงข้อมูลที่ไม่ได้เอาไปใช้ */
+        const wantAddr  = fields.some(f=>f.key==='address');
+        const wantRight = fields.some(f=>f.key==='rightType');
+        const wantPhone = fields.some(f=>f.key==='phone');
+        const isMissing = m => (wantAddr && !m.address) || (wantRight && !m.rightType) || (wantPhone && !m.phone);
+        const applyDetail = (l)=>{
+          if(!l || !l._id) return;
+          const m = map[l._id] || (map[l._id] = {});
+          if(!m.phone)   m.phone   = l.phone||'';
+          if(!m.address) m.address = l.address||'';
+          if(!m.rightType) m.rightType = l.rightType||'';
+          if(!m.sn)      m.sn      = l.sn||'';
+          if(!m.snL)     m.snL     = l.sn_L||l.snL||'';
+          if(!m.snR)     m.snR     = l.sn_R||l.snR||'';
+          if(!m.fu1_date) m.fu1_date = l.fu1_date||'';
+          if(!m.fu2_date) m.fu2_date = l.fu2_date||'';
+          if(!m.fu3_date) m.fu3_date = l.fu3_date||'';
+          if(!m.note)    m.note    = l.note||'';
+        };
+        const fetched = [];
+        const missing = list.filter(r=> isMissing(map[r._id]||{}));
+        if(missing.length){
+          let bulkOk = true;
+          const CHUNK = 100;
+          for(let i=0; i<missing.length && bulkOk; i+=CHUNK){
+            const ids = missing.slice(i, i+CHUNK).map(r=>r._id);
+            btn.textContent = `⏳ ดึงข้อมูล ${Math.min(i+CHUNK, missing.length)}/${missing.length}...`;
+            let res = null;
+            try{ res = await window.hcsApi.postAction('getRecordsBulk', {token:t, ids:ids}); }catch(e){ res = null; }
+            if(res && res.status==='ok' && Array.isArray(res.records)){
+              res.records.forEach(l=>{ applyDetail(l); fetched.push(l); });
+            } else { bulkOk = false; }
+          }
+          if(!bulkOk){
+            /* เซิร์ฟเวอร์ยังไม่ได้อัปเดต (ไม่รู้จัก getRecordsBulk) — ดึงทีละราย แต่ยิงพร้อมกัน 6 เส้น */
+            const still = list.filter(r=> isMissing(map[r._id]||{}));
+            let next = 0, done = 0;
+            const worker = async ()=>{
+              while(next < still.length){
+                const r = still[next++];
+                try{
+                  const res = await window.hcsApi.postAction('getRecord', {token:t, id:r._id});
+                  if(res && res.status==='ok' && res.record){
+                    const l = res.record; if(!l._id) l._id = r._id;
+                    applyDetail(l); fetched.push(l);
+                  }
+                }catch(e){}
+                done++; btn.textContent = `⏳ ดึงข้อมูล ${done}/${still.length}...`;
+              }
+            };
+            await Promise.all(Array.from({length: Math.min(6, still.length)}, ()=>worker()));
+          }
+          /* เขียนแคชในเครื่องครั้งเดียวตอนจบ — เดิมเรียก upsertFullCache() ทุกรายการ
+             ซึ่ง JSON.stringify แคชทั้งก้อนลง localStorage ใหม่ทุกครั้ง (ช้าแบบ N²) */
+          if(fetched.length){
+            try{
+              fetched.forEach(l=>{ if(l && l._id) _fullCache[l._id] = l; });
+              const cids = Object.keys(_fullCache);
+              if(cids.length > 120){
+                cids.sort((a,b)=>String(_fullCache[a]._savedAt||'').localeCompare(String(_fullCache[b]._savedAt||'')));
+                while(cids.length > 120){ delete _fullCache[cids.shift()]; }
+              }
+              saveFullCache();
+            }catch(e){}
+          }
         }
         btn.textContent = '⏳ กำลังสร้าง Excel...';
       }
@@ -4238,6 +4289,8 @@ function init(){
   document.getElementById('btnListExport').addEventListener('click', ()=>{
     exportListToExcel(loadExportFieldSelection());
   });
+  /* โหลดไลบรารี ExcelJS ล่วงหน้าตอนเอาเมาส์ไปจ่อปุ่ม — พอกดจริงจะได้ไม่ต้องรอโหลดจาก CDN */
+  document.getElementById('btnListExport').addEventListener('mouseenter', ()=>{ try{ loadExcelJS().catch(()=>{}); }catch(e){} }, {once:true});
   document.getElementById('btnListExportSettings').addEventListener('click', openExcelFieldModal);
   document.getElementById('lstPageSize').addEventListener('change', ()=>{ _lstPage=1; renderList(); });
   document.getElementById('lstPageFirst').addEventListener('click', ()=>{ _lstPage=1; renderList(); });
