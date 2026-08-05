@@ -3658,12 +3658,15 @@ function init(){
     const nowIso = new Date().toISOString().slice(0,19);
     const gender = noahGenderCode(rec.namePrefix || rec.name);
     const birthIso = noahIsoDate(rec.birth) || '1900-01-01';
-    const firstName = xmlEsc((rec.namePrefix||'')+(rec.nameFirst||rec.name||''));
-    const lastName = xmlEsc(rec.nameLast||'');
+    /* Noah เก็บค่าลงคอลัมน์ฐานข้อมูล SQL Server Compact ที่จำกัดความยาว — ถ้ายาวเกินจะเกิด
+       SqlCeException ตอน import ("The constructor to deserialize ... SqlCeException was not found")
+       จึงต้องจำกัดความยาวทุกช่องให้อยู่ในเกณฑ์ปลอดภัย */
+    const firstName = xmlEsc(((rec.namePrefix||'')+(rec.nameFirst||rec.name||'')).trim().slice(0,40));
+    const lastName = xmlEsc(String(rec.nameLast||'').trim().slice(0,40));
     const hnRaw = (rec.hn||'').toString().trim();
-    const hospNameForHn = (rec.hospital||'').toString().trim();
-    const hnCombined = hospNameForHn ? (hospNameForHn + '-' + hnRaw) : hnRaw;
-    const hn = xmlEsc(hnCombined);
+    /* PatientNo ใช้ HN อย่างเดียว จำกัด 20 ตัวอักษร — เดิมเอาชื่อ รพ.มาต่อหน้า HN ทำให้ยาวเกิน
+       คอลัมน์ Patient No ของ Noah แล้ว import ไม่เข้า (ชื่อ รพ.ดูได้จากช่องโรงพยาบาลในเว็บ/Excel อยู่แล้ว) */
+    const hn = xmlEsc(hnRaw.slice(0,20) || 'NA');
     const sessionDateIso = noahIsoDate(rec.audioVisitDate||rec.fitDate) || nowIso.slice(0,10);
     const audioB64 = utf8Base64(noahAudiogramXml(rec.audTh));
     const uid = String(Date.now()).slice(-7);
