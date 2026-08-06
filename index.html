@@ -2781,6 +2781,9 @@ const OUTBOX_KEY = KEY + '_outbox';   // คิวรายการที่ร
 const FKEY = KEY + '_full';           // แคชข้อมูลเต็มของผู้ป่วยแต่ละราย (เปิดแก้ไข/พิมพ์ได้ทันที ไม่ต้องรอโหลด)
 let _outbox = [];
 let _fullCache = {};
+/* จำนวนผู้ป่วยสูงสุดที่เก็บข้อมูลเต็มไว้ในเครื่อง — เดิม 120 ราย ทำให้ระบบที่มีคนไข้ 300+ ราย
+   ต้องวิ่งดึงข้อมูลจากเซิร์ฟเวอร์ซ้ำๆ ทุกครั้งที่เลื่อนดูหน้าอื่น */
+const FULLCACHE_MAX = 1000;
 try{ _outbox = JSON.parse(localStorage.getItem(OUTBOX_KEY)||'[]'); }catch(e){ _outbox = []; }
 try{ _fullCache = JSON.parse(localStorage.getItem(FKEY)||'{}'); }catch(e){ _fullCache = {}; }
 let _syncing = false;
@@ -2791,7 +2794,7 @@ function saveFullCache(){
     // ที่เก็บเต็ม — ตัดรายการเก่าออกให้เหลือ 20 รายล่าสุด แล้วลองใหม่
     try{
       const ids = Object.keys(_fullCache).sort((a,b)=>String(_fullCache[b]._savedAt||'').localeCompare(String(_fullCache[a]._savedAt||'')));
-      const keep = {}; ids.slice(0,20).forEach(id=>keep[id]=_fullCache[id]);
+      const keep = {}; ids.slice(0,200).forEach(id=>keep[id]=_fullCache[id]);
       _fullCache = keep;
       localStorage.setItem(FKEY, JSON.stringify(_fullCache));
     }catch(e2){}
@@ -2801,9 +2804,9 @@ function upsertFullCache(rec){
   if(!rec || !rec._id) return;
   _fullCache[rec._id] = rec;
   const ids = Object.keys(_fullCache);
-  if(ids.length > 120){ // จำกัดขนาดแคช เก็บเฉพาะ 120 รายล่าสุด
+  if(ids.length > FULLCACHE_MAX){ // จำกัดขนาดแคช เก็บเฉพาะรายล่าสุด
     ids.sort((a,b)=>String(_fullCache[a]._savedAt||'').localeCompare(String(_fullCache[b]._savedAt||'')));
-    while(ids.length > 120){ delete _fullCache[ids.shift()]; }
+    while(ids.length > FULLCACHE_MAX){ delete _fullCache[ids.shift()]; }
   }
   saveFullCache();
 }
@@ -3492,7 +3495,7 @@ function init(){
     const shownFrom = list.length ? startIdx+1 : 0;
     const shownTo = Math.min(startIdx+pageSize, list.length);
     document.getElementById('lstPageInfo').textContent = `${shownFrom}-${shownTo} of ${list.length}`;
-    fillMissingRightTypes(pageList);
+    fillMissingRightTypes(list);
     clearExpiredQueues();
   }
   /* ── ล้างคิวที่หมดวันแล้วอัตโนมัติ: รายการไหน queueDate เป็นวันก่อนหน้า → เอาคิวออก (queueNo/queueDate/calledAt)
@@ -3544,25 +3547,60 @@ function init(){
         แล้ววาดตารางใหม่ให้ป้ายสิทธิ์ขึ้นเอง — ไม่ต้องแก้เซิร์ฟเวอร์ ── */
   const _rtFetched = new Set();
   let _rtFilling = false;
-  async function fillMissingRightTypes(pageList){
+  async function fillMissingRightTypes(fullList){
     if(_rtFilling) return;
-    const api = window.hcsApi; if(!api || !pageList || !pageList.length) return;
+    const api = window.hcsApi; if(!api || !fullList || !fullList.length) return;
     const t = localStorage.getItem('hcs_token'); if(!t) return;
-    const need = pageList.filter(r => !r.rightType && !(_fullCache[r._id]||{}).rightType && !_rtFetched.has(r._id)
+    const need = fullList.filter(r => !r.rightType && !(_fullCache[r._id]||{}).rightType && !_rtFetched.has(r._id)
       && !_outbox.some(o=>o._id===r._id)); /* รายการที่รอส่งขึ้นเซิร์ฟเวอร์: ของในเครื่องใหม่สุด ห้ามดึงของเก่ามาทับ */
     if(!need.length) return;
     _rtFilling = true;
-    let got = 0;
+    const fetched = [];
     try{
-      for(const r of need){
-        _rtFetched.add(r._id);
+      /* ⚡ ดึงเป็นชุดครั้งเดียวทั้งรายการ (ไม่ใช่ทีละหน้า/ทีละราย) — คนไข้ 300 ราย = 3 รอบ แทน 300 รอบ */
+      let bulkOk = true;
+      const CHUNK = 100;
+      for(let k=0; k<need.length && bulkOk; k+=CHUNK){
+        const ids = need.slice(k, k+CHUNK).map(r=>r._id);
+        let res = null;
+        try{ res = await api.postAction('getRecordsBulk', {token:t, ids:ids}); }catch(e){ res = null; }
+        if(res && res.status==='ok' && Array.isArray(res.records)){
+          ids.forEach(id=>_rtFetched.add(id));
+          res.records.forEach(l=>{ if(l && l._id) fetched.push(l); });
+        } else { bulkOk = false; }
+      }
+      if(!bulkOk){
+        /* เซิร์ฟเวอร์เวอร์ชันเก่าไม่รู้จักคำสั่งชุด — ถอยไปดึงทีละราย แต่ยิงพร้อมกัน 6 เส้น */
+        let next = 0;
+        const worker = async ()=>{
+          while(next < need.length){
+            const r = need[next++];
+            _rtFetched.add(r._id);
+            try{
+              const res = await api.postAction('getRecord', {token:t, id:r._id});
+              if(res && res.status==='ok' && res.record){
+                const l = res.record; if(!l._id) l._id = r._id;
+                fetched.push(l);
+              }
+            }catch(e){}
+          }
+        };
+        await Promise.all(Array.from({length: Math.min(6, need.length)}, ()=>worker()));
+      }
+      /* เขียนแคชครั้งเดียวตอนจบ — เดิม upsertFullCache() ทุกรายการทำให้ stringify ทั้งก้อนซ้ำ (ช้าแบบ N²) */
+      if(fetched.length){
         try{
-          const res = await api.postAction('getRecord', {token:t, id:r._id});
-          if(res && res.status==='ok' && res.record){ upsertFullCache(res.record); got++; }
+          fetched.forEach(l=>{ _fullCache[l._id] = l; });
+          const cids = Object.keys(_fullCache);
+          if(cids.length > FULLCACHE_MAX){
+            cids.sort((a,b)=>String(_fullCache[a]._savedAt||'').localeCompare(String(_fullCache[b]._savedAt||'')));
+            while(cids.length > FULLCACHE_MAX){ delete _fullCache[cids.shift()]; }
+          }
+          saveFullCache();
         }catch(e){}
       }
     } finally { _rtFilling = false; }
-    if(got && _currentMode==='list') renderList();
+    if(fetched.length && _currentMode==='list') renderList();
   }
 
   /* ── ส่งออกไฟล์ Noah (.nhax) ──────────────────────────────────────
@@ -4121,9 +4159,9 @@ function init(){
             try{
               fetched.forEach(l=>{ if(l && l._id) _fullCache[l._id] = l; });
               const cids = Object.keys(_fullCache);
-              if(cids.length > 120){
+              if(cids.length > FULLCACHE_MAX){
                 cids.sort((a,b)=>String(_fullCache[a]._savedAt||'').localeCompare(String(_fullCache[b]._savedAt||'')));
-                while(cids.length > 120){ delete _fullCache[cids.shift()]; }
+                while(cids.length > FULLCACHE_MAX){ delete _fullCache[cids.shift()]; }
               }
               saveFullCache();
             }catch(e){}
