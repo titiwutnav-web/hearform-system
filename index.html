@@ -710,6 +710,9 @@ body::before{
 #entryBackdrop{ background:rgba(60,80,110,.28); backdrop-filter:blur(10px) saturate(1.2); }
 
 /* ── หน้าเรียกคิว ── */
+.qs-voiceinfo{font-size:12px;color:#64748b;white-space:nowrap}
+.qs-voiceinfo.bad{color:#b91c1c;font-weight:700}
+
 #qnNumber, #queueView .qn-number{ color:var(--lg-tint-deep); }
 .qtbl-btn{ border-radius:9999px; }
 
@@ -1169,6 +1172,14 @@ body::before{
       <div class="qs-row">
         <label>ห้องตรวจ/จุดบริการ: <input type="text" id="queueRoom" placeholder="เช่น ห้องตรวจการได้ยิน"></label>
         <label><input type="checkbox" id="queueChime" checked> เสียงกริ่งก่อนเรียก</label>
+        <label>เสียงพูด:
+          <select id="queueVoice">
+            <option value="">อัตโนมัติ (แนะนำ)</option>
+            <option value="__google__">เสียงออนไลน์ Google (ไทยชัด ต้องต่อเน็ต)</option>
+          </select>
+        </label>
+        <button type="button" class="btn btn-ghost" id="btnTestVoice">🔈 ทดสอบเสียง</button>
+        <span class="qs-voiceinfo" id="queueVoiceInfo"></span>
       </div>
     </div>
     <div class="queue-table-wrap">
@@ -3241,87 +3252,264 @@ function init(){
       });
     }catch(e){}
   }
-  // ── โหลดรายชื่อเสียงล่วงหน้า: Chrome/Edge โหลดเสียงแบบ async ครั้งแรก getVoices() มักได้ [] ──
+  /* ══════════════════════════════════════════════════════════════
+     ระบบเสียงพูด (TTS) — เขียนใหม่ให้อ่าน "ชื่อภาษาไทย" ได้บนเครื่อง Windows
+     ปัญหาเดิม: Windows ส่วนใหญ่ไม่มีเสียงพูดภาษาไทยติดตั้งมาให้
+     เสียงอังกฤษ (David/Zira) จะอ่านได้แต่ "ตัวเลข" แล้วข้ามตัวอักษรไทยทั้งหมด
+     → คิวถูกอ่าน แต่ "ชื่อ" เงียบ
+     วิธีแก้: ถ้าไม่มีเสียงไทยในเครื่อง ให้ดึงเสียงพูดไทยจาก Google TTS มาเล่นแทน
+     ══════════════════════════════════════════════════════════════ */
+  const VOICE_KEY = 'hcs_queue_voice';   // '' = อัตโนมัติ, '__google__' = บังคับใช้เสียงออนไลน์, อื่นๆ = ชื่อเสียงในเครื่อง
+  function voicePref(){ try{ return localStorage.getItem(VOICE_KEY) || ''; }catch(e){ return ''; } }
+
+  let _voicesCache = null;
   if('speechSynthesis' in window){
-    try{ window.speechSynthesis.getVoices(); window.speechSynthesis.onvoiceschanged = ()=>{}; }catch(e){}
+    try{
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = ()=>{ _voicesCache = null; try{ fillVoiceSelect(); }catch(e){} };
+    }catch(e){}
   }
   function getVoicesAsync(){
     return new Promise(resolve=>{
       try{
+        if(!('speechSynthesis' in window)) return resolve([]);
         let vs = window.speechSynthesis.getVoices()||[];
-        if(vs.length) return resolve(vs);
+        if(vs.length){ _voicesCache = vs; return resolve(vs); }
         let done = false;
-        const finish = ()=>{ if(done) return; done = true; resolve(window.speechSynthesis.getVoices()||[]); };
-        window.speechSynthesis.onvoiceschanged = finish;
+        const finish = ()=>{ if(done) return; done = true; _voicesCache = window.speechSynthesis.getVoices()||[]; resolve(_voicesCache); };
+        window.speechSynthesis.onvoiceschanged = ()=>{ finish(); try{ fillVoiceSelect(); }catch(e){} };
         setTimeout(finish, 1500); // กันค้าง — บางเครื่อง event ไม่ยิง
       }catch(e){ resolve([]); }
     });
   }
+  function isThaiVoice(v){ return !!(v && (/^th/i.test(v.lang||'') || /thai|premwadee|pattara|achara|niwat|kanya|narisa/i.test(v.name||''))); }
   function pickThaiVoice(voices){
     try{
-      const vs = voices || window.speechSynthesis.getVoices()||[];
-      // เรียงลำดับ: เสียง Natural/Online (Edge) > เสียงในเครื่อง > เสียงไทยอะไรก็ได้
-      return vs.find(v=>/^th/i.test(v.lang) && /natural|online/i.test(v.name))
-          || vs.find(v=>/^th/i.test(v.lang) && v.localService)
+      const vs = voices || _voicesCache || (window.speechSynthesis && window.speechSynthesis.getVoices()) || [];
+      return vs.find(v=>/^th/i.test(v.lang) && /natural|online/i.test(v.name))   // Edge Natural
+          || vs.find(v=>/^th/i.test(v.lang) && v.localService)                    // เสียงในเครื่อง
           || vs.find(v=>/^th/i.test(v.lang))
-          || vs.find(v=>/th[-_]?TH|thai|premwadee|pattara|achara|niwat|kanya/i.test(v.name))
+          || vs.find(v=>isThaiVoice(v))
           || null;
     }catch(e){ return null; }
+  }
+  /* เสียงที่จะใช้จริง: ตามที่ผู้ใช้เลือกไว้ ถ้าไม่ได้เลือกก็หาเสียงไทยอัตโนมัติ */
+  function resolveVoice(voices){
+    const pref = voicePref();
+    if(pref === '__google__') return null;
+    if(pref){
+      const hit = (voices||[]).find(v=>v.name===pref);
+      if(hit) return hit;
+    }
+    return pickThaiVoice(voices);
+  }
+  /* ตัดข้อความยาวเป็นท่อนๆ — Chrome พูดข้อความยาวเกิน ~200 ตัวอักษรแล้วเงียบกลางคัน */
+  function chunkText(text, max){
+    const t = String(text==null?'':text).replace(/\s+/g,' ').trim();
+    if(!t) return [];
+    if(t.length<=max) return [t];
+    const out=[]; let cur='';
+    t.split(' ').forEach(word=>{
+      let w = word;
+      if((cur+' '+w).trim().length > max){
+        if(cur){ out.push(cur.trim()); cur=''; }
+        while(w.length > max){ out.push(w.slice(0,max)); w = w.slice(max); }
+        cur = w;
+      } else cur = (cur+' '+w).trim();
+    });
+    if(cur) out.push(cur);
+    return out;
   }
   function showNoThaiVoiceWarning(){
     if(document.getElementById('noThaiVoiceWarn')) return;
     const d = document.createElement('div');
     d.id = 'noThaiVoiceWarn';
-    d.style.cssText = 'position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:99999;background:#7f1d1d;color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;line-height:1.6;max-width:560px;box-shadow:0 8px 24px rgba(0,0,0,.35)';
-    d.innerHTML = '⚠️ <b>เครื่องนี้ไม่มีเสียงพูดภาษาไทย</b> ระบบจะอ่านได้แต่ตัวเลข<br>วิธีแก้: <b>Settings → Time &amp; Language → Speech → Add voices → เลือก "ไทย"</b> แล้วรีสตาร์ทเบราว์เซอร์ หรือเปิดโปรแกรมด้วย <b>Microsoft Edge</b> แทน <button onclick="this.parentNode.remove()" style="margin-left:8px;background:#fff;color:#7f1d1d;border:0;border-radius:8px;padding:2px 10px;cursor:pointer;font-weight:700">ปิด</button>';
+    d.style.cssText = 'position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:99999;background:#7f1d1d;color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;line-height:1.7;max-width:600px;box-shadow:0 8px 24px rgba(0,0,0,.35)';
+    d.innerHTML = '⚠️ <b>เครื่องนี้ยังไม่มีเสียงพูดภาษาไทย และต่อเสียงออนไลน์ไม่ได้</b> จึงอ่านได้แต่ตัวเลข ไม่อ่านชื่อ<br>'
+      + '<b>วิธีแก้ (เลือกอย่างใดอย่างหนึ่ง)</b><br>'
+      + '1. ติดตั้งเสียงไทย: Settings → Time &amp; Language → Speech (หรือ Language &amp; region → ไทย → Language options) → Add voices → เลือก <b>ไทย</b> แล้วปิด-เปิดเบราว์เซอร์ใหม่<br>'
+      + '2. เปิดโปรแกรมด้วย <b>Microsoft Edge</b> (มีเสียงไทย Premwadee/Niwat ออนไลน์ให้อยู่แล้ว)<br>'
+      + '3. ต่ออินเทอร์เน็ตให้เข้าถึง translate.google.com ได้ แล้วเลือกเสียง "ออนไลน์ Google"'
+      + '<button onclick="this.parentNode.remove()" style="margin-left:8px;background:#fff;color:#7f1d1d;border:0;border-radius:8px;padding:2px 10px;cursor:pointer;font-weight:700">ปิด</button>';
     document.body.appendChild(d);
   }
-  /* ── ตัวสำรอง: เครื่องที่ไม่มีเสียงพูดภาษาไทยติดตั้งเลย (ตั้งค่า Windows ไม่ได้)
-        → ดึงเสียงพูดจาก Google Translate TTS ผ่านอินเทอร์เน็ตแทน (เล่นผ่าน <audio> ไม่ต้องติดตั้งอะไร) ── */
+  /* ══════════════════════════════════════════════════════════════
+     การประกาศแบบเป็นท่อน (segment) — เว้นจังหวะรอบตัวเลข และเน้นเลขคิว
+     แต่ละท่อน: { t:ข้อความ, vol:ความดัง 0-1, slow:อ่านช้า, gap:เว้นจังหวะหลังพูดจบ (มิลลิวินาที) }
+     ══════════════════════════════════════════════════════════════ */
+  const VOL_NORMAL = 0.72;  // คำทั่วไป — เบาลงเล็กน้อยเพื่อให้เลขคิวเด่นขึ้น
+  const VOL_NUMBER = 1.0;   // เลขคิว — ดังเต็มที่
+  const RATE_NORMAL = 0.95;
+  const RATE_NUMBER = 0.62; // เลขคิวอ่านช้ากว่าปกติ
+  function segGap(ms){ return new Promise(r=>setTimeout(r, ms||0)); }
+  /* ประกอบบทประกาศ: เชิญคิวหมายเลข …(เว้น)… <เลข> …(เว้น)… <เลข> …(เว้น)… คุณ <ชื่อ> …(เว้น)… เชิญที่ <ห้อง> */
+  function buildQueueSegments(queueNo, name, room){
+    const no = String(queueNo==null?'':queueNo).trim();
+    /* คำนำหน้าแบบย่อ: จุดทำให้เสียงพูดหยุดกลางประโยคแล้วข้ามชื่อ → ขยายเป็นคำเต็มก่อน */
+    let spokenName = String(name||'')
+      .replace(/^\s*น\s*\.\s*ส\s*\.?/,'นางสาว')
+      .replace(/^\s*ด\s*\.\s*ช\s*\.?/,'เด็กชาย')
+      .replace(/^\s*ด\s*\.\s*ญ\s*\.?/,'เด็กหญิง')
+      .replace(/^\s*พ\s*\.\s*อ\s*\.?/,'พันเอก')
+      .replace(/^\s*ร\s*\.\s*ต\s*\.?/,'ร้อยตรี')
+      .replace(/^\s*(นาง|นาย|นางสาว)\s*\./,'$1')
+      .replace(/[.•\-_]/g,' ').replace(/\s+/g,' ').trim();
+    const segs = [{ t:'เชิญคิวหมายเลข', vol:VOL_NORMAL, gap:550 }];
+    if(no){
+      segs.push({ t:no, vol:VOL_NUMBER, slow:true, gap:520 });
+      segs.push({ t:no, vol:VOL_NUMBER, slow:true, gap:650 }); // พูดเลขซ้ำ 2 ครั้ง
+    }
+    if(spokenName) segs.push({ t:spokenName, vol:VOL_NORMAL, gap:480 });
+    segs.push({ t:'เชิญที่ ' + (room||queueRoomName()), vol:VOL_NORMAL, gap:0 });
+    return segs;
+  }
+  /* ── เสียงออนไลน์: Google Translate TTS (ไม่ต้องติดตั้งอะไรในเครื่อง) ── */
+  const GTTS_HOSTS = [
+    'https://translate.googleapis.com/translate_tts?ie=UTF-8&client=gtx&tl=th&q=',
+    'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=th&q='
+  ];
   let _gttsAudio = null;
-  function speakViaGoogleTTS(text, times){
+  let _gttsHostOK = null; // จำโฮสต์ที่ใช้ได้ไว้ ครั้งต่อไปจะไม่ต้องลองใหม่
+  function playAudioUrl(url, vol){
     return new Promise((resolve, reject)=>{
       try{
-        const n = times || 1; let played = 0;
-        const url = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=th&client=tw-ob&q=' + encodeURIComponent(String(text).slice(0,190));
         if(_gttsAudio){ try{ _gttsAudio.pause(); }catch(e){} }
-        const a = new Audio(url); _gttsAudio = a;
-        let started = false;
+        const a = new Audio(); _gttsAudio = a;
+        try{ a.volume = (vol==null?1:Math.max(0, Math.min(1, vol))); }catch(e){}
+        let started=false, done=false;
+        const fail = (e)=>{ if(done) return; done=true; reject(e||new Error('audio-failed')); };
         a.onplaying = ()=>{ started = true; };
-        a.onended = ()=>{ played++; if(played < n){ a.currentTime = 0; a.play().catch(()=>{}); } else resolve(true); };
-        a.onerror = ()=>{ if(!started) reject(new Error('gtts-load-failed')); };
-        a.play().then(()=>{}).catch(err=>reject(err));
-        setTimeout(()=>{ if(!started) reject(new Error('gtts-timeout')); }, 4000); // เน็ตช้า/โดนบล็อก — ไปใช้ทางอื่นต่อ
+        a.onended   = ()=>{ if(done) return; done=true; resolve(true); };
+        a.onerror   = ()=>fail(new Error('audio-load-error'));
+        a.src = url;
+        a.play().catch(err=>fail(err));
+        setTimeout(()=>{ if(!started) fail(new Error('audio-timeout')); }, 6000); // เน็ตช้า/โดนบล็อก → ไปใช้ทางอื่น
       }catch(e){ reject(e); }
     });
   }
-  async function speakText(text, times){
+  async function speakSegmentsGoogle(segs, times){
+    if(!segs || !segs.length) return true;
+    const hosts = _gttsHostOK ? [_gttsHostOK].concat(GTTS_HOSTS.filter(h=>h!==_gttsHostOK)) : GTTS_HOSTS.slice();
+    let lastErr = null;
+    for(const host of hosts){
+      try{
+        const n = times || 1;
+        for(let i=0;i<n;i++){
+          for(const sg of segs){
+            const parts = chunkText(sg.t, 180); // Google TTS รับได้ ~200 ตัวอักษรต่อครั้ง
+            for(const pt of parts){
+              await playAudioUrl(host + encodeURIComponent(pt) + (sg.slow ? '&ttsspeed=0.5' : ''), sg.vol);
+            }
+            if(sg.gap) await segGap(sg.gap);
+          }
+          if(i < n-1) await segGap(750);
+        }
+        _gttsHostOK = host;
+        return true;
+      }catch(e){ lastErr = e; }
+    }
+    throw lastErr || new Error('gtts-failed');
+  }
+  /* ── เสียงในเครื่อง ── */
+  let _keepAlive = null;
+  function speakOne(text, opt){
+    return new Promise(resolve=>{
+      try{
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'th-TH';
+        u.rate = opt.rate; u.volume = opt.vol; u.pitch = 1;
+        if(opt.voice) u.voice = opt.voice;
+        let done = false;
+        const fin = ()=>{ if(done) return; done = true; resolve(true); };
+        u.onend = fin; u.onerror = fin;
+        setTimeout(fin, 15000); // กันค้างถ้าเบราว์เซอร์ไม่ยิง event
+        window.speechSynthesis.speak(u);
+      }catch(e){ resolve(false); }
+    });
+  }
+  async function speakSegmentsLocal(segs, times, voice){
+    if(!segs || !segs.length) return true;
+    const synth = window.speechSynthesis;
+    try{ synth.cancel(); synth.resume(); }catch(e){} // แก้ Chrome ค้างสถานะ paused แล้วพูดไม่ออกทั้งที่มีเสียง
+    clearInterval(_keepAlive);
+    _keepAlive = setInterval(()=>{ try{ if(synth.speaking && !synth.paused){ synth.pause(); synth.resume(); } }catch(e){} }, 9000);
     try{
-      if(!('speechSynthesis' in window)){ try{ await speakViaGoogleTTS(text, times); }catch(e){} return; }
-      window.speechSynthesis.cancel();
-      try{ window.speechSynthesis.resume(); }catch(e){} // แก้ Chrome ค้างสถานะ paused แล้วพูดไม่ออกทั้งที่มีเสียง
-      const voices = await getVoicesAsync(); // รอโหลดรายชื่อเสียงให้ครบก่อน — แก้ปัญหาหาเสียงไทยไม่เจอทั้งที่มี
-      const v = pickThaiVoice(voices);
-      if(!v){
-        /* ไม่มีเสียงไทยในเครื่อง → ลองเสียงจาก Google ก่อน (ใช้ได้ทุกเครื่องที่ต่อเน็ต ไม่ต้องตั้งค่า) */
-        try{ await speakViaGoogleTTS(text, times); return; }
-        catch(e){ showNoThaiVoiceWarning(); }
-      }
       const n = times || 1;
       for(let i=0;i<n;i++){
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'th-TH'; u.rate = 0.92;
-        if(v) u.voice = v;
-        window.speechSynthesis.speak(u); // เรียก speak() ซ้อนกันตามจำนวนรอบ — เบราว์เซอร์จะพูดเรียงกันเป็นคิวให้เอง
+        for(const sg of segs){
+          const parts = chunkText(sg.t, 160); // Chrome เงียบกลางคันถ้าข้อความยาวเกินไป
+          for(const pt of parts){
+            await speakOne(pt, { rate: sg.slow?RATE_NUMBER:RATE_NORMAL, vol: (sg.vol==null?1:sg.vol), voice: voice });
+          }
+          if(sg.gap) await segGap(sg.gap);
+        }
+        if(i < n-1) await segGap(750);
       }
+    } finally { clearInterval(_keepAlive); }
+    return true;
+  }
+  /* ── แสดงว่าตอนนี้ใช้เสียงอะไรอยู่ ── */
+  function updateVoiceInfo(v, usingGoogle){
+    const el = document.getElementById('queueVoiceInfo');
+    if(!el) return;
+    if(usingGoogle){ el.className='qs-voiceinfo'; el.textContent = '🌐 ใช้เสียงไทยออนไลน์ (Google)'; return; }
+    if(v && isThaiVoice(v)){ el.className='qs-voiceinfo'; el.textContent = '✓ ใช้เสียงไทย: ' + v.name; return; }
+    el.className='qs-voiceinfo bad';
+    el.textContent = '⚠️ ไม่มีเสียงไทย — จะอ่านได้แต่ตัวเลข ไม่อ่านชื่อ';
+  }
+  /* ── ฟังก์ชันหลัก: พูดตามท่อนที่กำหนด ── */
+  async function speakSegments(segs, times){
+    try{
+      segs = (segs||[]).filter(sg=>sg && String(sg.t||'').trim());
+      if(!segs.length) return;
+      const pref = voicePref();
+      const hasSynth = ('speechSynthesis' in window);
+      const voices = hasSynth ? await getVoicesAsync() : [];
+      const v = hasSynth ? resolveVoice(voices) : null;
+      const thaiOK = isThaiVoice(v);
+      /* ใช้เสียงออนไลน์เมื่อ: ผู้ใช้บังคับเลือก หรือ ในเครื่องไม่มีเสียงไทย (ซึ่งจะทำให้ชื่อไม่ถูกอ่าน) */
+      if(pref === '__google__' || !thaiOK){
+        updateVoiceInfo(v, true);
+        try{
+          if(hasSynth) window.speechSynthesis.cancel();
+          await speakSegmentsGoogle(segs, times);
+          return;
+        }catch(e){
+          if(!hasSynth){ showNoThaiVoiceWarning(); return; }
+          showNoThaiVoiceWarning(); // ต่อเน็ตไม่ได้ + ไม่มีเสียงไทย → อ่านได้แค่ตัวเลข
+        }
+      }
+      updateVoiceInfo(v, false);
+      await speakSegmentsLocal(segs, times, v);
     }catch(e){}
+  }
+  /* พูดข้อความธรรมดา (ใช้ที่อื่นในโปรแกรม) */
+  function speakText(text, times){
+    return speakSegments([{ t:text, vol:1, gap:0 }], times);
+  }
+  /* ── เติมรายชื่อเสียงลงกล่องเลือก ── */
+  async function fillVoiceSelect(){
+    const sel = document.getElementById('queueVoice');
+    if(!sel) return;
+    const voices = await getVoicesAsync();
+    const cur = voicePref();
+    const thai = voices.filter(isThaiVoice);
+    const other = voices.filter(v=>!isThaiVoice(v));
+    let html = '<option value="">อัตโนมัติ (แนะนำ)</option>'
+             + '<option value="__google__">เสียงออนไลน์ Google (ไทยชัด ต้องต่อเน็ต)</option>';
+    if(thai.length) html += '<optgroup label="เสียงไทยในเครื่อง">' + thai.map(v=>`<option value="${esc(v.name)}">${esc(v.name)}</option>`).join('') + '</optgroup>';
+    if(other.length) html += '<optgroup label="เสียงอื่นๆ (อ่านไทยไม่ได้)">' + other.map(v=>`<option value="${esc(v.name)}">${esc(v.name)} (${esc(v.lang)})</option>`).join('') + '</optgroup>';
+    sel.innerHTML = html;
+    sel.value = cur;
+    if(sel.value !== cur) sel.value = '';
+    updateVoiceInfo(resolveVoice(voices), cur==='__google__' || !isThaiVoice(resolveVoice(voices)));
   }
   function announceQueue(rec, opts){
     opts = opts || {};
     const room = queueRoomName();
-    const text = `เชิญคิวหมายเลข ${rec.queueNo} ${rec.name||''} เชิญที่ ${room}`;
+    const segs = buildQueueSegments(rec.queueNo, rec.name, room);
     const chimeOn = document.getElementById('queueChime') ? document.getElementById('queueChime').checked : true;
-    if(opts.chime!==false && chimeOn){ playChime(); setTimeout(()=>speakText(text, 2), 700); } else { speakText(text, 2); }
+    if(opts.chime!==false && chimeOn){ playChime(); setTimeout(()=>speakSegments(segs, 2), 800); } else { speakSegments(segs, 2); }
     _currentCall = { id: rec._id, queueNo: rec.queueNo, name: rec.name||'' };
     document.getElementById('qnNumber').textContent = rec.queueNo;
     document.getElementById('qnName').textContent = rec.name || '-';
@@ -3339,6 +3527,7 @@ function init(){
     if(!res || res.status!=='ok') console.warn('บันทึกสถานะเรียกคิวขึ้นเซิร์ฟเวอร์กลางไม่สำเร็จ: '+((res&&res.message)||''));
   }
   function renderQueueView(){
+    try{ fillVoiceSelect(); }catch(e){}
     const dateLbl = document.getElementById('queueDateLabel');
     if(dateLbl) dateLbl.textContent = 'รายชื่อคิวตรวจของวันนี้ (' + todayThai + ') เรียงตามลำดับที่มาถึง';
     const list = getTodayQueueRecords();
@@ -4372,6 +4561,22 @@ function init(){
     if(!next){ alert('ไม่มีคิวที่รอเรียกแล้ว'); return; }
     callQueueRecord(next);
   });
+  /* ── ตั้งค่าเสียงพูด ── */
+  (function(){
+    const sel = document.getElementById('queueVoice');
+    if(sel){
+      sel.addEventListener('change', ()=>{
+        try{ localStorage.setItem(VOICE_KEY, sel.value||''); }catch(e){}
+        speakSegments(buildQueueSegments(12, 'สมชาย ใจดี', queueRoomName()), 1);
+      });
+      fillVoiceSelect();
+    }
+    const btn = document.getElementById('btnTestVoice');
+    if(btn) btn.addEventListener('click', ()=>{
+      const rec = getTodayQueueRecords()[0];
+      speakSegments(buildQueueSegments(rec?rec.queueNo:12, rec?rec.name:'สมชาย ใจดี', queueRoomName()), 1);
+    });
+  })();
   (function(){
     const el = document.getElementById('queueRoom');
     if(!el) return;
