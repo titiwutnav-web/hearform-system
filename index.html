@@ -217,6 +217,14 @@ svg.audio { width:100%; height:auto; max-width:390px; cursor:crosshair; touch-ac
 #sidebar .avgrow-side .avgbox .t { font-size:9.5px; }
 #sidebar .avgrow-side .avgbox .v { font-size:14px; }
 #sidebar .avgrow-side .avgbox .deg { font-size:9.5px; }
+/* ── กล่องแปลผล Audiogram อัตโนมัติ ── */
+#sidebar .interp-box { border:1px solid #CFE3F7; background:linear-gradient(180deg,#F4F9FF,#EDF4FE); border-radius:10px; padding:8px 10px 9px; margin:0 0 8px; }
+#sidebar .interp-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:5px; }
+#sidebar .interp-title { font-size:11px; font-weight:700; color:#0C6EA8; letter-spacing:.2px; }
+#sidebar .interp-btn { font-family:inherit; font-size:10.5px; font-weight:600; color:#0C6EA8; background:#fff; border:1px solid #9FCBEC; border-radius:7px; padding:3px 9px; cursor:pointer; white-space:nowrap; }
+#sidebar .interp-btn:hover { background:#0C6EA8; color:#fff; border-color:#0C6EA8; }
+#sidebar .interp-text { font-size:13px; font-weight:700; color:#173A56; line-height:1.45; white-space:pre-line; min-height:18px; }
+#sidebar .interp-text.empty { font-weight:400; color:#8AA0B2; font-size:11.5px; }
 #sidebar .ttbl { width:100%; border-collapse:collapse; font-size:12.5px; margin-top:8px; font-family:inherit; }
 #sidebar .ttbl th, #sidebar .ttbl td { border:1px solid #E5E2F7; padding:4px 2px; text-align:center; color:#241F47; }
 #sidebar .ttbl thead th { background:#F5F3FF; font-weight:600; font-size:11px; color:#6B6685; font-family:'Sarabun','TH Sarabun New',Tahoma,sans-serif; }
@@ -374,7 +382,7 @@ svg.audio { width:100%; height:auto; max-width:390px; cursor:crosshair; touch-ac
 #listView { display:block; width:100%; min-height:100vh; padding:48px 32px; box-sizing:border-box; }
 #app.mode-print #listView { display:none; }
 #app.mode-list #main { display:none; }
-.list-wrap { max-width:1100px; margin:0 auto; background:#fff; border-radius:20px; box-shadow:0 24px 60px rgba(76,60,190,0.16), 0 2px 8px rgba(76,60,190,0.08); overflow:hidden; font-family:'Poppins','Sarabun','TH Sarabun New',Tahoma,sans-serif; }
+.list-wrap { max-width:1500px; margin:0 auto; background:#fff; border-radius:20px; box-shadow:0 24px 60px rgba(76,60,190,0.16), 0 2px 8px rgba(76,60,190,0.08); overflow:hidden; font-family:'Poppins','Sarabun','TH Sarabun New',Tahoma,sans-serif; }
 .list-head { background:linear-gradient(135deg, #6D5DF6 0%, #8B5CF6 100%); color:#fff; padding:32px 32px 28px; display:flex; gap:16px; align-items:flex-start; }
 .list-head-icon { width:48px; height:48px; border-radius:9999px; background:rgba(255,255,255,0.22); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
 .list-head h1 { margin:0 0 4px; font-size:19px; font-weight:700; }
@@ -391,18 +399,20 @@ svg.audio { width:100%; height:auto; max-width:390px; cursor:crosshair; touch-ac
 .list-subhead { display:flex; align-items:center; justify-content:space-between; padding:18px 32px 4px; flex-wrap:wrap; gap:10px; font-size:15px; font-weight:700; color:#241F47; }
 .list-count-badge { background:#EDE9FE; color:#6D5DF6; font-size:12px; font-weight:700; padding:3px 10px; border-radius:9999px; margin-left:6px; }
 .list-subhead-actions { display:flex; gap:10px; }
-.list-table-wrap { padding:8px 32px 16px; overflow-x:auto; }
+.list-table-wrap { padding:8px 20px 16px; overflow-x:auto; }
 .list-pagination { display:flex; align-items:center; justify-content:flex-end; gap:20px; padding:14px 32px 28px; flex-wrap:wrap; font-size:13px; color:#64748b; }
 .lp-size select { height:32px; border:1.5px solid #E5E2F7; border-radius:8px; font-family:inherit; font-size:13px; padding:0 8px; margin-left:6px; }
 .lp-nav { display:flex; gap:6px; }
 .lp-nav .btn { padding:0 10px; height:32px; min-width:0; }
-.list-table { width:100%; border-collapse:collapse; font-size:13.5px; }
-.list-table th { text-align:left; padding:10px 12px; font-size:11px; color:#8B88A3; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; border-bottom:1.5px solid #EDEBFB; white-space:nowrap; }
-.list-table td { padding:11px 12px; border-bottom:1px solid #F3F1FC; color:#241F47; vertical-align:middle; }
+.list-table { width:100%; border-collapse:collapse; font-size:12.5px; table-layout:fixed; }
+.list-table th { text-align:left; padding:10px 8px; font-size:10.5px; color:#8B88A3; font-weight:700; text-transform:uppercase; letter-spacing:0.02em; border-bottom:1.5px solid #EDEBFB; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.list-table td { padding:9px 8px; border-bottom:1px solid #F3F1FC; color:#241F47; vertical-align:middle; overflow:hidden; text-overflow:ellipsis; }
 .list-table tr:hover td { background:#FBFAFF; }
-.list-table .lst-actions { white-space:nowrap; }
-/* ── คอลัมน์ชื่อ-สกุล: กว้างขึ้นและอยู่บรรทัดเดียวเสมอ (HN ดูได้จาก tooltip ตอนชี้) ── */
-.list-table .th-name, .list-table .lst-name { width:40%; }
+.list-table .lst-actions { white-space:nowrap; overflow:visible; }
+/* ── คอลัมน์ชื่อ-สกุล: กว้างพอดี ไม่ล้นจนต้องเลื่อนแนวนอน (HN ดูได้จาก tooltip ตอนชี้) ── */
+.list-table .th-name, .list-table .lst-name { width:16%; white-space:nowrap; }
+.list-table .lst-btn { padding:5px 7px; font-size:11px; }
+.list-table .lst-actions .lst-btn { padding:5px 6px; font-size:13px; min-width:26px; }
 .list-table .lst-name { white-space:nowrap; font-weight:600; }
 .list-table .lst-model { white-space:nowrap; }
 /* ── ป้ายสิทธิ์การรักษาในตารางรายการ ── */
@@ -417,6 +427,8 @@ svg.audio { width:100%; height:auto; max-width:390px; cursor:crosshair; touch-ac
 .list-table .lst-edit:hover { background:#DDD6FE; }
 .list-table .lst-audio { background:#CFFAFE; color:#0E7490; }
 .list-table .lst-audio:hover { background:#A5F3FC; }
+.list-table .lst-ha { background:#FFEDD5; color:#C2410C; }
+.list-table .lst-ha:hover { background:#FED7AA; }
 .list-table .lst-print { background:#DCFCE7; color:#15803D; }
 .list-table .lst-print:hover { background:#BBF7D0; }
 .list-table .lst-del { background:#FEE2E2; color:#B91C1C; }
@@ -424,6 +436,82 @@ svg.audio { width:100%; height:auto; max-width:390px; cursor:crosshair; touch-ac
 .list-table .lst-queue { background:transparent; padding:3px 6px; color:#8B88A3; white-space:nowrap; }
 .list-table .lst-queue:hover { background:#F1F0FB; }
 .list-empty { text-align:center; padding:36px 12px; color:#A29DBE; font-size:13.5px; }
+/* ══════════════════════════════════════════════════════════════
+   ระบบโทรติดตามผลผู้ป่วย — หน้าแยก + แถบเลือกหลายคนในหน้ารายการ
+   ══════════════════════════════════════════════════════════════ */
+#callView { display:none; width:100%; min-height:100vh; padding:48px 32px; box-sizing:border-box; }
+#app.mode-call #callView { display:block; }
+#app.mode-call #sidebar, #app.mode-call #main, #app.mode-call #listView { display:none; }
+#app.mode-print #callView, #app.mode-entry #callView { display:none; }
+.call-wrap { max-width:1180px; margin:0 auto; background:#fff; border-radius:20px; box-shadow:0 24px 60px rgba(76,60,190,0.16), 0 2px 8px rgba(76,60,190,0.08); overflow:hidden; font-family:'Poppins','Sarabun','TH Sarabun New',Tahoma,sans-serif; }
+.call-head { background:linear-gradient(135deg,#0EA5E9 0%,#6D5DF6 100%); color:#fff; padding:28px 32px 24px; display:flex; gap:16px; align-items:flex-start; }
+.call-head-icon { width:48px; height:48px; border-radius:9999px; background:rgba(255,255,255,.22); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+.call-head h1 { margin:0 0 4px; font-size:19px; font-weight:700; }
+.call-head p { margin:0; font-size:12.5px; color:rgba(255,255,255,.82); line-height:1.6; }
+.call-head-actions { margin-left:auto; display:flex; gap:8px; align-items:center; }
+.call-head-close { background:rgba(255,255,255,.2); border:none; color:#fff; width:32px; height:32px; border-radius:9999px; font-size:15px; cursor:pointer; }
+.call-filters { padding:18px 32px; border-bottom:1px solid #EDEBFB; display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end; }
+.call-sum { display:flex; flex-wrap:wrap; gap:9px; padding:16px 32px; border-bottom:1px solid #EDEBFB; }
+.cs-card { flex:1 1 112px; border:1.5px solid #EDEBFB; border-radius:12px; padding:9px 12px; background:#FBFAFF; cursor:pointer; }
+.cs-card:hover { border-color:#C9C2F5; }
+.cs-card.on { border-color:#6D5DF6; box-shadow:0 0 0 3px rgba(109,93,246,.13); }
+.cs-card .n { font-size:20px; font-weight:800; color:#241F47; line-height:1.1; }
+.cs-card .t { font-size:11px; color:#8B88A3; font-weight:700; margin-top:2px; }
+.call-table { width:100%; border-collapse:collapse; font-size:13.5px; }
+.call-table th { text-align:left; padding:10px 12px; font-size:11px; color:#8B88A3; font-weight:700; text-transform:uppercase; letter-spacing:.04em; border-bottom:1.5px solid #EDEBFB; white-space:nowrap; }
+.call-table td { padding:10px 12px; border-bottom:1px solid #F3F1FC; color:#241F47; vertical-align:middle; }
+.call-table tr:hover td { background:#FBFAFF; }
+.call-table .ct-name { font-weight:600; white-space:nowrap; }
+.call-table .ct-phone { white-space:nowrap; font-variant-numeric:tabular-nums; }
+.appt-pill { display:inline-block; background:#EEF6FF; color:#0C6EA8; font-weight:700; font-size:11.5px; padding:3px 10px; border-radius:9999px; white-space:nowrap; }
+.st-pill { display:inline-block; font-weight:700; font-size:11.5px; padding:4px 11px; border-radius:9999px; white-space:nowrap; border:1px solid transparent; }
+.st-none     { background:#F1F0FB; color:#8B88A3; }
+.st-confirm  { background:#DCFCE7; color:#15803D; }
+.st-noanswer { background:#FEF3C7; color:#92400E; }
+.st-postpone { background:#E0E7FF; color:#3730A3; }
+.st-unreach  { background:#FFE4E6; color:#9F1239; }
+.st-badnum   { background:#FEE2E2; color:#B91C1C; }
+.st-waive    { background:#E5E7EB; color:#374151; }
+.st-tele     { background:#CFFAFE; color:#0E7490; }
+.call-sel { height:34px; border:1.5px solid #E5E2F7; border-radius:9px; font-family:inherit; font-size:12.5px; padding:0 8px; color:#241F47; background:#fff; max-width:190px; }
+.call-note-in { height:32px; width:100%; min-width:110px; border:1.5px solid #EDEBFB; border-radius:8px; font-family:inherit; font-size:12.5px; padding:0 9px; box-sizing:border-box; }
+.call-when { font-size:10.5px; color:#A29DBE; margin-top:3px; white-space:nowrap; }
+/* ── แถบเลือกหลายคนในหน้ารายการ ── */
+.lst-bulk { display:none; align-items:center; gap:12px; margin:0 32px 8px; padding:10px 16px; background:#EDE9FE; border:1.5px solid #C9C2F5; border-radius:12px; font-size:13px; font-weight:700; color:#4C3CBE; }
+.lst-bulk.show { display:flex; }
+.lst-bulk .spacer { flex:1; }
+/* ── ช่องติ๊กเลือกหลายรายการ: ซ่อนไว้ก่อน กดปุ่ม "นัดหมาย" ค่อยแสดง ── */
+.list-table .th-chk, .list-table .td-chk { width:24px; padding-left:6px; padding-right:0; display:none; }
+.list-table.sel-mode .th-chk, .list-table.sel-mode .td-chk { display:table-cell; }
+#btnToggleSelect.on { background:#e7edff; border-color:#3d6df6; color:var(--lg-tint-deep); font-weight:700; }
+/* ── สัดส่วนความกว้างแต่ละคอลัมน์ (table-layout:fixed) ให้พอดีจอ ไม่ต้องเลื่อนแนวนอน
+      ลำดับคอลัมน์: 1 ติ๊กเลือก · 2 NO. · 3 คิว · 4 ชื่อ-สกุล · 5 วันที่ใส่เครื่อง
+                    6 รุ่น · 7 ข้างที่ใส่ · 8 สิทธิ์ · 9 จัดการ ── */
+.list-table th:nth-child(2), .list-table td:nth-child(2) { width:5%; }   /* NO. */
+.list-table th:nth-child(3), .list-table td:nth-child(3) { width:9%; }   /* คิว */
+.list-table th:nth-child(5), .list-table td:nth-child(5) { width:12%; }  /* วันที่ใส่เครื่อง */
+.list-table th:nth-child(6), .list-table td:nth-child(6) { width:12%; }  /* รุ่น */
+.list-table th:nth-child(7), .list-table td:nth-child(7) { width:8%; }   /* ข้างที่ใส่ */
+.list-table th:nth-child(8), .list-table td:nth-child(8) { width:9%; }   /* สิทธิ์ */
+.list-table th:nth-child(9), .list-table td:nth-child(9) { width:17%; }  /* จัดการ */
+.list-table .lst-name, .list-table .ct-name, .list-table td:nth-child(4) { overflow:visible; text-overflow:clip; }
+.list-table .lst-model, .list-table td:nth-child(6) { white-space:nowrap; }
+.list-table td:nth-child(3), .list-table td:nth-child(9) { overflow:visible; }
+.list-table input[type="checkbox"] { width:16px; height:16px; accent-color:#6D5DF6; cursor:pointer; }
+/* ── กล่องลงนัดหมาย ── */
+#apptModal { display:none; position:fixed; inset:0; z-index:99990; background:rgba(36,31,71,.42); align-items:center; justify-content:center; padding:16px; }
+#apptModal.show { display:flex; }
+.appt-card { background:#fff; border-radius:18px; width:100%; max-width:430px; box-shadow:0 24px 60px rgba(76,60,190,.3); overflow:hidden; font-family:'Poppins','Sarabun','TH Sarabun New',Tahoma,sans-serif; }
+.appt-card h3 { margin:0; padding:18px 22px 14px; font-size:16px; color:#241F47; background:#F7F5FF; border-bottom:1px solid #EDEBFB; }
+.appt-body { padding:18px 22px; }
+.appt-body label { display:block; font-size:11.5px; color:#8B88A3; font-weight:700; margin:0 0 5px; }
+.appt-body input, .appt-body select { width:100%; height:38px; padding:0 12px; border:1.5px solid #E5E2F7; border-radius:10px; font-family:inherit; font-size:13.5px; color:#241F47; box-sizing:border-box; margin-bottom:13px; background:#fff; }
+.appt-foot { display:flex; gap:9px; justify-content:flex-end; padding:0 22px 20px; }
+@media (max-width:640px){
+  #callView { padding:16px 8px; }
+  .call-filters, .call-sum { padding:14px 14px; }
+  .cs-card { flex:1 1 44%; }
+}
 .queue-pill { display:inline-block; background:#F1F0FB; color:#5B5675; font-weight:700; font-size:12px; padding:3px 10px; border-radius:9999px; }
 .queue-pill.today { background:#EDE9FE; color:#6D5DF6; }
 /* ── floating queue toast (แสดงเลขคิวตอนกดบันทึก) ── */
@@ -831,18 +919,18 @@ body::before{
 /* ── เช็คการมาติดตามผล 1-3: ราง stepper กระจก จุดขาวลอย เสร็จแล้วเป็นเขียวพร้อมติ๊ก ✓ ── */
 .list-table .lst-fu{ white-space:nowrap; }
 .fu-track{
-  position:relative; display:inline-flex; align-items:center; gap:11px; padding:5px 9px;
+  position:relative; display:inline-flex; align-items:center; gap:6px; padding:4px 7px;
   border-radius:9999px; background:rgba(255,255,255,.42); border:1px solid rgba(255,255,255,.65);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.8), 0 2px 6px rgba(50,70,100,.05);
 }
 .fu-track::before{ /* เส้นทางเชื่อมระหว่างจุด */
-  content:""; position:absolute; left:18px; right:18px; top:50%; height:2px; transform:translateY(-50%);
+  content:""; position:absolute; left:14px; right:14px; top:50%; height:2px; transform:translateY(-50%);
   background:rgba(140,160,180,.32); border-radius:2px;
 }
 .fu-dot{
-  position:relative; z-index:1; width:24px; height:24px; padding:0; border:none; cursor:pointer;
+  position:relative; z-index:1; width:19px; height:19px; padding:0; border:none; cursor:pointer;
   border-radius:9999px; display:inline-flex; align-items:center; justify-content:center;
-  font-family:inherit; font-size:11px; font-weight:700;
+  font-family:inherit; font-size:10px; font-weight:700;
   background:#fff; color:#8CA0AD;
   box-shadow:0 1px 4px rgba(50,70,100,.22), inset 0 1px 0 rgba(255,255,255,.95);
   transition:all .18s cubic-bezier(.3,.8,.4,1); overflow:visible;
@@ -860,25 +948,44 @@ body::before{
 }
 .fu-dot.done:hover{ filter:brightness(1.07); transform:scale(1.15); }
 
-/* ── หน้าตั้งค่าส่งออก Excel: การ์ดกระจก + ตัวเลือกเป็นชิปกด 2 คอลัมน์ ── */
-#excelFieldModal{ background:rgba(60,80,110,.32) !important;  }
-#excelFieldModal .pm-box{ width:min(560px,96vw) !important; }
-#excelFieldModal .pm-checklist{ display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:4px; }
+/* ── หน้าตั้งค่าส่งออก Excel: พื้นทึบอ่านง่าย (ของเดิมโปร่งแสงจนตัวหนังสือด้านหลังเห็นทะลุ) ── */
+#excelFieldModal{ background:rgba(30,41,59,.6) !important;  }
+/* กล่องสูงไม่เกินจอ · หัวเรื่องล็อกอยู่บน · เนื้อหาข้างในเลื่อนเอง
+   (สไตล์ .pm-box ตัวเต็มถูกผูกไว้กับ #printModal เท่านั้น กล่องนี้เลยต้องกำหนดเอง) */
+#excelFieldModal .pm-box{
+  width:min(560px,96vw) !important; background:#ffffff !important;
+  border-radius:16px; box-shadow:0 24px 70px rgba(0,0,0,.35);
+  display:flex; flex-direction:column; max-height:88vh; overflow:hidden;
+}
+#excelFieldModal .pm-header{ flex-shrink:0; }
+#excelFieldModal .pm-body{ flex:1; min-height:0; overflow-y:auto; }
+#excelFieldModal .ef-who{
+  background:#f1f5fd; border:1px solid #dde5f5; border-radius:11px;
+  padding:11px 14px; margin-bottom:14px; font-size:12.5px; line-height:1.65; color:var(--lg-ink-soft);
+}
+/* จัดกลุ่มตัวเลือกเป็นหัวข้อ ๆ ให้อ่านง่าย */
+#excelFieldModal .pm-checklist{ display:block; margin-bottom:4px; }
+#excelFieldModal .efg{ margin-bottom:16px; }
+#excelFieldModal .efg-title{
+  font-size:12px; font-weight:700; color:#64748b; letter-spacing:.02em;
+  padding:0 0 7px 2px; margin-bottom:8px; border-bottom:1px solid #e6eaf2;
+}
+#excelFieldModal .efg-items{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 #excelFieldModal .pm-checklist label{
   display:flex; align-items:center; gap:9px; padding:10px 13px; border-radius:12px; cursor:pointer;
-  background:rgba(255,255,255,.45); border:1px solid rgba(255,255,255,.6);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.75), 0 2px 6px rgba(50,70,100,.06);
+  background:#f4f6fb; border:1px solid #e2e6f0;
+  box-shadow:0 1px 2px rgba(50,70,100,.04);
   font-size:13px; color:var(--lg-ink-soft); transition:all .18s ease; user-select:none;
 }
-#excelFieldModal .pm-checklist label:hover{ background:rgba(255,255,255,.72); }
+#excelFieldModal .pm-checklist label:hover{ background:#ecf0f9; border-color:#d3d9ea; }
 #excelFieldModal .pm-checklist input.excel-field-ck{ accent-color:var(--lg-tint); width:15px; height:15px; flex-shrink:0; }
 #excelFieldModal .pm-checklist label:has(input:checked){
-  background:linear-gradient(170deg, rgba(96,146,255,.18), rgba(61,109,246,.12));
-  border-color:rgba(61,109,246,.5); color:var(--lg-tint-deep); font-weight:700;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.85), 0 0 0 1px rgba(61,109,246,.18), 0 3px 10px rgba(61,109,246,.12);
+  background:#e7edff;
+  border-color:#3d6df6; color:var(--lg-tint-deep); font-weight:700;
+  box-shadow:0 0 0 1px rgba(61,109,246,.25);
 }
 #excelFieldModal .pm-checklist label:has(input:disabled){ opacity:.6; cursor:default; }
-@media (max-width:520px){ #excelFieldModal .pm-checklist{ grid-template-columns:1fr; } }
+@media (max-width:520px){ #excelFieldModal .efg-items{ grid-template-columns:1fr; } }
 
 /* ── สกรอลบาร์ ── */
 ::-webkit-scrollbar{ width:9px; height:9px; }
@@ -1118,13 +1225,21 @@ body::before{
         <div>รายการผู้ป่วย <span class="list-count-badge" id="lstCountBadge">0 รายการ</span></div>
         <div class="list-subhead-actions">
           <button class="btn btn-ghost" id="btnListRefresh">🔄 รีเฟรช</button>
+          <button class="btn btn-ghost" id="btnToggleSelect" title="แสดง/ซ่อนช่องติ๊กเลือกผู้ป่วยเพื่อลงนัดหมาย">📅 นัดหมาย</button>
           <button class="btn btn-ghost" id="btnGoQueue">📢 เรียกคิวตรวจ</button>
+          <button class="btn btn-ghost" id="btnGoCall">📞 โทรติดตาม</button>
           <button class="btn btn-primary" id="btnNewPatient">+ เพิ่มผู้ป่วยใหม่</button>
         </div>
       </div>
+      <div class="lst-bulk" id="lstBulkBar">
+        <span id="lstBulkCount">เลือก 0 คน</span>
+        <span class="spacer"></span>
+        <button class="btn btn-primary" id="btnBulkAppt">📅 ลงนัดหมาย</button>
+        <button class="btn btn-ghost" id="btnBulkClear">✕ ยกเลิกการเลือก</button>
+      </div>
       <div class="list-table-wrap">
-        <table class="list-table">
-          <thead><tr><th>NO.</th><th>คิว</th><th class="th-name">ชื่อ-สกุล</th><th>ติดตาม</th><th>วันที่ใส่เครื่อง</th><th>รุ่น</th><th>ข้างที่ใส่</th><th>สิทธิ์</th><th>จัดการ</th></tr></thead>
+        <table class="list-table" id="lstTable">
+          <thead><tr><th class="th-chk"><input type="checkbox" id="lstChkAll" title="เลือกทั้งหน้า"></th><th>NO.</th><th>คิว</th><th class="th-name">ชื่อ-สกุล</th><th>วันที่ใส่เครื่อง</th><th>รุ่น</th><th>ข้างที่ใส่</th><th>สิทธิ์</th><th>จัดการ</th></tr></thead>
           <tbody id="lstBody"></tbody>
         </table>
       </div>
@@ -1147,6 +1262,64 @@ body::before{
       </div>
     </div>
   </section>
+  <section id="callView">
+    <div class="call-wrap">
+      <div class="call-head">
+        <div class="call-head-icon">📞</div>
+        <div>
+          <h1>โทรติดตามผลผู้ป่วย</h1>
+          <p>ตรวจสอบรายชื่อที่มีนัดหมาย โทรยืนยัน แล้วบันทึกผลการโทรของแต่ละราย</p>
+        </div>
+        <div class="call-head-actions">
+          <button type="button" class="btn btn-ghost" id="btnCallRefresh">🔄 รีเฟรช</button>
+          <button type="button" class="call-head-close" id="btnCallBack" title="กลับหน้ารายการ">✕</button>
+        </div>
+      </div>
+      <div class="call-filters">
+        <div class="lf-fld" style="max-width:170px"><label>นัดตั้งแต่วันที่</label><input id="callFrom" type="date"></div>
+        <div class="lf-fld" style="max-width:170px"><label>ถึงวันที่</label><input id="callTo" type="date"></div>
+        <div class="lf-fld" style="max-width:200px"><label>เรื่องที่นัด</label><select id="callTypeFilter" class="call-sel" style="max-width:none;width:100%;height:38px"><option value="">— ทั้งหมด —</option></select></div>
+        <div class="lf-fld" style="max-width:200px"><label>ค้นหาชื่อ / HN</label><input id="callSearch" placeholder="เช่น สมชาย"></div>
+        <div class="lf-fld" style="flex:0 0 auto"><button class="btn btn-ghost" id="btnCallToday">📅 เฉพาะวันนี้</button></div>
+        <div class="lf-fld" style="flex:0 0 auto"><button class="btn btn-ghost" id="btnCallClear">✕ ล้างตัวกรอง</button></div>
+      </div>
+      <div class="call-sum" id="callSummary"></div>
+      <div class="list-subhead">
+        <div>รายชื่อที่มีนัดหมาย <span class="list-count-badge" id="callCountBadge">0 รายการ</span></div>
+        <div class="list-subhead-actions">
+          <button class="btn btn-ghost" id="btnCallExport">⬇️ ส่งออก CSV</button>
+        </div>
+      </div>
+      <div class="list-table-wrap">
+        <table class="call-table">
+          <thead><tr><th>NO.</th><th>ชื่อ-สกุล</th><th>โทรศัพท์</th><th>วันนัด</th><th>เรื่องที่นัด</th><th>ผลการโทร</th><th>หมายเหตุ</th><th>จัดการ</th></tr></thead>
+          <tbody id="callBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+  <div id="apptModal">
+    <div class="appt-card">
+      <h3 id="apptTitle">📅 ลงนัดหมาย</h3>
+      <div class="appt-body">
+        <label>วันที่นัด</label>
+        <input type="date" id="apptDateIn">
+        <label>เรื่องที่นัด</label>
+        <select id="apptTypeIn"></select>
+        <div id="apptOtherWrap" style="display:none">
+          <label>ระบุเรื่องที่นัด</label>
+          <input type="text" id="apptOtherIn" placeholder="เช่น ปรับเครื่อง / รับผลตรวจ">
+        </div>
+        <label>หมายเหตุ (ไม่บังคับ)</label>
+        <input type="text" id="apptNoteIn" placeholder="เช่น นัดช่วงเช้า">
+      </div>
+      <div class="appt-foot">
+        <button class="btn btn-ghost" id="btnApptCancel">ยกเลิก</button>
+        <button class="btn btn-ghost" id="btnApptClear" title="ลบนัดหมายของคนที่เลือก">🗑️ ลบนัด</button>
+        <button class="btn btn-primary" id="btnApptSave">บันทึกนัดหมาย</button>
+      </div>
+    </div>
+  </div>
   <section id="queueView">
     <div class="queue-head">
       <div class="queue-head-icon">📢</div>
@@ -1259,7 +1432,8 @@ body::before{
       </div>
     </div>
     <div class="pm-body" style="flex-direction:column;padding:18px 20px;overflow-y:auto">
-      <div style="display:flex;gap:10px;margin-bottom:14px">
+      <div id="excelFieldWho" class="ef-who"></div>
+      <div style="display:flex;gap:10px;margin-bottom:16px">
         <button class="btn btn-ghost" id="excelFieldAll" type="button" style="font-size:12.5px;padding:6px 12px">✔️ เลือกทั้งหมด</button>
         <button class="btn btn-ghost" id="excelFieldNone" type="button" style="font-size:12.5px;padding:6px 12px">◻️ ไม่เลือกเลย</button>
       </div>
@@ -1414,6 +1588,7 @@ const S11_LABELS = ['ปิด-เปิด เปลี่ยนแบตเต
 const DEFAULTS = {
   hospital:'', place:'', namePrefix:'นาย',
   audiologist:'นายธิติวุฒิ นวคุณไพโรจน์', positionNum:'513', officer:'นายธิติวุฒิ นวคุณไพโรจน์',
+  citizenId:'', examiner:'', examinerPosition:'',
   fitDate: todayThai, audioVisitDate: todayThai, date: todayThai, weber:'Not heard', rinne_r:'Not heard', rinne_l:'Not heard', audio_cc:'Hearing Evaluation For Fit HA',
   ear:'', dtype:'bte', earmold:true, mSoft:true, aRemoval:true,
   tool_spr:true, tool_audiometer:true, tool_tympanometer:false, tool_soundfield:true, tool_rem:true,
@@ -1449,6 +1624,21 @@ function parseBirth(s){
   if(year>2300) year=year-543;
   return {day,mon,year};
 }
+/* ตรวจความถูกต้องเลขบัตรประชาชนไทย 13 หลัก (หลักที่ 13 เป็น check digit) */
+function validCitizenId(s){
+  const d = String(s||'').replace(/\D/g,'');
+  if(d.length !== 13) return false;
+  let sum = 0;
+  for(let i=0; i<12; i++) sum += Number(d[i]) * (13-i);
+  return ((11 - (sum % 11)) % 10) === Number(d[12]);
+}
+
+/* พิมพ์อายุอย่างเดียว → เติมช่องวันเกิดเป็นปี พ.ศ. ให้อัตโนมัติ (ไม่ระบุวัน/เดือน) */
+function birthYearFromAge(a){
+  const n=parseInt(String(a).replace(/\D/g,''),10);
+  if(isNaN(n) || n<0 || n>130) return '';
+  return String(new Date().getFullYear()+543-n);
+}
 function computeAge(s){
   const b=parseBirth(s); if(!b) return '';
   const now=new Date(); let age=now.getFullYear()-b.year;
@@ -1470,6 +1660,104 @@ function pta4(e){ let s=0,c=0,masked=false,nr=false; [500,1000,2000,4000].forEac
 function avgSup(a){ if(!a) return ''; return (a.nr?'<span class="sp-n">+</span>':''); }
 function avgSupPre(a){ if(!a) return ''; return (a.masked?'<span class="sp-m">✱</span>':''); }
 function degree(p){ if(p===null) return ''; if(p<=25) return 'ปกติ'; if(p<=40) return 'เล็กน้อย'; if(p<=55) return 'ปานกลาง'; if(p<=70) return 'ปานกลาง-มาก'; if(p<=90) return 'มาก'; return 'หูหนวก'; }
+
+/* ══════════════════════════════════════════════════════════════════
+   แปลผล Audiogram อัตโนมัติ (Type + Degree)
+   - Normal hearing : AC ไม่เกิน 25 dB ทุกความถี่ที่กรอก
+   - Degree         : คิดจาก PTA ของ AC (500–2000 Hz)
+   - A-B gap        : ต่างกัน >20 dB 1 ความถี่ | >15 dB 2 ความถี่
+                      | >10 dB 3 ความถี่ | >5 dB 4 ความถี่ (เข้าข้อใดข้อหนึ่ง)
+   - Type           : ไม่มี gap → Sensorineural
+                      มี gap + BC ≤25 ทุกจุด → Conductive
+                      มี gap + BC >25 จุดใดจุดหนึ่ง → Mixed
+   ตรวจทุกความถี่ที่กรอกในช่วง 125–8000 Hz
+   ══════════════════════════════════════════════════════════════════ */
+const DEGREE_EN = [
+  {max:25,  en:'Normal hearing',                  th:'การได้ยินปกติ'},
+  {max:40,  en:'Mild hearing loss',               th:'สูญเสียการได้ยินระดับเล็กน้อย'},
+  {max:55,  en:'Moderate hearing loss',           th:'สูญเสียการได้ยินระดับปานกลาง'},
+  {max:70,  en:'Moderately severe hearing loss',  th:'สูญเสียการได้ยินระดับปานกลางถึงมาก'},
+  {max:90,  en:'Severe hearing loss',             th:'สูญเสียการได้ยินระดับมาก'},
+  {max:999, en:'Profound hearing loss',           th:'สูญเสียการได้ยินระดับหูหนวก'}
+];
+function degreeWordEN(p){ if(p===null||p===undefined) return ''; if(p<=25) return 'Normal'; const r=DEGREE_EN.find(d=>p<=d.max)||DEGREE_EN[DEGREE_EN.length-1]; return r.en.replace(' hearing loss',''); }
+
+/* คืนค่า threshold ของหูข้างหนึ่ง เฉพาะความถี่ที่กรอกจริง */
+function earVals(ear,type){
+  const out=[];
+  FREQ_ALL.forEach(fr=>{ const d=S.audTh&&S.audTh[fr]?S.audTh[fr][ear+type]:null; if(!d) return; const v=num(d.v); if(v!==null) out.push({fr,v,nr:!!d.nr,m:!!d.m}); });
+  return out;
+}
+
+/* ตรวจ A-B gap ตามเกณฑ์นับจำนวนความถี่
+   หมายเหตุ: ถ้า BC ความถี่นั้นเป็นสัญลักษณ์ "ตก / ไม่ตอบสนอง" (+)
+             ให้ถือว่าไม่มีความห่างระหว่าง AC กับ BC ที่ความถี่นั้น */
+function hasABGap(ear){
+  const gaps=[];
+  FREQ_ALL.forEach(fr=>{
+    if(!S.audTh||!S.audTh[fr]) return;
+    const bcCell=S.audTh[fr][ear+'BC'];
+    if(bcCell.nr) return;                      /* BC ตก → ข้ามความถี่นี้ (ไม่นับเป็น gap) */
+    const a=num(S.audTh[fr][ear+'AC'].v), b=num(bcCell.v);
+    if(a===null||b===null) return;
+    const g=a-b; if(g>0) gaps.push({fr,g});
+  });
+  const cnt = t => gaps.filter(x=>x.g>t).length;
+  const rules = [{t:20,n:1},{t:15,n:2},{t:10,n:3},{t:5,n:4}];
+  const hit = rules.find(r=>cnt(r.t)>=r.n);
+  return {gap:!!hit, rule:hit||null, gaps};
+}
+
+/* แปลผลหูข้างเดียว → {text, degree, type, normal} หรือ null ถ้าไม่มีข้อมูล */
+function interpretEar(ear){
+  const ac = earVals(ear,'AC');
+  if(!ac.length) return null;
+  const side = ear==='R' ? 'Rt.' : 'Lt.';
+
+  /* Normal hearing: AC ไม่เกิน 25 ทุกความถี่ที่กรอก (คิดจากตัวเลข ไม่สนใจสัญลักษณ์ตก) */
+  if(ac.every(x=>x.v<=25)) return {side, text:`${side} Normal hearing`, normal:true, degree:'Normal', type:''};
+
+  const p = pta(ear);
+  let deg = degreeWordEN(p ? p.val : null);
+
+  /* PTA ยังอยู่ในเกณฑ์ปกติ (≤25) แต่มีความถี่อื่นผิดปกติ → ระบุเป็นช่วงความถี่แทนระดับ */
+  let dropFreqs=null;
+  if(deg==='Normal'){
+    const bad = ac.filter(x=>x.v>25).map(x=>x.fr).sort((a,b)=>a-b);
+    if(!bad.length) deg='Mild';
+    else if(bad.every(f=>f>=3000)) deg='High-frequency';   /* ตกเฉพาะ 3000–8000 Hz */
+    else if(bad.every(f=>f<=500))  deg='Low-frequency';    /* ตกเฉพาะ 125–500 Hz */
+    else { deg=''; dropFreqs=bad; }                        /* ตกกระจาย → ระบุความถี่ที่ตก */
+  }
+
+  const ab = hasABGap(ear);
+  const bc = earVals(ear,'BC');
+  let type;
+  if(!bc.length) type='';                                  /* ไม่ได้ตรวจ BC → บอกแต่ degree ไม่ระบุ type */
+  else if(!ab.gap) type='Sensorineural';
+  else if(bc.some(x=>x.v>25)) type='Mixed';
+  else type='Conductive';
+
+  const text = dropFreqs
+    ? `${side} Hearing threshold drop at ${dropFreqs.join(', ')} Hz` + (type?`, ${type} hearing loss`:'')
+    : (type ? `${side} ${deg} ${type} hearing loss` : `${side} ${deg} hearing loss`);
+  return {side, text, normal:false, degree:deg, type, dropFreqs, noBC:!bc.length, pta:p?p.val:null, ab};
+}
+
+/* ข้อความแปลผลรวมสองหู */
+function interpretAudiogram(){
+  const r=interpretEar('R'), l=interpretEar('L');
+  const lines=[];
+  if(r) lines.push(r.text);
+  if(l) lines.push(l.text);
+  if(!lines.length) return '';
+  /* ถ้าเหมือนกันทั้งสองข้าง ย่อเป็น Bilateral */
+  if(r && l){
+    const rr=r.text.replace(/^Rt\.\s*/,''), ll=l.text.replace(/^Lt\.\s*/,'');
+    if(rr===ll) return `Bilateral ${rr}`;
+  }
+  return lines.join('\n');
+}
 
 /* ── audiogram chart geometry (log-frequency x axis, matches Noah-style entry) ── */
 function plotW(){ return 6*CH.oct; }
@@ -1645,13 +1933,13 @@ function audUndo(){
   if(audHistoryIdx<=0) return;
   audHistoryIdx--;
   S.audTh = mergeAudTh(audHistory[audHistoryIdx]);
-  buildAudTable(); renderAudAll(); autosave(); paintAudHistoryButtons();
+  buildAudTable(); renderAudAll(); updateDerived(); render(); syncComputedFields(); autosave(); paintAudHistoryButtons();
 }
 function audRedo(){
   if(audHistoryIdx>=audHistory.length-1) return;
   audHistoryIdx++;
   S.audTh = mergeAudTh(audHistory[audHistoryIdx]);
-  buildAudTable(); renderAudAll(); autosave(); paintAudHistoryButtons();
+  buildAudTable(); renderAudAll(); updateDerived(); render(); syncComputedFields(); autosave(); paintAudHistoryButtons();
 }
 function paintAudHistoryButtons(){
   const ub=document.getElementById('aud-tb-undo'), rb=document.getElementById('aud-tb-redo');
@@ -1666,7 +1954,7 @@ function copyEarData(src,dst){
       S.audTh[fr][dst+ty] = { v:s.v, m:s.m, nr:s.nr };
     });
   });
-  buildAudTable(); renderAudAll(); autosave(); pushAudHistory();
+  buildAudTable(); renderAudAll(); updateDerived(); render(); syncComputedFields(); autosave(); pushAudHistory();
 }
 /* ── Air = Bone: ใส่ค่า Bone เท่ากับ Air ทั้งสองข้าง (เฉพาะความถี่ที่มี Bone: 500-4000) ── */
 function airEqualsBone(){
@@ -1674,19 +1962,12 @@ function airEqualsBone(){
   ['R','L'].forEach(ear=>{
     BONE_FREQS.forEach(fr=>{
       const a=S.audTh[fr][ear+'AC'];
-      if(a && a.v!==''){ S.audTh[fr][ear+'BC']={v:a.v, m:false, nr:false}; did=true; }
+      /* AC เกินเพดาน Bone → ใส่ Bone ที่ค่าสูงสุดพร้อมสัญลักษณ์ "ตก" */
+      if(a && a.v!==''){ const cell={v:a.v, m:false, nr:false}; clampBoneCell(fr,cell); S.audTh[fr][ear+'BC']=cell; did=true; }
     });
   });
   if(!did){ alert('ยังไม่มีผล Air ที่ความถี่ 500-4000 ให้คัดลอกเป็น Bone'); return; }
-  buildAudTable(); renderAudAll(); autosave(); pushAudHistory();
-}
-/* ── Bone ตก: ใส่ Bone ทั้งสองข้างที่ระดับตก — 500=60, 1000/2000/4000=70 พร้อมสัญลักษณ์ NR (No response) ── */
-function boneDropPreset(){
-  const map={500:'60',1000:'70',2000:'70',4000:'70'};
-  ['R','L'].forEach(ear=>{
-    BONE_FREQS.forEach(fr=>{ S.audTh[fr][ear+'BC']={v:map[fr], m:false, nr:true}; });
-  });
-  buildAudTable(); renderAudAll(); autosave(); pushAudHistory();
+  buildAudTable(); renderAudAll(); updateDerived(); render(); syncComputedFields(); autosave(); pushAudHistory();
 }
 /* ── คัดลอกกราฟแบบปุ่มเดียวต่อชนิด (Air/Bone แยกกัน): ข้างที่มีผลจะถูกคัดลอกไปข้างที่ว่างอัตโนมัติ ── */
 function copyEarDataSmart(type){
@@ -1707,7 +1988,10 @@ function copyEarDataSmart(type){
     const s=S.audTh[fr][src+type];
     S.audTh[fr][dst+type] = { v:s.v, m:s.m, nr:s.nr };
   });
-  buildAudTable(); renderAudAll(); autosave(); pushAudHistory();
+  /* สลับปากกาไปเป็นหูข้างที่เพิ่งคัดลอกไป — คลิกบนกราฟครั้งต่อไปจะแก้ข้างนั้นทันที
+     (เช่น ลงซ้ายไว้ กด ⇄ Air → ได้ขวามา แล้วสลับเป็นลง AC ขวาต่อได้เลย) */
+  setAudTool('sym', dst + '|' + type + '|' + (audTool.masked ? 'm' : ''));
+  buildAudTable(); renderAudAll(); updateDerived(); render(); syncComputedFields(); autosave(); pushAudHistory();
 }
 function audChartClick(e){
   if(e.pointerType==='mouse' && e.button!==0) return; // เมาส์: รับเฉพาะคลิกซ้าย
@@ -1722,7 +2006,8 @@ function audChartClick(e){
   const celld=S.audTh[best][audTool.ear+audTool.type];
   if(audTool.mode!=='nr' && celld.v!=='' && celld.v===String(db) && !celld.nr){ celld.v=''; celld.m=false; celld.nr=false; }
   else { celld.v=String(db); celld.m=audTool.masked; celld.nr=(audTool.mode==='nr'); }
-  buildAudTable(); renderAudAll(); autosave(); pushAudHistory();
+  if(audTool.type==='BC') clampBoneCell(best, celld);   /* Bone เกินเพดาน → เด้งเป็นค่าสูงสุด + ตก */
+  buildAudTable(); renderAudAll(); updateDerived(); render(); syncComputedFields(); autosave(); pushAudHistory();
 }
 function renderAudChartInteractive(){
   const holder=document.getElementById('audChartHolder'); if(!holder) return;
@@ -1756,6 +2041,17 @@ function renderAudAll(){
 
 /* ── audiogram threshold table (sidebar entry grid) ── */
 const BONE_FREQS=[500,1000,2000,4000];
+/* ── เพดานกำลังส่งของ Bone conduction (max output) — 500 Hz = 65 dB, 1000–4000 Hz = 70 dB ──
+   ใส่ค่าเกินเพดาน → เด้งกลับมาที่ค่าสูงสุด พร้อมทำเครื่องหมาย "ตก / ไม่ตอบสนอง (+)" ให้อัตโนมัติ */
+const BONE_MAX={500:65,750:70,1000:70,1500:70,2000:70,3000:70,4000:70};
+function boneMax(fr){ return BONE_MAX[fr]!==undefined ? BONE_MAX[fr] : 70; }
+function clampBoneCell(fr,cell){
+  if(!cell) return false;
+  const v=num(cell.v); if(v===null) return false;
+  const mx=boneMax(fr);
+  if(v>mx){ cell.v=String(mx); cell.nr=true; return true; }
+  return false;
+}
 function audActiveFreqs(){ return FREQ_ALL; }
 function onAudTableInput(){
   audActiveFreqs().forEach(fr=>EARTYPES.forEach(c=>{
@@ -1763,6 +2059,8 @@ function onAudTableInput(){
     const ve=document.getElementById(id+'_v'); if(ve) d.v=ve.value.trim();
     const me=document.getElementById(id+'_m'); if(me) d.m=me.checked;
     const ne=document.getElementById(id+'_nr'); if(ne) d.nr=ne.checked;
+    /* Bone เกินเพดาน max output → เด้งลงมาที่ค่าสูงสุด + ติ๊ก NR ให้ */
+    if(c.type==='BC' && clampBoneCell(fr,d)){ if(ve) ve.value=d.v; if(ne) ne.checked=true; }
   }));
   onAnyChange(); pushAudHistory();
 }
@@ -1918,8 +2216,7 @@ function audiogramSectionBody(){
           <button type="button" class="tb noah" id="aud-tb-nr" title="No response — ลงจุดพร้อมลูกศรไม่ตอบสนอง">NR</button>
           <button type="button" class="tb noah" id="aud-tb-copyAir" title="คัดลอกผล Air จากข้างที่ลงแล้วไปยังข้างที่ว่างอัตโนมัติ">⇄ Air</button>
           <button type="button" class="tb noah" id="aud-tb-copyBone" title="คัดลอกผล Bone จากข้างที่ลงแล้วไปยังข้างที่ว่างอัตโนมัติ">⇄ Bone</button>
-          <button type="button" class="tb noah" id="aud-tb-airbone" title="ใส่ค่า Bone เท่ากับ Air ทั้งสองข้าง (500-4000 Hz)">Air = Bone</button>
-          <button type="button" class="tb noah" id="aud-tb-bonedrop" title="ใส่ Bone ตกทั้งสองข้าง: 500=60, 1000-4000=70">Bone ตก</button>
+          <button type="button" class="tb noah" id="aud-tb-airbone" title="ใส่ Bone ให้เท่ากับ Air ทั้งสองข้าง (500-4000 Hz) — ไม่มี Air-bone gap · ถ้า Air เกินเพดาน Bone จะใส่เป็นค่าสูงสุดพร้อมสัญลักษณ์ตก">≡ ไม่มี A-B gap</button>
         </div>
       </div>
       <div class="legend" id="audLegend"></div>
@@ -1950,12 +2247,67 @@ function audiogramSectionBody(){
       <div class="fld"><label>Weber</label><select data-bind="weber"><option value="Not heard">Not heard</option><option value="⭠O⭢">⭠O⭢</option><option value="O⭢Rt.">O⭢Rt.</option><option value="O⭢Lt.">O⭢Lt.</option></select></div>
       <div class="row"><div class="fld"><label>Rinne Rt</label><select data-bind="rinne_r"><option value="Not heard">Not heard</option><option value="AC &gt; BC">AC &gt; BC</option><option value="BC &gt; AC">BC &gt; AC</option><option value="BC Cross to Rt.">BC Cross to Rt.</option><option value="BC Cross to Lt.">BC Cross to Lt.</option></select></div><div class="fld"><label>Rinne Lt</label><select data-bind="rinne_l"><option value="Not heard">Not heard</option><option value="AC &gt; BC">AC &gt; BC</option><option value="BC &gt; AC">BC &gt; AC</option><option value="BC Cross to Rt.">BC Cross to Rt.</option><option value="BC Cross to Lt.">BC Cross to Lt.</option></select></div></div>
       <div class="subhead">Audiologic Diagnosis</div>
+      <div id="interpBox" class="interp-box">
+        <div class="interp-head">
+          <span class="interp-title">🩺 แปลผลอัตโนมัติ</span>
+          <button type="button" id="btnInterpApply" class="interp-btn">↻ ใช้คำแปลผลนี้</button>
+        </div>
+        <div id="interpText" class="interp-text">— ยังไม่มีข้อมูล Audiogram —</div>
+      </div>
       <div class="fld"><textarea data-bind="diag1" rows="2" placeholder="เช่น Bilateral sensorineural hearing loss, moderate degree"></textarea></div>
       <div class="fld"><input type="text" data-bind="diag2"></div>
       <div class="fld"><input type="text" data-bind="diag3"></div>
 
+      <div class="subhead">ผู้ตรวจการได้ยิน</div>
+      <div class="fld">
+        <label>ชื่อ–สกุล ผู้ตรวจ <span style="color:#94a3b8;font-weight:400">(ลงชื่อท้ายใบ Audiogram)</span></label>
+        <input type="text" data-bind="examiner" id="inpExaminer" placeholder="ค่าเริ่มต้น = ชื่อนักแก้ไขการได้ยิน">
+        <div class="hint" style="margin-top:4px">
+          <button type="button" id="btnExaminerDefault" class="interp-btn">↻ ใช้ชื่อนักแก้ไขการได้ยิน</button>
+        </div>
+      </div>
+      <div class="fld"><label>ตำแหน่งผู้ตรวจ</label><input type="text" data-bind="examinerPosition" placeholder="ค่าเริ่มต้น = ตำแหน่งนักแก้ไขการได้ยิน"></div>
+
       <div class="subhead">ค่าเฉลี่ยการได้ยิน (Average / PTA)</div>
       <div class="avgrow" id="audAvgRow"></div>
+  `;
+}
+/* ── เนื้อหาแถบ "ข้อมูลเครื่องช่วยฟัง + พิมพ์หู" (ใช้ทั้งในหน้ารวมและแถบแยก 🦻) ── */
+function hearingAidBody(){
+  return `
+      <label class="fld" style="margin-bottom:6px"></label>
+      <div class="subhead" style="margin-top:0">ใส่หูข้าง / ชนิดเครื่อง</div>
+      <div class="chk-row">
+        <label class="chk"><input type="radio" name="ear" data-bind-radio="ear" value="left"> ซ้าย</label>
+        <label class="chk"><input type="radio" name="ear" data-bind-radio="ear" value="right"> ขวา</label>
+        <label class="chk"><input type="radio" name="ear" data-bind-radio="ear" value="both"> สองข้าง</label>
+      </div>
+      <div class="chk-row">
+        <label class="chk"><input type="radio" name="dtype" data-bind-radio="dtype" value="body"> Body</label>
+        <label class="chk"><input type="radio" name="dtype" data-bind-radio="dtype" value="bte"> BTE</label>
+        <label class="chk"><input type="radio" name="dtype" data-bind-radio="dtype" value="ite"> ในช่องหู</label>
+        <label class="chk"><input type="radio" name="dtype" data-bind-radio="dtype" value="ric"> RIC</label>
+      </div>
+      <div class="subhead">เครื่องช่วยฟังที่เลือก</div>
+      <div id="sec7_card1">${sec7html_1()}</div>
+      <div class="subhead">รายละเอียดพิมพ์หู</div>
+      <div class="chk-row">${ck('mSoft','Soft','material')}${ck('mHard','Hard','material')}</div>
+      <div class="chk-row">${ck('sHalf','Half Shell','shellType')}${ck('sFull','Full Shell','shellType')}${ck('sSkel','Skeleton','shellType')}${ck('sCanal','Canal','shellType')}</div>
+      <div class="chk-row">${ck('aRemoval','Removal Cord')}${ck('aCanalLock','Canal Lock')}${ck('aVent','Vent')}</div>
+      <div class="fld" id="ventSizeWrap"><label>ขนาด Vent</label><input type="text" data-bind="ventSize"></div>
+  `;
+}
+function comparePairBody(){
+  return `
+      <div id="sec7_cards">${sec7html()}</div>
+      <div class="fld" style="display:flex;align-items:center;gap:6px;max-width:200px"><label style="margin-bottom:0;white-space:nowrap">ราคา</label><input type="text" data-bind="price" style="width:110px"></div>
+  `;
+}
+function audiologistBody(){
+  return `
+      <div class="fld"><label>ชื่อ–สกุล</label><input type="text" data-bind="audiologist"></div>
+      <div class="fld"><label>ตำแหน่ง <span style="color:#94a3b8;font-weight:400">(นักโสตสัมผัสวิทยา ผ.ส.)</span></label><input type="text" data-bind="positionNum" placeholder="เลขที่ตำแหน่ง เช่น 513"></div>
+      <div class="fld"><label>ชื่อพนักงานขาย</label><input type="text" data-bind="salesperson"></div>
   `;
 }
 let _sidebarMode = 'patient';
@@ -1964,10 +2316,23 @@ function buildSidebar(){
     document.getElementById('forms').innerHTML = `<div class="section" style="border-bottom:none">${audiogramSectionBody()}</div>`;
     return;
   }
+  if(_sidebarMode==='hearingaid'){
+    _stepTitles = [];
+    document.getElementById('forms').innerHTML = `
+      <div class="hint" style="margin:10px 14px 0;padding:9px 12px;background:#F4F9FF;border:1px solid #CFE3F7;border-radius:10px;color:#0C6EA8">
+        🦻 กรอกเฉพาะข้อมูลเครื่องช่วยฟัง — ข้อมูลผู้ป่วยแก้ได้จากปุ่ม ✏️ ในหน้ารายการ
+      </div>
+      ${sec('🦻 ข้อมูลเครื่องช่วยฟัง + พิมพ์หู',true,hearingAidBody())}
+      ${sec('คู่เทียบ',false,comparePairBody())}
+      ${sec('นักแก้ไขการได้ยิน',true,audiologistBody())}
+    `;
+    return;
+  }
   document.getElementById('forms').innerHTML = `
     ${sec('ข้อมูลผู้ป่วย (ใช้ร่วมทุกฟอร์ม)',true,`
       <div class="row"><div class="fld" style="max-width:130px"><label>HN</label><input type="text" data-bind="hn"></div><div class="fld" style="max-width:90px"><label>คำนำหน้า</label><select data-bind="namePrefix"><option value="นาย">นาย</option><option value="นาง">นาง</option><option value="นางสาว">นางสาว</option><option value="เด็กชาย">เด็กชาย</option><option value="เด็กหญิง">เด็กหญิง</option></select></div><div class="fld"><label>ชื่อ</label><input type="text" data-bind="nameFirst"></div><div class="fld"><label>นามสกุล</label><input type="text" data-bind="nameLast"></div></div>
-      <div class="row"><div class="fld"><label>โทรศัพท์</label><input type="text" data-bind="phone"></div><div class="fld"><label>วันเกิด (พ.ศ.)</label><input type="text" data-bind="birth" placeholder="เช่น 12 มี.ค. 2500"></div></div>
+      <div class="row"><div class="fld"><label>เลขบัตรประชาชน <span style="color:#94a3b8;font-weight:400">(ไม่บังคับ)</span></label><input type="text" id="inpCitizenId" data-bind="citizenId" inputmode="numeric" maxlength="17" placeholder="x-xxxx-xxxxx-xx-x"><div class="hint" id="cidHint" style="margin-top:3px"></div></div></div>
+      <div class="row"><div class="fld"><label>โทรศัพท์</label><input type="text" data-bind="phone"></div><div class="fld"><label>วันเกิด (พ.ศ.)</label><input type="text" data-bind="birth" placeholder="เช่น 12 มี.ค. 2500"></div><div class="fld" style="max-width:96px"><label>หรือ อายุ (ปี)</label><input type="text" id="inpAge" inputmode="numeric" placeholder="เช่น 65"></div></div>
       <div class="fld"><label>วันที่ใส่เครื่อง/สั่งทำ/ซื้อ</label><input type="text" data-bind="fitDate"></div>
       ${rad('rightType','สิทธิ์การรักษา',[['disabled','ผู้พิการ'],['gov','ข้าราชการ'],['sso','ประกันสังคม']])}
       <div class="fld"><label style="color:#D3232A">📌 หมายเหตุ (แสดงสีแดงในหน้ารายการ)</label><input type="text" data-bind="note" class="note-input" placeholder="เช่น ไม่มาตามนัด / ยังไม่พิมพ์หู / ขอคืน HA"></div>
@@ -1994,37 +2359,9 @@ function buildSidebar(){
       </div>
       <div class="hint">สรุปที่อยู่: ${f('addr_summary')}</div>
     `)}
-    ${sec('เครื่องช่วยฟัง + พิมพ์หู',true,`
-      <label class="fld" style="margin-bottom:6px"></label>
-      <div class="subhead" style="margin-top:0">ใส่หูข้าง / ชนิดเครื่อง</div>
-      <div class="chk-row">
-        <label class="chk"><input type="radio" name="ear" data-bind-radio="ear" value="left"> ซ้าย</label>
-        <label class="chk"><input type="radio" name="ear" data-bind-radio="ear" value="right"> ขวา</label>
-        <label class="chk"><input type="radio" name="ear" data-bind-radio="ear" value="both"> สองข้าง</label>
-      </div>
-      <div class="chk-row">
-        <label class="chk"><input type="radio" name="dtype" data-bind-radio="dtype" value="body"> Body</label>
-        <label class="chk"><input type="radio" name="dtype" data-bind-radio="dtype" value="bte"> BTE</label>
-        <label class="chk"><input type="radio" name="dtype" data-bind-radio="dtype" value="ite"> ในช่องหู</label>
-        <label class="chk"><input type="radio" name="dtype" data-bind-radio="dtype" value="ric"> RIC</label>
-      </div>
-      <div class="subhead">เครื่องช่วยฟังที่เลือก</div>
-      <div id="sec7_card1">${sec7html_1()}</div>
-      <div class="subhead">รายละเอียดพิมพ์หู</div>
-      <div class="chk-row">${ck('mSoft','Soft','material')}${ck('mHard','Hard','material')}</div>
-      <div class="chk-row">${ck('sHalf','Half Shell','shellType')}${ck('sFull','Full Shell','shellType')}${ck('sSkel','Skeleton','shellType')}${ck('sCanal','Canal','shellType')}</div>
-      <div class="chk-row">${ck('aRemoval','Removal Cord')}${ck('aCanalLock','Canal Lock')}${ck('aVent','Vent')}</div>
-      <div class="fld" id="ventSizeWrap"><label>ขนาด Vent</label><input type="text" data-bind="ventSize"></div>
-    `)}
-    ${sec('คู่เทียบ',false,`
-      <div id="sec7_cards">${sec7html()}</div>
-      <div class="fld" style="display:flex;align-items:center;gap:6px;max-width:200px"><label style="margin-bottom:0;white-space:nowrap">ราคา</label><input type="text" data-bind="price" style="width:110px"></div>
-    `)}
-    ${sec('นักแก้ไขการได้ยิน',true,`
-      <div class="fld"><label>ชื่อ–สกุล</label><input type="text" data-bind="audiologist"></div>
-      <div class="fld"><label>ตำแหน่ง <span style="color:#94a3b8;font-weight:400">(นักโสตสัมผัสวิทยา ผ.ส.)</span></label><input type="text" data-bind="positionNum" placeholder="เลขที่ตำแหน่ง เช่น 513"></div>
-      <div class="fld"><label>ชื่อพนักงานขาย</label><input type="text" data-bind="salesperson"></div>
-    `)}
+    ${sec('🦻 ข้อมูลเครื่องช่วยฟัง + พิมพ์หู',true,hearingAidBody())}
+    ${sec('คู่เทียบ',false,comparePairBody())}
+    ${sec('นักแก้ไขการได้ยิน',true,audiologistBody())}
     ${secOpt('อื่นๆ',`
       <div class="subhead" style="margin-top:0">1–2. เครื่องมือที่ใช้ตรวจการได้ยิน</div>
       <div class="chk-row">${ck('tool_spr','ตู้ตรวจการได้ยิน (Sound Proof Room)')}${ck('tool_audiometer','Audiometer')}${ck('tool_tympanometer','Tympanometer')}${ck('tool_soundfield','Sound Field')}${ck('tool_rem','Real Ear Measurement')}</div>
@@ -2263,8 +2600,8 @@ function audiogramPage(){
     <div style="display:flex;justify-content:flex-end;flex-shrink:0">
       <div style="text-align:center;font-size:11.5px;line-height:1.5">
         <div style="margin-bottom:1mm">ลงชื่อ <span class="sigline" style="min-width:55mm;display:inline-block;border-bottom:1px solid #444"></span></div>
-        <div style="border-bottom:1.2px dotted #444;min-width:65mm;min-height:6mm;display:flex;align-items:flex-end;justify-content:center;padding-bottom:1mm;font-weight:600;color:#0c3d5e">${f('audiologist')}</div>
-        <div style="color:#555;margin-top:1mm">${f('position')}</div>
+        <div style="border-bottom:1.2px dotted #444;min-width:65mm;min-height:6mm;display:flex;align-items:flex-end;justify-content:center;padding-bottom:1mm;font-weight:600;color:#0c3d5e">${f('examiner')}</div>
+        <div style="color:#555;margin-top:1mm">${f('examinerPosition')}</div>
       </div>
     </div>
   </section>`;
@@ -2397,6 +2734,9 @@ function updateDerived(){
   S.name = ((S.namePrefix||'')+(S.nameFirst||'')+(S.nameLast?' '+S.nameLast:'')).trim();
   S.emModel = S.model||'';
   S.position = S.positionNum ? ('นักโสตสัมผัสวิทยา  ผ.ส. '+S.positionNum) : '';
+  /* ผู้ตรวจการได้ยิน (ลงชื่อท้ายใบ Audiogram) — ถ้าไม่ได้กรอกเอง ใช้ชื่อ/ตำแหน่งนักแก้ไขการได้ยินเป็นค่าเริ่มต้น */
+  if(!String(S.examiner||'').trim()) S.examiner = S.audiologist||'';
+  if(!String(S.examinerPosition||'').trim()) S.examinerPosition = S.position||'';
   S.officer = S.audiologist||'';
   S.place = 'โรงพยาบาล'+(S.hospital||'');
   // cascade: trial device selection auto-fills final brand/model (ต้องคำนวณก่อนใช้ด้านล่าง)
@@ -2445,7 +2785,30 @@ function updateDerived(){
     if(pl) S.air_lt = String(pl.val);
     if(br) S.bone_rt = String(br.val);
     if(bl) S.bone_lt = String(bl.val);
+
+    /* แปลผลอัตโนมัติ → เติมลง Audiologic Diagnosis (หยุดเติมถ้าผู้ใช้แก้เอง) */
+    const auto = interpretAudiogram();
+    if(auto){
+      const cur=(S.diag1||'').trim(), prev=(S._diagAuto||'').trim();
+      if(cur!=='' && cur!==prev && cur!==auto) S._diag1_manual = true;  /* มีคำที่คนเขียนไว้ → ไม่เขียนทับ */
+      if(!S._diag1_manual) S.diag1 = auto;
+      S._diagAuto = auto;
+    }
   }
+}
+
+/* อัปเดตกล่องแสดงคำแปลผลในแถบข้าง */
+function renderInterpBox(){
+  const box=document.getElementById('interpBox'); if(!box) return;
+  const txtEl=document.getElementById('interpText');
+  const auto = interpretAudiogram();
+  if(!auto){
+    txtEl.className='interp-text empty';
+    txtEl.textContent='— ยังไม่มีข้อมูล Audiogram —';
+    return;
+  }
+  txtEl.className='interp-text';
+  txtEl.textContent=auto;
 }
 
 function updateCascades(){
@@ -2563,10 +2926,13 @@ function renderSfImage(){
 
 /* ── bind / reflect ───────────────────────────────────────────── */
 function syncComputedFields(){
-  ['air_rt','air_lt','bone_rt','bone_lt','prog1','emModel','officer'].forEach(k=>{
+  ['air_rt','air_lt','bone_rt','bone_lt','prog1','emModel','officer','diag1','examiner','examinerPosition'].forEach(k=>{
     const el=document.querySelector(`[data-bind="${k}"]`);
     if(el && document.activeElement!==el) el.value = S[k]??'';
   });
+  const ageEl=document.getElementById('inpAge');
+  if(ageEl && document.activeElement!==ageEl) ageEl.value = S.age||'';
+  renderInterpBox();
 }
 function onAnyChange(){ updateDerived(); render(); syncComputedFields(); autosave(); }
 
@@ -2649,7 +3015,12 @@ function bindDataBindScope(root){
       }
       onAnyChange();
     }); }
-    else { el.addEventListener('input', ()=>{ S[k]=el.value; onAnyChange(); }); }
+    else { el.addEventListener('input', ()=>{
+      S[k]=el.value;
+      /* จำว่าผู้ใช้แก้คำแปลผลเอง → หยุดเขียนทับอัตโนมัติ (ล้างช่องว่าง = กลับไปอัตโนมัติ) */
+      if(k==='diag1') S._diag1_manual = el.value.trim()!=='' && el.value!==(S._diagAuto||'');
+      onAnyChange();
+    }); }
   });
 }
 function refreshDeviceCards(){
@@ -2678,6 +3049,33 @@ function bindInputs(){
   bindCascades();
   bindAddrCascade();
 
+  /* ช่องเลขบัตรประชาชน (ไม่บังคับ): ใส่ขีดคั่นให้อัตโนมัติ + ตรวจหลักตรวจสอบ (checksum) */
+  const cidEl = document.getElementById('inpCitizenId');
+  if(cidEl) cidEl.addEventListener('input', ()=>{
+    const d = cidEl.value.replace(/\D/g,'').slice(0,13);
+    const p = [d.slice(0,1), d.slice(1,5), d.slice(5,10), d.slice(10,12), d.slice(12,13)].filter(x=>x);
+    cidEl.value = p.join('-');
+    S.citizenId = cidEl.value;
+    const hint = document.getElementById('cidHint');
+    if(hint){
+      if(!d) hint.textContent = '';
+      else if(d.length < 13) hint.innerHTML = `<span style="color:#94a3b8">กรอกแล้ว ${d.length}/13 หลัก</span>`;
+      else hint.innerHTML = validCitizenId(d)
+        ? '<span style="color:#15803D">✅ เลขบัตรถูกต้อง</span>'
+        : '<span style="color:#B91C1C">⚠️ เลขบัตรไม่ถูกต้อง (ตรวจสอบอีกครั้ง)</span>';
+    }
+    onAnyChange();
+  });
+
+  /* ช่องอายุ: พิมพ์อายุ → เติมวันเกิด (ปี พ.ศ.) ให้เอง */
+  const ageEl=document.getElementById('inpAge');
+  if(ageEl) ageEl.addEventListener('input', ()=>{
+    const y=birthYearFromAge(ageEl.value);
+    S.birth = ageEl.value.trim()==='' ? '' : (y||S.birth);
+    const bEl=document.querySelector('[data-bind="birth"]'); if(bEl) bEl.value=S.birth||'';
+    onAnyChange();
+  });
+
   document.querySelectorAll('#audTools [data-sym]').forEach(b=>b.addEventListener('click', ()=>setAudTool('sym', b.dataset.sym)));
   document.querySelectorAll('#audTools [data-mode]').forEach(b=>b.addEventListener('click', ()=>setAudTool('mode', b.dataset.mode)));
   const maskedBtn=document.getElementById('aud-tb-masked'); if(maskedBtn) maskedBtn.addEventListener('click', ()=>setAudTool('masked'));
@@ -2690,7 +3088,23 @@ function bindInputs(){
   const copyAirBtn=document.getElementById('aud-tb-copyAir'); if(copyAirBtn) copyAirBtn.addEventListener('click', ()=>copyEarDataSmart('AC'));
   const copyBoneBtn=document.getElementById('aud-tb-copyBone'); if(copyBoneBtn) copyBoneBtn.addEventListener('click', ()=>copyEarDataSmart('BC'));
   const airBoneBtn=document.getElementById('aud-tb-airbone'); if(airBoneBtn) airBoneBtn.addEventListener('click', airEqualsBone);
-  const boneDropBtn=document.getElementById('aud-tb-bonedrop'); if(boneDropBtn) boneDropBtn.addEventListener('click', boneDropPreset);
+  const exDefBtn=document.getElementById('btnExaminerDefault');
+  if(exDefBtn) exDefBtn.addEventListener('click', ()=>{
+    S.examiner = S.audiologist||'';
+    S.examinerPosition = S.position||'';
+    const a=document.querySelector('[data-bind="examiner"]'); if(a) a.value = S.examiner;
+    const b=document.querySelector('[data-bind="examinerPosition"]'); if(b) b.value = S.examinerPosition;
+    onAnyChange();
+  });
+
+  const interpBtn=document.getElementById('btnInterpApply');
+  if(interpBtn) interpBtn.addEventListener('click', ()=>{
+    const auto=interpretAudiogram();
+    if(!auto){ alert('ยังไม่มีข้อมูล Audiogram ให้แปลผล'); return; }
+    S.diag1 = auto; S._diag1_manual = false;
+    const el=document.querySelector('[data-bind="diag1"]'); if(el) el.value = auto;
+    onAnyChange();
+  });
   const showInter=document.getElementById('showInter'); if(showInter) showInter.addEventListener('change', ()=>{ buildAudTable(); autosave(); });
   const audTableToggle=document.getElementById('audTableToggle');
   if(audTableToggle) audTableToggle.addEventListener('click', ()=>{
@@ -2799,6 +3213,20 @@ try{ _outbox = JSON.parse(localStorage.getItem(OUTBOX_KEY)||'[]'); }catch(e){ _o
 try{ _fullCache = JSON.parse(localStorage.getItem(FKEY)||'{}'); }catch(e){ _fullCache = {}; }
 let _syncing = false;
 function saveOutbox(){ try{ localStorage.setItem(OUTBOX_KEY, JSON.stringify(_outbox)); }catch(e){} }
+/* ══ baseline snapshot — เก็บ "ข้อมูลเวอร์ชันที่เครื่องนี้โหลดมาตอนเปิดเคส" ไว้เทียบตอนบันทึก ══
+   ใช้ให้เซิร์ฟเวอร์รู้ว่าเครื่องนี้แก้ช่องไหนไปบ้าง จะได้ทับเฉพาะช่องนั้น
+   ไม่ไปลบข้อมูลที่ห้องอื่นเพิ่งกรอกลงช่องอื่นระหว่างที่เรากรอกอยู่ ══ */
+let _baseSnap = {};
+function snapBase(rec){
+  if(!rec || !rec._id) return;
+  if(_outbox.some(o=>o._id===rec._id)) return;                       // ยังส่งไม่เสร็จ = อย่าเลื่อน baseline
+  if(typeof S==='object' && S && S._id===rec._id && _entryOpen) return; // กำลังเปิดกรอกอยู่ = อย่าเลื่อน baseline
+  try{ _baseSnap[rec._id] = JSON.parse(JSON.stringify(rec)); }catch(e){}
+  const ids = Object.keys(_baseSnap);
+  if(ids.length > 60) delete _baseSnap[ids[0]];                      // กันบวม
+}
+function baseFor(id){ return _baseSnap[id] || null; }
+let _entryOpen = false;
 function saveFullCache(){
   try{ localStorage.setItem(FKEY, JSON.stringify(_fullCache)); }
   catch(e){
@@ -2841,6 +3269,9 @@ function updateSyncBadge(){
 function outboxEnqueue(rec){
   let copy; try{ copy = JSON.parse(JSON.stringify(rec)); }catch(e){ copy = rec; }
   const idx = _outbox.findIndex(r=>r._id===copy._id);
+  /* แนบ baseline ไปด้วย เพื่อให้เซิร์ฟเวอร์ merge ได้ถูกช่อง — ถ้ามีตัวเก่าค้างคิวอยู่ ให้ใช้ baseline เดิมของมัน
+     (เพราะตัวเก่ายังไม่ถึงเซิร์ฟเวอร์ จุดเริ่มต้นที่แท้จริงจึงยังเป็นอันเดิม) */
+  copy.__base = (idx>=0 && _outbox[idx].__base) ? _outbox[idx].__base : baseFor(copy._id);
   if(idx>=0) _outbox[idx]=copy; else _outbox.push(copy);
   saveOutbox(); updateSyncBadge();
   syncOutbox(); // เริ่มส่งเบื้องหลังทันที (ไม่บล็อกหน้าจอ)
@@ -2854,19 +3285,40 @@ async function syncOutbox(){
     while(_outbox.length){
       const rec = _outbox[0];
       const t = localStorage.getItem('hcs_token');
-      const res = await api.postAction('upsertRecord', {token:t, record:rec});
+      let send; try{ send = JSON.parse(JSON.stringify(rec)); }catch(e){ send = rec; }
+      const base = send.__base || null; delete send.__base;
+      const res = await api.postAction('upsertRecord', {token:t, record:send, base:base});
       if(!res || res.status!=='ok'){ break; } // เน็ตมีปัญหา/เซิร์ฟเวอร์ไม่ตอบ — เดี๋ยวลองใหม่อัตโนมัติทุก 15 วิ
       if(res._savedAt){
-        rec._savedAt = res._savedAt;
-        if(typeof S==='object' && S && S._id===rec._id) S._savedAt = res._savedAt;
-        const li = _recordsCache.findIndex(r=>r._id===rec._id);
+        /* เซิร์ฟเวอร์รวมข้อมูลกับของห้องอื่นให้แล้ว — เอาตัวที่รวมแล้วมาใช้แทน กันข้อมูลในเครื่องนี้ค้างเป็นตัวเก่า */
+        let saved = (res.merged && res.record) ? res.record : send;
+        saved._savedAt = res._savedAt;
+        if(typeof S==='object' && S && S._id===saved._id){
+          if(res.merged && res.record && !_entryOpen) S = Object.assign({}, S, saved);
+          S._savedAt = res._savedAt;
+        }
+        upsertLocalRecordsCache(saved);
+        const li = _recordsCache.findIndex(r=>r._id===saved._id);
         if(li>=0) _recordsCache[li]._savedAt = res._savedAt;
-        upsertFullCache(rec);
+        upsertFullCache(saved);
+        try{ localStorage.setItem(RKEY, JSON.stringify(_recordsCache)); }catch(e2){}
+        try{ _baseSnap[saved._id] = JSON.parse(JSON.stringify(saved)); }catch(e2){} // baseline ใหม่ = ตัวที่เพิ่งบันทึกสำเร็จ
+        if(res.merged){
+          notifyMerged(saved, res.conflicts||[]);
+          try{ if(typeof renderList==='function' && _currentMode==='list') renderList(); }catch(e2){}
+        }
       }
       _outbox.shift(); saveOutbox(); updateSyncBadge();
     }
   }catch(e){ console.warn('ซิงก์ขึ้นเซิร์ฟเวอร์ไม่สำเร็จ จะลองใหม่อัตโนมัติ:', e); }
   finally{ _syncing = false; updateSyncBadge(); }
+}
+/* ── แจ้งให้ผู้ใช้รู้ว่าห้องอื่นแก้เคสเดียวกันอยู่ และระบบรวมข้อมูลให้แล้ว ── */
+function notifyMerged(rec, conflicts){
+  let msg = '🔀 ห้องอื่นแก้ไข "'+(rec.name||'ผู้ป่วยรายนี้')+'" พร้อมกัน — ระบบรวมข้อมูลให้แล้ว ไม่มีข้อมูลหาย';
+  if(conflicts && conflicts.length) msg += ' (ช่องที่แก้ตรงกัน '+conflicts.length+' ช่อง ใช้ค่าของเครื่องนี้)';
+  try{ if(typeof flash==='function'){ flash(msg); return; } }catch(e){}
+  console.info(msg, conflicts);
 }
 setInterval(syncOutbox, 15000);
 setTimeout(syncOutbox, 3000);
@@ -2898,7 +3350,30 @@ async function doSave(){
     if(!_v('fitDate')) missing.push('วันที่ใส่เครื่อง');
     if(!_v('rightType')) missing.push('สิทธิ์การรักษา');
     if(!_v('addr_no') && !_v('addr_moo') && !_v('addr_province')) missing.push('ที่อยู่');
-    if(missing.length && !confirm('⚠️ ข้อมูลผู้ป่วยยังไม่ครบ ขาด: '+missing.join(', ')+'\n\nกด "ตกลง" เพื่อบันทึกต่อทั้งที่ยังไม่ครบ\nกด "ยกเลิก" เพื่อกลับไปกรอกให้ครบก่อน')) return false;
+    /* เลขบัตรประชาชนไม่บังคับ — แต่ถ้ากรอกมาแล้วไม่ครบ 13 หลัก ให้เตือน */
+    const cidDigits = String(S.citizenId||'').replace(/\D/g,'');
+    if(cidDigits && cidDigits.length!==13) missing.push('เลขบัตรประชาชน (ต้องครบ 13 หลัก)');
+
+    /* ── ข้อมูลเครื่องช่วยฟัง (แถบ 🦻) ── */
+    const haMissing = [];
+    if(!_v('ear')) haMissing.push('ข้างที่ใส่');
+    if(!_v('dtype')) haMissing.push('ชนิดเครื่อง');
+    const _both = S.ear==='both';
+    const _brand = _v('s7_resound');
+    const _model = _both ? (_v('s7_resound_model_L') || _v('s7_resound_model_R')) : _v('s7_resound_model');
+    if(!_brand) haMissing.push('ยี่ห้อเครื่องช่วยฟัง');
+    if(!_model) haMissing.push('รุ่นเครื่องช่วยฟัง');
+    const _sn = _both ? (_v('sn_L') || _v('sn_R')) : _v('sn');
+    if(!_sn) haMissing.push('S/N เครื่อง');
+    if(!_v('audiologist')) haMissing.push('ชื่อนักแก้ไขการได้ยิน');
+
+    if((missing.length || haMissing.length)){
+      let msg = '⚠️ ข้อมูลยังไม่ครบ\n';
+      if(missing.length)   msg += '\n👤 ข้อมูลผู้ป่วย — ขาด: ' + missing.join(', ') + '\n';
+      if(haMissing.length) msg += '\n🦻 ข้อมูลเครื่องช่วยฟัง — ขาด: ' + haMissing.join(', ') + '\n';
+      msg += '\nกด "ตกลง" เพื่อบันทึกต่อทั้งที่ยังไม่ครบ\nกด "ยกเลิก" เพื่อกลับไปกรอกให้ครบก่อน';
+      if(!confirm(msg)) return false;
+    }
   }
   try{
     /* ── รันหมายเลขคิวเฉพาะเมื่อ "วันที่ใส่เครื่อง" ตรงกับวันนี้เท่านั้น
@@ -2977,7 +3452,11 @@ function upsertLocalRecordsCache(s){
     fu1_date: s.fu1_date||'', fu2_date: s.fu2_date||'', fu3_date: s.fu3_date||'',
     note: s.note||'',
     ptaR: (s.ptaR===undefined?null:s.ptaR), ptaL: (s.ptaL===undefined?null:s.ptaL),
-    queueNo: s.queueNo||null, queueDate: s.queueDate||'', calledAt: s.calledAt||'', _savedAt: s._savedAt||''
+    queueNo: s.queueNo||null, queueDate: s.queueDate||'', calledAt: s.calledAt||'', _savedAt: s._savedAt||'',
+    /* ── ระบบโทรติดตาม ── */
+    phone: s.phone||'', citizenId: s.citizenId||'',
+    apptDate: s.apptDate||'', apptType: s.apptType||'', apptNote: s.apptNote||'',
+    callStatus: s.callStatus||'', callNote: s.callNote||'', callAt: s.callAt||'', callBy: s.callBy||''
   };
   const idx = _recordsCache.findIndex(r=>r._id===light._id);
   if(idx>=0) _recordsCache[idx]=light; else _recordsCache.unshift(light);
@@ -2985,6 +3464,8 @@ function upsertLocalRecordsCache(s){
 /* ── เปิดให้สคริปต์ส่วนล็อกอิน/Admin (คนละ scope) อ่าน cache รายชื่อผู้ป่วยชุดเดียวกันนี้ได้ ── */
 window.hcsGetRecords = function(){ return _recordsCache; };
 function loadRecordIntoS(rec){
+  snapBase(rec);        // baseline = เวอร์ชันที่เห็นตอนเปิดฟอร์ม
+  _entryOpen = true;    // ล็อก baseline ไว้ระหว่างกรอก ห้ามให้การรีเฟรชเบื้องหลังมาเลื่อน
   S = Object.assign({}, DEFAULTS, rec);
   S.audTh = mergeAudTh(rec.audTh);
   resetAudHistory();
@@ -2995,6 +3476,87 @@ function avgForRec(rec, ear, type){
   let s=0,c=0; const th = rec.audTh||{};
   PTA_FREQS.forEach(fr=>{ const d = th[fr] && th[fr][ear+type]; const v = d?num(d.v):null; if(v!==null){ s+=v; c++; } });
   return c ? Math.round(s/c) : null;
+}
+
+/* ══════════════════ ICD-10 / ICD-9 จากผลการได้ยิน ══════════════════
+   ใช้เกณฑ์เดียวกับการแปลผล Audiogram (interpretEar) แต่รับ record เข้ามาตรงๆ
+   เพื่อคำนวณย้อนหลังจากข้อมูลที่บันทึกไว้ ตอนส่งออก Excel
+
+   หลักการลงรหัส
+   - สองหูชนิดเดียวกัน           → รหัส bilateral    (SNHL H903 | CHL H900 | Mixed H906)
+   - ข้างเดียว อีกข้างได้ยินปกติ   → รหัส unilateral   (SNHL H904 | CHL H901 | Mixed H907)
+   - สองหูคนละชนิด               → ลง 2 รหัส unspecified (SNHL H905 | CHL H902 | Mixed H908)
+     (รหัส unilateral ใช้ไม่ได้ เพราะแปลว่า "อีกข้างได้ยินปกติ" เท่านั้น)
+   - ข้างเดียว อีกข้างไม่ได้ตรวจ   → รหัส unspecified ของข้างที่ตรวจ
+   - ถ้ามีรหัสวินิจฉัย เติม Z461 (Fitting and adjustment of hearing aid)
+     และ ICD-9 หัตถการ 9548, 9549
+   ══════════════════════════════════════════════════════════════════ */
+const ICD10_BIL = {SNHL:'H903', CHL:'H900', MIX:'H906'};
+const ICD10_UNI = {SNHL:'H904', CHL:'H901', MIX:'H907'};
+const ICD10_UNS = {SNHL:'H905', CHL:'H902', MIX:'H908'};
+const ICD10_FIT = 'Z461';
+const ICD9_CODES = ['9548', '9549'];
+
+/* รหัสอุปกรณ์ตามชนิดเครื่องช่วยฟัง (ใช้เบิก สปสช.)
+   2507 = ทัดหลังหู (BTE / RIC) · 2508 = ในช่องหู (ITE) · แบบกล่อง (Body) ไม่มีรหัส */
+const DEVICE_CODE = { bte:'2507', ric:'2507', ite:'2508' };
+function deviceCodeForRec(rec){ return (rec && DEVICE_CODE[rec.dtype]) || ''; }
+
+/* ชนิดการสูญเสียการได้ยินของหูข้างหนึ่งจาก audTh ที่บันทึกไว้
+   คืนค่า 'SNHL' | 'CHL' | 'MIX' | 'NORMAL' | '' (ตรวจ AC แต่ไม่ได้ตรวจ BC → ระบุชนิดไม่ได้)
+          | null (ไม่มีข้อมูลการได้ยินเลย) */
+function hlTypeForRec(rec, ear){
+  const th = rec && rec.audTh; if(!th) return null;
+  const ac=[], bc=[];
+  FREQ_ALL.forEach(fr=>{
+    const row = th[fr]; if(!row) return;
+    const a = row[ear+'AC'], b = row[ear+'BC'];
+    if(a){ const v=num(a.v); if(v!==null) ac.push({fr, v}); }
+    if(b){ const v=num(b.v); if(v!==null) bc.push({fr, v, nr:!!b.nr}); }
+  });
+  if(!ac.length) return null;
+  if(ac.every(x=>x.v<=25)) return 'NORMAL';   /* AC ≤25 ทุกความถี่ → การได้ยินปกติ */
+  if(!bc.length) return '';                    /* ไม่ได้ตรวจ BC → บอกชนิดไม่ได้ */
+  const gaps=[];
+  FREQ_ALL.forEach(fr=>{
+    const row = th[fr]; if(!row) return;
+    const bcCell = row[ear+'BC']; if(!bcCell || bcCell.nr) return;  /* BC ตก → ไม่นับเป็น gap */
+    const acCell = row[ear+'AC']; if(!acCell) return;
+    const a=num(acCell.v), b=num(bcCell.v);
+    if(a===null||b===null) return;
+    const g=a-b; if(g>0) gaps.push(g);
+  });
+  const cnt = t => gaps.filter(g=>g>t).length;
+  const hasGap = [[20,1],[15,2],[10,3],[5,4]].some(r=> cnt(r[0])>=r[1]);
+  if(!hasGap) return 'SNHL';
+  return bc.some(x=>x.v>25) ? 'MIX' : 'CHL';
+}
+
+/* สำรอง: ข้อมูลเก่าที่ไม่มี audTh — อ่านชนิดจากข้อความแปลผลในช่องวินิจฉัย */
+function hlTypeFromDiagText(txt, ear){
+  if(!txt) return null;
+  const lines = String(txt).split(/\r?\n+/).map(x=>x.trim()).filter(Boolean);
+  const head = ear==='R' ? /^Rt\./i : /^Lt\./i;
+  const line = lines.find(l=>head.test(l)) || lines.find(l=>/^Bilateral/i.test(l));
+  if(!line) return null;
+  if(/mixed/i.test(line))         return 'MIX';   /* ตรวจ Mixed ก่อน เพราะข้อความเต็มมีคำว่า sensorineural อยู่ด้วย */
+  if(/sensorineural/i.test(line)) return 'SNHL';
+  if(/conductive/i.test(line))    return 'CHL';
+  if(/normal/i.test(line))        return 'NORMAL';
+  return '';
+}
+
+/* รหัส ICD-10 วินิจฉัยของผู้ป่วย 1 ราย (ยังไม่รวม Z461) — คืนเป็นอาร์เรย์ 0-2 รหัส */
+function icd10DxForRec(rec){
+  if(!rec) return [];
+  let R = hlTypeForRec(rec,'R'), L = hlTypeForRec(rec,'L');
+  if(R===null || R==='') R = hlTypeFromDiagText(rec.diag1,'R') || R;
+  if(L===null || L==='') L = hlTypeFromDiagText(rec.diag1,'L') || L;
+  const isHL = t => t==='SNHL' || t==='CHL' || t==='MIX';
+  if(isHL(R) && isHL(L)) return R===L ? [ICD10_BIL[R]] : [ICD10_UNS[R], ICD10_UNS[L]];
+  if(isHL(R)) return [ L==='NORMAL' ? ICD10_UNI[R] : ICD10_UNS[R] ];
+  if(isHL(L)) return [ R==='NORMAL' ? ICD10_UNI[L] : ICD10_UNS[L] ];
+  return [];
 }
 
 /* ── init ──────────────────────────────────────────────────────── */
@@ -3164,9 +3726,12 @@ function init(){
   let _currentMode = 'list'; // หน้าปัจจุบัน — ใช้ตัดสินใจว่า auto-refresh ควรทำงานหรือไม่
   function setMode(mode){
     _currentMode = mode;
+    /* อยู่หน้ากรอกข้อมูล = ล็อก baseline ไว้ ห้ามให้การรีเฟรชรายชื่อเบื้องหลังมาเลื่อนจุดตั้งต้น
+       ออกจากหน้ากรอกแล้ว = ปลดล็อก ให้รับข้อมูลล่าสุดจากเซิร์ฟเวอร์ได้ตามปกติ */
+    _entryOpen = (mode==='entry');
     const app = document.getElementById('app');
-    app.classList.remove('mode-entry','mode-print','mode-list','mode-queue');
-    app.classList.add(mode==='print' ? 'mode-print' : (mode==='list' ? 'mode-list' : (mode==='queue' ? 'mode-queue' : 'mode-entry')));
+    app.classList.remove('mode-entry','mode-print','mode-list','mode-queue','mode-call');
+    app.classList.add(mode==='print' ? 'mode-print' : (mode==='list' ? 'mode-list' : (mode==='queue' ? 'mode-queue' : (mode==='call' ? 'mode-call' : 'mode-entry'))));
     window.scrollTo(0,0);
     // ── มือถือ: ซ่อนแถบผู้ใช้มุมบนขวาตอนมีหน้าต่างลอย (กรอกข้อมูล/Audiogram/พิมพ์/เรียกคิว) กันไปทับปุ่มปิด ✕ ของหน้าต่างนั้นๆ ──
     // หมายเหตุ: #userBar อยู่นอก #app ใน DOM (เป็น sibling ไม่ใช่ลูก) เลือกด้วย CSS descendant selector ไม่ได้ ต้องสลับ class ผ่าน JS แทน
@@ -3179,6 +3744,7 @@ function init(){
       refreshRecordsCache().then(renderList); // แล้วซิงก์กับเซิร์ฟเวอร์เบื้องหลัง เผื่อเครื่อง/ห้องอื่นบันทึกเพิ่มมา
     }
     if(mode==='queue') refreshRecordsCache().then(renderQueueView);
+    if(mode==='call'){ renderCallView(); refreshRecordsCache().then(renderCallView); }
   }
 
   /* ══ Auto-refresh: หน้ารายการ/หน้าคิว ดึงข้อมูลใหม่จากเซิร์ฟเวอร์เองทุก 12 วินาที ══
@@ -3206,13 +3772,14 @@ function init(){
   async function autoRefreshTick(){
     if(document.visibilityState !== 'visible') return;
     if(_autoBusy) return;
-    if(_currentMode !== 'list' && _currentMode !== 'queue') return;
+    if(_currentMode !== 'list' && _currentMode !== 'queue' && _currentMode !== 'call') return;
     if(!window.hcsApi || !localStorage.getItem('hcs_token')) return;
     _autoBusy = true;
     try{
       await refreshRecordsCache();
       if(_currentMode === 'list') renderList();
       else if(_currentMode === 'queue') renderQueueView();
+      else if(_currentMode === 'call') renderCallView();
       markAutoStamp();
     }catch(e){ /* เน็ตสะดุด — รอบหน้าลองใหม่เอง */ }
     finally{ _autoBusy = false; }
@@ -3572,7 +4139,8 @@ function init(){
       if(_optNode) optionalPanel.appendChild(_optNode);
     }
     const titleEl = document.querySelector('#sidebar .side-head h1');
-    if(titleEl) titleEl.textContent = view==='audiogram' ? 'กรอกข้อมูล Audiogram' : 'เพิ่ม / แก้ไขข้อมูลผู้ป่วย';
+    if(titleEl) titleEl.textContent = view==='audiogram' ? 'กรอกข้อมูล Audiogram'
+                                    : (view==='hearingaid' ? '🦻 กรอกข้อมูลเครื่องช่วยฟัง' : 'เพิ่ม / แก้ไขข้อมูลผู้ป่วย');
     bindInputs();
     bindOptionalToggle();
     reflectInputs();
@@ -3588,6 +4156,258 @@ function init(){
   const LST_EAR_TH = {left:'ซ้าย', right:'ขวา', both:'สองข้าง'};
   const LST_RIGHT_TH = {disabled:'ผู้พิการ', gov:'ข้าราชการ', sso:'ประกันสังคม'};
   let _lstPage = 1;
+  /* ══════════════════════════════════════════════════════════════
+     ระบบโทรติดตามผลผู้ป่วย
+     - ลงนัดหมายทีละหลายคนจากหน้ารายการ (ติ๊ก checkbox)
+     - หน้า "โทรติดตาม" แยกต่างหาก: กรองตามวันนัด/เรื่องนัด แล้วบันทึกผลการโทร
+     - เก็บเฉพาะสถานะการโทรล่าสุดของแต่ละราย (ไม่เก็บย้อนหลังหลายครั้ง)
+     ══════════════════════════════════════════════════════════════ */
+  const CALL_STATUSES = [
+    {k:'confirm',  th:'ยืนยันนัดหมาย'},
+    {k:'noanswer', th:'ไม่รับสาย'},
+    {k:'postpone', th:'ขอเลื่อนวันนัดหมาย'},
+    {k:'unreach',  th:'ติดต่อไม่ได้'},
+    {k:'badnum',   th:'เบอร์ไม่ถูกต้อง'},
+    {k:'waive',    th:'สละสิทธิ์'},
+    {k:'tele',     th:'Tele-follow up'}
+  ];
+  const CALL_ST_TH = {}; CALL_STATUSES.forEach(s=>CALL_ST_TH[s.k]=s.th);
+  const APPT_TYPES = ['Follow-up 1','Follow-up 2','Follow-up 3','Audiogram','Fit HA','EM (พิมพ์หู)','Battery (รับถ่าน)','ซ่อมเครื่อง','ABR'];
+  const APPT_OTHER = '__other__';
+
+  /* ค่านัดหมาย/ผลโทรของรายการหนึ่ง — ใช้ค่าจากเซิร์ฟเวอร์ก่อน ถ้าไม่มีค่อยดูแคชข้อมูลเต็มในเครื่อง
+     (Apps Script เวอร์ชันเก่าที่ยังไม่ได้แพตช์จะไม่ส่งฟิลด์เหล่านี้กลับมากับ listRecords) */
+  function apptOf(r){
+    const fc = _fullCache[r._id] || {};
+    return {
+      date:   r.apptDate   || fc.apptDate   || '',
+      type:   r.apptType   || fc.apptType   || '',
+      note:   r.apptNote   || fc.apptNote   || '',
+      status: r.callStatus || fc.callStatus || '',
+      cnote:  r.callNote   || fc.callNote   || '',
+      at:     r.callAt     || fc.callAt     || '',
+      by:     r.callBy     || fc.callBy     || '',
+      phone:  r.phone      || fc.phone      || ''
+    };
+  }
+  function apptLabel(r){
+    const a = apptOf(r);
+    if(!a.date) return '';
+    return a.date + (a.type ? ' · ' + a.type : '');
+  }
+  function stPill(k){
+    const cls = k && CALL_ST_TH[k] ? 'st-'+k : 'st-none';
+    return `<span class="st-pill ${cls}">${k && CALL_ST_TH[k] ? CALL_ST_TH[k] : 'ยังไม่ได้โทร'}</span>`;
+  }
+  function thaiShort(d){
+    if(!d) return '';
+    const p = String(d).split('-'); if(p.length!==3) return d;
+    const M=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    return Number(p[2])+' '+(M[Number(p[1])-1]||p[1])+' '+(Number(p[0])+543);
+  }
+
+  /* ── เขียนค่าใหม่ลงรายการ แล้วส่งขึ้นเซิร์ฟเวอร์ ─────────────────────────────
+     ⚡ ทางเร็ว (patchRecordsBulk): ส่งขึ้นไปแค่ "ช่องที่เปลี่ยน" ครั้งเดียวจบทุกคน
+        เดิมต้องดึงข้อมูลเต็มของทุกคนลงมาก่อน แล้วส่งกลับขึ้นไปทีละคน
+        (ข้อมูลเต็มมี Audiogram/รูปภาพ ~40KB ต่อคน · Apps Script ตอบ ~1-3 วิ/รอบ)
+        ลงนัด 40 คน = 41 รอบ ⇒ รอเป็นนาที · ตอนนี้เหลือรอบเดียว ~2-5 วิ
+     ทางเดิม: ใช้เมื่อเซิร์ฟเวอร์ยังไม่ได้แพตช์ (ไม่รู้จักคำสั่ง patchRecordsBulk)
+     ────────────────────────────────────────────────────────────────────── */
+  async function patchRecords(ids, patch){
+    const api = window.hcsApi, t = localStorage.getItem('hcs_token');
+    if(api && t && ids.length){
+      try{
+        const res = await api.postAction('patchRecordsBulk', {token:t, ids:ids, patch:patch});
+        if(res && res.status==='ok'){
+          const at = res._savedAt || new Date().toISOString();
+          ids.forEach(id=>{
+            const base = _fullCache[id];
+            if(base){
+              const rec = Object.assign({}, base, patch, {_savedAt:at});
+              _fullCache[id] = rec;
+              upsertLocalRecordsCache(rec);
+            }else{
+              /* ไม่มีข้อมูลเต็มในเครื่อง — เซิร์ฟเวอร์แก้ให้แล้ว อัปเดตแค่รายการย่อให้หน้าจอตรงกัน */
+              const li = _recordsCache.findIndex(r=>r._id===id);
+              if(li>=0) _recordsCache[li] = Object.assign({}, _recordsCache[li], patch, {_savedAt:at});
+            }
+          });
+          saveFullCache();
+          try{ localStorage.setItem(RKEY, JSON.stringify(_recordsCache)); }catch(e){}
+          return {done: (res.done===undefined ? ids.length : res.done), skipped: res.skipped||0, fast:true};
+        }
+      }catch(e){ /* เน็ตหลุด/เซิร์ฟเวอร์เวอร์ชันเก่า — ถอยไปใช้วิธีเดิมด้านล่าง */ }
+    }
+    const need = ids.filter(id => !_fullCache[id]);
+    if(need.length && api && t){
+      try{
+        const res = await api.postAction('getRecordsBulk', {token:t, ids:need});
+        if(res && res.status==='ok' && res.records) res.records.forEach(rec=>{ upsertFullCache(rec); snapBase(rec); });
+      }catch(e){ /* ออฟไลน์ — ใช้เท่าที่มีในเครื่อง */ }
+    }
+    let done = 0, skipped = 0;
+    ids.forEach(id=>{
+      const base = _fullCache[id];
+      if(!base){ skipped++; return; }        /* ไม่มีข้อมูลเต็ม → ไม่แตะ กันเขียนทับฟอร์มด้วยข้อมูลไม่ครบ */
+      const rec = Object.assign({}, base, patch);
+      rec._savedAt = new Date().toISOString();
+      upsertLocalRecordsCache(rec); upsertFullCache(rec);
+      outboxEnqueue(rec);
+      done++;
+    });
+    try{ localStorage.setItem(RKEY, JSON.stringify(_recordsCache)); }catch(e){}
+    return {done, skipped};
+  }
+
+  /* ── การเลือกหลายคนในหน้ารายการ ── */
+  const _selIds = new Set();
+  function updateBulkBar(){
+    const bar = document.getElementById('lstBulkBar');
+    if(!bar) return;
+    bar.classList.toggle('show', _selIds.size>0);
+    const c = document.getElementById('lstBulkCount');
+    if(c) c.textContent = 'เลือก ' + _selIds.size + ' คน';
+  }
+  function clearSelection(){ _selIds.clear(); updateBulkBar(); renderList(); }
+
+  /* ── กล่องลงนัดหมาย ── */
+  let _apptTargets = [];
+  function fillApptTypeSelect(sel, withAll){
+    if(!sel) return;
+    sel.innerHTML = (withAll?'<option value="">— ทั้งหมด —</option>':'')
+      + APPT_TYPES.map(t=>`<option value="${t}">${t}</option>`).join('')
+      + (withAll?'':`<option value="${APPT_OTHER}">อื่นๆ (พิมพ์เอง)</option>`);
+  }
+  function openApptModal(ids){
+    if(!ids.length){ alert('ยังไม่ได้เลือกผู้ป่วย — ติ๊กช่องหน้ารายชื่อก่อน'); return; }
+    _apptTargets = ids.slice();
+    const m = document.getElementById('apptModal');
+    document.getElementById('apptTitle').textContent = '📅 ลงนัดหมาย — ' + ids.length + ' คน';
+    const dIn = document.getElementById('apptDateIn');
+    if(!dIn.value) dIn.value = todayKey();
+    document.getElementById('apptOtherWrap').style.display = 'none';
+    m.classList.add('show');
+  }
+  function closeApptModal(){ document.getElementById('apptModal').classList.remove('show'); _apptTargets=[]; }
+
+  async function saveAppointment(clear){
+    const ids = _apptTargets.slice();
+    if(!ids.length) return;
+    let patch;
+    if(clear){
+      if(!confirm('ลบนัดหมายและผลการโทรของ '+ids.length+' คนที่เลือก?')) return;
+      patch = {apptDate:'', apptType:'', apptNote:'', callStatus:'', callNote:'', callAt:'', callBy:''};
+    } else {
+      const date = document.getElementById('apptDateIn').value;
+      if(!date){ alert('กรุณาเลือกวันที่นัด'); return; }
+      let type = document.getElementById('apptTypeIn').value;
+      if(type===APPT_OTHER){
+        type = (document.getElementById('apptOtherIn').value||'').trim();
+        if(!type){ alert('กรุณาระบุเรื่องที่นัด'); return; }
+      }
+      /* ลงนัดใหม่ = เริ่มรอบโทรใหม่ ล้างผลโทรของนัดเดิมออก */
+      patch = {apptDate:date, apptType:type, apptNote:(document.getElementById('apptNoteIn').value||'').trim(),
+               callStatus:'', callNote:'', callAt:'', callBy:''};
+    }
+    const btn = document.getElementById('btnApptSave'); const old = btn.textContent;
+    btn.disabled = true; btn.textContent = '⏳ กำลังบันทึก...';
+    const res = await patchRecords(ids, patch);
+    btn.disabled = false; btn.textContent = old;
+    closeApptModal();
+    _selIds.clear(); updateBulkBar(); renderList();
+    if(_currentMode==='call') renderCallView();
+    if(res.skipped) alert('บันทึกแล้ว '+res.done+' คน · ข้าม '+res.skipped+' คน (โหลดข้อมูลเต็มไม่ได้ — ลองเชื่อมต่อเน็ตแล้วทำใหม่)');
+    else flash('📅 บันทึกนัดหมาย '+res.done+' คนแล้ว');
+  }
+
+  /* ── รายชื่อที่แสดงในหน้าโทรติดตาม ── */
+  let _callStFilter = '';
+  function getCallList(){
+    const from = document.getElementById('callFrom').value;
+    const to   = document.getElementById('callTo').value;
+    const typ  = document.getElementById('callTypeFilter').value;
+    const q    = (document.getElementById('callSearch').value||'').trim().toLowerCase();
+    let list = getRecords().filter(r=>{ const a=apptOf(r); return !!a.date; });
+    try{
+      const allowed = effectiveAllowedHospitals();
+      if(allowed.length) list = list.filter(r=>allowed.includes((r.hospital||'').trim()));
+    }catch(e){}
+    if(from) list = list.filter(r=>apptOf(r).date >= from);
+    if(to)   list = list.filter(r=>apptOf(r).date <= to);
+    if(typ)  list = list.filter(r=>apptOf(r).type === typ);
+    if(q)    list = list.filter(r=>((r.name||'')+' '+(r.hn||'')).toLowerCase().includes(q));
+    if(_callStFilter) list = list.filter(r=>(apptOf(r).status||'') === (_callStFilter==='__none__' ? '' : _callStFilter));
+    return list.sort((a,b)=>{
+      const da=apptOf(a).date, db=apptOf(b).date;
+      if(da!==db) return da<db ? -1 : 1;
+      return String(a.name||'').localeCompare(String(b.name||''),'th');
+    });
+  }
+
+  function renderCallView(){
+    const from = document.getElementById('callFrom'); if(!from) return;
+    /* สรุปนับจากรายชื่อก่อนกรองสถานะ — กดการ์ดเพื่อกรองเฉพาะสถานะนั้น */
+    const saved = _callStFilter; _callStFilter = '';
+    const all = getCallList();
+    _callStFilter = saved;
+    const counts = {}; CALL_STATUSES.forEach(s=>counts[s.k]=0); counts.__none__ = 0;
+    all.forEach(r=>{ const st=apptOf(r).status; counts[st && CALL_ST_TH[st] ? st : '__none__']++; });
+    const cards = [{k:'', th:'ทั้งหมด', n:all.length}, {k:'__none__', th:'ยังไม่ได้โทร', n:counts.__none__}]
+      .concat(CALL_STATUSES.map(s=>({k:s.k, th:s.th, n:counts[s.k]})));
+    document.getElementById('callSummary').innerHTML = cards.map(c=>
+      `<div class="cs-card${_callStFilter===c.k?' on':''}" data-st="${c.k}"><div class="n">${c.n}</div><div class="t">${c.th}</div></div>`).join('');
+
+    const list = getCallList();
+    document.getElementById('callCountBadge').textContent = list.length + ' รายการ';
+    const body = document.getElementById('callBody');
+    if(!list.length){ body.innerHTML = '<tr><td colspan="8" class="list-empty">ไม่มีรายชื่อที่ตรงกับตัวกรอง — ลงนัดหมายได้จากหน้ารายการผู้ป่วย</td></tr>'; return; }
+    body.innerHTML = list.map((r,i)=>{
+      const a = apptOf(r);
+      const when = a.at ? new Date(a.at).toLocaleString('th-TH',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+      return `<tr>
+        <td>${i+1}</td>
+        <td class="ct-name" title="HN ${esc(r.hn)||'-'}">${esc(r.name)||'-'}</td>
+        <td class="ct-phone">${a.phone ? `<a href="tel:${esc(a.phone).replace(/[^0-9+]/g,'')}">${esc(a.phone)}</a>` : '<span style="color:#C4BFD8">ไม่มีเบอร์</span>'}</td>
+        <td>${thaiShort(a.date)}</td>
+        <td>${a.type ? `<span class="appt-pill">${esc(a.type)}</span>` : '-'}${a.note ? `<div class="call-when">${esc(a.note)}</div>` : ''}</td>
+        <td>
+          <select class="call-sel" data-cact="st" data-id="${r._id}">
+            <option value="">— ยังไม่ได้โทร —</option>
+            ${CALL_STATUSES.map(s=>`<option value="${s.k}"${a.status===s.k?' selected':''}>${s.th}</option>`).join('')}
+          </select>
+          ${when ? `<div class="call-when">🕐 ${when}${a.by?' · '+esc(a.by):''}</div>` : ''}
+        </td>
+        <td><input class="call-note-in" data-cact="note" data-id="${r._id}" value="${esc(a.cnote).replace(/"/g,'&quot;')}" placeholder="บันทึกเพิ่มเติม"></td>
+        <td class="lst-actions">
+          <button class="lst-btn lst-queue" data-cact="reappt" data-id="${r._id}" title="แก้ไข/เลื่อนวันนัด">📅</button>
+          <button class="lst-btn lst-edit" data-cact="open" data-id="${r._id}" title="เปิดข้อมูลผู้ป่วย">✏️</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  async function setCallStatus(id, status){
+    const now = new Date().toISOString();
+    const by = String(localStorage.getItem('hcs_username')||'');
+    await patchRecords([id], status ? {callStatus:status, callAt:now, callBy:by} : {callStatus:'', callAt:'', callBy:''});
+    renderCallView();
+  }
+
+  function exportCallCsv(){
+    const list = getCallList();
+    if(!list.length){ alert('ไม่มีรายการให้ส่งออก'); return; }
+    const rows = [['ลำดับ','HN','ชื่อ-สกุล','โทรศัพท์','วันนัด','เรื่องที่นัด','ผลการโทร','หมายเหตุ','เวลาที่บันทึก','ผู้บันทึก']];
+    list.forEach((r,i)=>{ const a=apptOf(r);
+      rows.push([i+1, r.hn||'', r.name||'', a.phone||'', a.date||'', a.type||'',
+                 (a.status&&CALL_ST_TH[a.status])||'ยังไม่ได้โทร', a.cnote||'', a.at||'', a.by||'']); });
+    const csv = '﻿' + rows.map(r=>r.map(c=>`"${String(c==null?'':c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+    const url = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+    const a = document.createElement('a');
+    a.href = url; a.download = 'โทรติดตาม-'+todayKey()+'.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 1500);
+  }
+
   function getFilteredRecords(){
     const hnQ = (document.getElementById('lstSearchHn').value||'').trim().toLowerCase();
     const nameQ = (document.getElementById('lstSearchName').value||'').trim().toLowerCase();
@@ -3658,21 +4478,19 @@ function init(){
       const earTxt = LST_EAR_TH[r.ear] || r.ear || '-';
       /* สิทธิ์การรักษา: ใช้ค่าจากเซิร์ฟเวอร์ก่อน ถ้าไม่มี (Apps Script เวอร์ชันเก่า) ดูจากแคชข้อมูลเต็มในเครื่อง */
       const rt = r.rightType || (_fullCache[r._id]||{}).rightType || '';
+      /* นัดหมาย/ติดตามผลย้ายไปดูที่หน้า "โทรติดตาม" แทน — ไม่ต้องแสดงในตารางหลักเพื่อไม่ให้รก */
       return `<tr>
+        <td class="td-chk"><input type="checkbox" data-act="sel" data-id="${r._id}"${_selIds.has(r._id)?' checked':''}></td>
         <td>${startIdx+i+1}</td>
         <td>${qBadge}</td>
         <td class="lst-name" title="HN ${esc(r.hn)||'-'}">${esc(r.name)||'-'}${(()=>{ const nv = r.note || (_fullCache[r._id]||{}).note || ''; return nv ? `<div class="lst-note">📌 ${esc(nv)}</div>` : ''; })()}</td>
-        <td class="lst-fu"><span class="fu-track">${[1,2,3].map(n=>{
-          const fc = _fullCache[r._id]||{};
-          const d = r['fu'+n+'_date'] || fc['fu'+n+'_date'] || '';
-          return `<button class="fu-dot${d?' done':''}" data-act="fu" data-fu="${n}" data-id="${r._id}" title="${d ? ('มาติดตามครั้งที่ '+n+' เมื่อ '+esc(d)+' — กดเพื่อลบ/แก้ไข') : ('กดเพื่อบันทึกการมาติดตามผลครั้งที่ '+n)}">${n}</button>`;
-        }).join('')}</span></td>
         <td>${esc(r.fitDate)||'-'}</td>
         <td class="lst-model">${esc(r.model)||'-'}</td>
         <td>${esc(earTxt)}</td>
         <td>${LST_RIGHT_TH[rt] ? `<span class="right-pill rp-${rt}">${LST_RIGHT_TH[rt]}</span>` : '-'}</td>
         <td class="lst-actions">
           <button class="lst-btn lst-edit" data-act="edit" data-id="${r._id}" title="แก้ไขข้อมูลผู้ป่วย">✏️</button>
+          <button class="lst-btn lst-ha" data-act="ha" data-id="${r._id}" title="กรอกข้อมูลเครื่องช่วยฟัง">🦻</button>
           <button class="lst-btn lst-audio" data-act="audio" data-id="${r._id}" title="กรอก Audiogram">📈</button>
           <button class="lst-btn lst-print" data-act="print" data-id="${r._id}" title="พิมพ์ฟอร์ม">🖨️</button>
           <button class="lst-btn lst-noah" data-act="noah" data-id="${r._id}" title="ส่งออกไฟล์ Noah">📤</button>
@@ -3686,6 +4504,9 @@ function init(){
     document.getElementById('lstPageInfo').textContent = `${shownFrom}-${shownTo} of ${list.length}`;
     fillMissingRightTypes(list);
     clearExpiredQueues();
+    updateBulkBar();
+    const chkAll = document.getElementById('lstChkAll');
+    if(chkAll) chkAll.checked = pageList.length>0 && pageList.every(r=>_selIds.has(r._id));
   }
   /* ── ล้างคิวที่หมดวันแล้วอัตโนมัติ: รายการไหน queueDate เป็นวันก่อนหน้า → เอาคิวออก (queueNo/queueDate/calledAt)
         บันทึกในเครื่องทันทีแล้วส่งขึ้นเซิร์ฟเวอร์เบื้องหลัง — ทำครั้งเดียวต่อรายการต่อการเปิดหน้า ── */
@@ -3719,6 +4540,7 @@ function init(){
           if(!rec) rec = cached || null;
         }
         if(!rec) continue;
+        snapBase(rec);
         if(!(rec.queueNo && rec.queueDate && String(rec.queueDate) < today)){ upsertFullCache(rec); continue; }
         rec.queueNo = null; rec.queueDate = ''; rec.calledAt = '';
         rec._savedAt = new Date().toISOString();
@@ -3959,8 +4781,10 @@ function init(){
         else { rec = serverRec; upsertFullCache(rec); }
       }
     }
+    snapBase(rec); // ← จำเวอร์ชันตั้งต้นไว้ เพื่อให้เซิร์ฟเวอร์รวมข้อมูลได้ถูกช่องตอนบันทึก
     if(act==='edit'){ loadRecordIntoS(rec); openEntryModal('patient'); }
     else if(act==='audio'){ loadRecordIntoS(rec); openEntryModal('audiogram'); }
+    else if(act==='ha'){ loadRecordIntoS(rec); openEntryModal('hearingaid'); }
     else if(act==='print'){ loadRecordIntoS(rec); openPrintModal(); }
     else if(act==='noah'){ exportRecordToNoah(rec); }
     else if(act==='fu'){
@@ -4054,6 +4878,7 @@ function init(){
                 phone: local.phone||'', ear: EAR_TH_EXPORT[local.ear]||local.ear_label||local.ear||'',
                 sn: local.sn||'', modelL: local.modelL||'', modelR: local.modelR||'', snL: local.snL||'', snR: local.snR||'',
                 address: local.address||'',
+                citizenId: local.citizenId||'', diag1: local.diag1||'', audTh: local.audTh||null, dtype: local.dtype||'',
                 _savedAt: local._savedAt || (serverRec && serverRec._savedAt) || ''
               });
             }
@@ -4076,6 +4901,10 @@ function init(){
             if(!m.fu2_date) m.fu2_date = local.fu2_date||'';
             if(!m.fu3_date) m.fu3_date = local.fu3_date||'';
             if(!m.note)    m.note    = local.note||'';
+            if(!m.citizenId) m.citizenId = local.citizenId||'';
+            if(!m.dtype)   m.dtype   = local.dtype||'';
+            if(!m.diag1)   m.diag1   = local.diag1||'';
+            if(!m.audTh)   m.audTh   = local.audTh||null;
           });
           return {map, offline:false};
         }
@@ -4083,39 +4912,66 @@ function init(){
     }
     Object.keys(_fullCache).forEach(id=>{
       const s = _fullCache[id];
-      map[id] = { phone:s.phone||'', ear:EAR_TH_EXPORT[s.ear]||s.ear_label||'', sn:s.sn||'', modelL:s.modelL||'', modelR:s.modelR||'', snL:s.snL||'', snR:s.snR||'', address:s.address||'', rightType:s.rightType||'', fu1_date:s.fu1_date||'', fu2_date:s.fu2_date||'', fu3_date:s.fu3_date||'', note:s.note||'' };
+      map[id] = { phone:s.phone||'', ear:EAR_TH_EXPORT[s.ear]||s.ear_label||'', sn:s.sn||'', modelL:s.modelL||'', modelR:s.modelR||'', snL:s.snL||'', snR:s.snR||'', address:s.address||'', rightType:s.rightType||'', fu1_date:s.fu1_date||'', fu2_date:s.fu2_date||'', fu3_date:s.fu3_date||'', note:s.note||'', citizenId:s.citizenId||'', diag1:s.diag1||'', audTh:s.audTh||null, dtype:s.dtype||'' };
     });
     return {map, offline:true};
   }
   /* ── ตัวเลือกคอลัมน์สำหรับส่งออก Excel — ผู้ใช้เลือกได้เองว่าจะเอาข้อมูลอะไรบ้าง, จำค่าที่เลือกไว้ใน localStorage ── */
+  /* รวมข้อมูลผู้ป่วยจากทุกแหล่ง (รายการจากเซิร์ฟเวอร์ + รายละเอียด + แคชข้อมูลเต็ม)
+     ให้เป็นก้อนเดียว เพื่อใช้คำนวณ ICD และดึงเลขบัตรประชาชนตอนส่งออก */
+  function exportFullRec(er){
+    const id = er && er.r && er.r._id;
+    const full = (id && _fullCache[id]) || {};
+    const rr = (er && er.r) || {}, dd = (er && er.d) || {};
+    const m = Object.assign({}, rr, dd, full);
+    if(!m.audTh)     m.audTh     = dd.audTh || full.audTh || null;
+    if(!m.diag1)     m.diag1     = dd.diag1 || rr.diag1 || '';
+    if(!m.citizenId) m.citizenId = dd.citizenId || rr.citizenId || '';
+    if(!m.dtype)     m.dtype     = dd.dtype || rr.dtype || '';
+    return m;
+  }
+  function exportIcdDx(er){ return icd10DxForRec(exportFullRec(er)); }
+  /* ── กลุ่ม "รหัสเบิก": ในหน้าตั้งค่าติ๊กครั้งเดียว แต่ตอนออก Excel แยกเป็น 3 คอลัมน์
+        รหัสเบิก (รหัสอุปกรณ์) · ICD-10 · ICD-9 ── */
+  const REIMBURSE_KEYS = ['reimburse', 'icd10', 'icd9'];
+
+  /* group = หัวข้อที่ใช้จัดกลุ่มในหน้าตั้งค่าเลือกคอลัมน์ */
   const EXPORT_FIELDS = [
-    {key:'idx',       label:'ลำดับ',            width:7,  align:'center', required:true, get:(er,idx)=> idx+1},
-    {key:'hn',        label:'HN',               width:13, align:'center', get:er=> er.r.hn||''},
-    {key:'name',      label:'ชื่อ-สกุล',         width:30, align:'left',   wrap:true, get:er=> er.r.name||''},
-    {key:'phone',     label:'เบอร์โทร',          width:15, align:'center', get:er=> er.d.phone||''},
-    {key:'address',   label:'ที่อยู่',            width:35, align:'left',   get:er=> er.d.address||''},
-    {key:'ear',       label:'ข้างที่ใส่',        width:11, align:'center', get:er=> er.earTxt||''},
-    {key:'brand',     label:'ยี่ห้อ',             width:15, align:'left',   get:er=> er.r.brand||''},
-    {key:'model',     label:'รุ่น',               width:17, align:'left',   get:er=> er.model||''},
-    {key:'sn',        label:'S/N',              width:19, align:'center', get:er=> er.sn||''},
-    {key:'fitDate',   label:'วันที่ใส่เครื่อง',    width:16, align:'center', get:er=> er.r.fitDate||''},
-    {key:'hospital',  label:'โรงพยาบาล',         width:20, align:'left',   get:er=> er.r.hospital||''},
-    {key:'rightType', label:'สิทธิ์การรักษา',      width:16, align:'left',   get:er=> LST_RIGHT_TH[er.r.rightType||er.d.rightType] || er.r.rightType || er.d.rightType || ''},
-    {key:'ptaR',      label:'PTA หูขวา',         width:10, align:'center', get:er=> (er.r.ptaR===null||er.r.ptaR===undefined||er.r.ptaR==='')?'':er.r.ptaR},
-    {key:'ptaL',      label:'PTA หูซ้าย',        width:10, align:'center', get:er=> (er.r.ptaL===null||er.r.ptaL===undefined||er.r.ptaL==='')?'':er.r.ptaL},
-    {key:'queueNo',   label:'คิวที่',             width:8,  align:'center', get:er=> er.r.queueNo||''},
-    {key:'queueDate', label:'วันที่คิว',           width:12, align:'center', get:er=> er.r.queueDate||''},
-    {key:'fu1', label:'ติดตามครั้งที่ 1', width:15, align:'center', get:er=> er.r.fu1_date || er.d.fu1_date || (_fullCache[er.r._id]||{}).fu1_date || ''},
-    {key:'fu2', label:'ติดตามครั้งที่ 2', width:15, align:'center', get:er=> er.r.fu2_date || er.d.fu2_date || (_fullCache[er.r._id]||{}).fu2_date || ''},
-    {key:'fu3', label:'ติดตามครั้งที่ 3', width:15, align:'center', get:er=> er.r.fu3_date || er.d.fu3_date || (_fullCache[er.r._id]||{}).fu3_date || ''},
-    {key:'note', label:'หมายเหตุ', width:28, align:'left', get:er=> er.r.note || er.d.note || (_fullCache[er.r._id]||{}).note || ''},
+    {key:'idx',       group:'ผู้ป่วย', label:'ลำดับ',            width:7,  align:'center', required:true, get:(er,idx)=> idx+1},
+    {key:'hn',        group:'ผู้ป่วย', label:'HN',               width:13, align:'center', get:er=> er.r.hn||''},
+    {key:'name',      group:'ผู้ป่วย', label:'ชื่อ-สกุล',         width:30, align:'left',   wrap:true, get:er=> er.r.name||''},
+    {key:'citizenId', group:'ผู้ป่วย', label:'เลขบัตรประชาชน',    width:19, align:'center', get:er=> String(exportFullRec(er).citizenId||'').replace(/\D/g,'')},
+    {key:'phone',     group:'ผู้ป่วย', label:'เบอร์โทร',          width:15, align:'center', get:er=> er.d.phone||''},
+    {key:'address',   group:'ผู้ป่วย', label:'ที่อยู่',            width:35, align:'left',   get:er=> er.d.address||''},
+    {key:'rightType', group:'ผู้ป่วย', label:'สิทธิ์การรักษา',      width:16, align:'left',   get:er=> LST_RIGHT_TH[er.r.rightType||er.d.rightType] || er.r.rightType || er.d.rightType || ''},
+    {key:'hospital',  group:'ผู้ป่วย', label:'โรงพยาบาล',         width:20, align:'left',   get:er=> er.r.hospital||''},
+
+    {key:'ear',       group:'เครื่องช่วยฟัง', label:'ข้างที่ใส่',        width:11, align:'center', get:er=> er.earTxt||''},
+    {key:'brand',     group:'เครื่องช่วยฟัง', label:'ยี่ห้อ',             width:15, align:'left',   get:er=> er.r.brand||''},
+    {key:'model',     group:'เครื่องช่วยฟัง', label:'รุ่น',               width:17, align:'left',   get:er=> er.model||''},
+    {key:'sn',        group:'เครื่องช่วยฟัง', label:'S/N',              width:19, align:'center', get:er=> er.sn||''},
+    {key:'fitDate',   group:'เครื่องช่วยฟัง', label:'วันที่ใส่เครื่อง',    width:16, align:'center', get:er=> er.r.fitDate||''},
+
+    /* ── รหัสสำหรับคีย์เข้าระบบ สปสช. — ติ๊กช่องเดียว ("รหัสเบิก") ได้ครบ 3 คอลัมน์ ── */
+    {key:'reimburse', group:'รหัสเบิก', label:'รหัสเบิก',          width:12, align:'center', get:er=> deviceCodeForRec(exportFullRec(er))},
+    {key:'icd10',     group:'รหัสเบิก', label:'ICD-10',           width:22, align:'center', sub:true, get:er=>{ const dx=exportIcdDx(er); return dx.length ? dx.concat([ICD10_FIT]).join(', ') : ''; }},
+    {key:'icd9',      group:'รหัสเบิก', label:'ICD-9',            width:15, align:'center', sub:true, get:er=> exportIcdDx(er).length ? ICD9_CODES.join(', ') : ''},
+    {key:'ptaR',      group:'รหัสเบิก', label:'PTA หูขวา',         width:10, align:'center', get:er=> (er.r.ptaR===null||er.r.ptaR===undefined||er.r.ptaR==='')?'':er.r.ptaR},
+    {key:'ptaL',      group:'รหัสเบิก', label:'PTA หูซ้าย',        width:10, align:'center', get:er=> (er.r.ptaL===null||er.r.ptaL===undefined||er.r.ptaL==='')?'':er.r.ptaL},
+
+    {key:'queueNo',   group:'คิว · ติดตามผล', label:'คิวที่',             width:8,  align:'center', get:er=> er.r.queueNo||''},
+    {key:'queueDate', group:'คิว · ติดตามผล', label:'วันที่คิว',           width:12, align:'center', get:er=> er.r.queueDate||''},
+    {key:'fu1', group:'คิว · ติดตามผล', label:'ติดตามครั้งที่ 1', width:15, align:'center', get:er=> er.r.fu1_date || er.d.fu1_date || (_fullCache[er.r._id]||{}).fu1_date || ''},
+    {key:'fu2', group:'คิว · ติดตามผล', label:'ติดตามครั้งที่ 2', width:15, align:'center', get:er=> er.r.fu2_date || er.d.fu2_date || (_fullCache[er.r._id]||{}).fu2_date || ''},
+    {key:'fu3', group:'คิว · ติดตามผล', label:'ติดตามครั้งที่ 3', width:15, align:'center', get:er=> er.r.fu3_date || er.d.fu3_date || (_fullCache[er.r._id]||{}).fu3_date || ''},
+    {key:'note', group:'คิว · ติดตามผล', label:'หมายเหตุ', width:28, align:'left', get:er=> er.r.note || er.d.note || (_fullCache[er.r._id]||{}).note || ''},
   ];
   const EXPORT_FIELDS_KEY = 'hcs_export_fields_sel_v1';
-  const EXPORT_FIELDS_DEFAULT = ['idx','hn','name','phone','address','ear','brand','model','sn','fitDate'];
-  // Snapshot of EXPORT_FIELDS_DEFAULT before 'address' was added. Used only to migrate
-  // selections saved by returning users so newly-added default fields (like address)
-  // show up automatically, without resurrecting fields the user explicitly unchecked.
-  const EXPORT_FIELDS_DEFAULT_PREV = ['idx','hn','name','phone','ear','brand','model','sn','fitDate'];
+  const EXPORT_FIELDS_DEFAULT = ['idx','hn','name','citizenId','phone','address','ear','brand','model','sn','fitDate','reimburse'];
+  // Snapshot of EXPORT_FIELDS_DEFAULT before citizenId / ICD columns were added. Used only to
+  // migrate selections saved by returning users so newly-added default fields show up
+  // automatically, without resurrecting fields the user explicitly unchecked.
+  const EXPORT_FIELDS_DEFAULT_PREV = ['idx','hn','name','phone','address','ear','brand','model','sn','fitDate'];
   function loadExportFieldSelection(){
     let sel;
     try{ sel = JSON.parse(localStorage.getItem(EXPORT_FIELDS_KEY)||'null'); }catch(e){ sel=null; }
@@ -4133,7 +4989,9 @@ function init(){
       });
     }
     EXPORT_FIELDS.forEach(f=>{ if(f.required && sel.indexOf(f.key)<0) sel.unshift(f.key); });
-    return sel;
+    /* ค่าที่บันทึกไว้เก่าอาจมีแค่ icd10/icd9 (ยังไม่มีคีย์ reimburse) — ถือว่าเลือกกลุ่มรหัสเบิกไว้ */
+    if(sel.indexOf('reimburse') < 0 && (sel.indexOf('icd10') >= 0 || sel.indexOf('icd9') >= 0)) sel.push('reimburse');
+    return expandReimburseKeys(sel);
   }
   function saveExportFieldSelection(sel){
     try{ localStorage.setItem(EXPORT_FIELDS_KEY, JSON.stringify(sel)); }catch(e){}
@@ -4141,20 +4999,62 @@ function init(){
   function renderExcelFieldModal(){
     const box = document.getElementById('excelFieldList');
     const sel = new Set(loadExportFieldSelection());
-    box.innerHTML = EXPORT_FIELDS.map(f=>{
-      const checked = sel.has(f.key) ? ' checked' : '';
-      const disabled = f.required ? ' disabled' : '';
-      return `<label><input type="checkbox" class="excel-field-ck" value="${f.key}"${checked}${disabled}> ${f.label}${f.required?' <span style="color:#94a3b8;font-size:11.5px">(บังคับ)</span>':''}</label>`;
+    /* จัดกลุ่มตามหัวข้อ เพื่อให้หน้าตั้งค่าอ่านง่าย ไม่เป็นพรืดยาว
+       ข้ามฟิลด์ที่เป็นลูกของกลุ่ม (sub) — เช่น ICD-10/ICD-9 ที่คุมด้วยช่อง "รหัสเบิก" ช่องเดียว */
+    const groups = [];
+    EXPORT_FIELDS.filter(f=>!f.sub).forEach(f=>{
+      const g = f.group || 'อื่นๆ';
+      let bucket = groups.find(x=>x.name===g);
+      if(!bucket){ bucket = {name:g, items:[]}; groups.push(bucket); }
+      bucket.items.push(f);
+    });
+    box.innerHTML = groups.map(g=>{
+      const chips = g.items.map(f=>{
+        const checked = sel.has(f.key) ? ' checked' : '';
+        const disabled = f.required ? ' disabled' : '';
+        /* ช่อง "รหัสเบิก" ช่องเดียว = ได้ 3 คอลัมน์ตอนออก Excel — บอกให้ชัดใต้ชื่อ */
+        const hint = f.key==='reimburse' ? ' <span style="color:#94a3b8;font-size:11.5px">(3 คอลัมน์: รหัสเบิก · ICD-10 · ICD-9)</span>' : '';
+        return `<label><input type="checkbox" class="excel-field-ck" value="${f.key}"${checked}${disabled}> ${f.label}${hint}${f.required?' <span style="color:#94a3b8;font-size:11.5px">(บังคับ)</span>':''}</label>`;
+      }).join('');
+      return `<div class="efg"><div class="efg-title">${g.name}</div><div class="efg-items">${chips}</div></div>`;
     }).join('');
   }
+  /* ติ๊ก "รหัสเบิก" 1 ช่อง → กางเป็น 3 คอลัมน์ (รหัสเบิก · ICD-10 · ICD-9) ตอนสร้างไฟล์ */
+  function expandReimburseKeys(keys){
+    const out = keys.slice();
+    if(out.indexOf('reimburse') >= 0){
+      REIMBURSE_KEYS.forEach(k=>{ if(out.indexOf(k) < 0) out.push(k); });
+    } else {
+      return out.filter(k=>REIMBURSE_KEYS.indexOf(k) < 0);
+    }
+    return out;
+  }
   function getCheckedExportFields(){
-    return Array.from(document.querySelectorAll('.excel-field-ck')).filter(c=>c.checked).map(c=>c.value);
+    const keys = Array.from(document.querySelectorAll('.excel-field-ck')).filter(c=>c.checked).map(c=>c.value);
+    return expandReimburseKeys(keys);
+  }
+  /* ── ผู้ป่วยที่จะส่งออก: ถ้าติ๊กเลือกไว้ในตารางหลัก ใช้เฉพาะคนที่ติ๊ก · ถ้าไม่ได้ติ๊กเลย ใช้ทั้งหมดตามตัวกรอง ── */
+  function getExportTargets(){
+    const filtered = getFilteredRecords();
+    if(!_selIds.size) return filtered;
+    const picked = filtered.filter(r=>_selIds.has(r._id));
+    return picked.length ? picked : filtered;
   }
   function openExcelFieldModal(){
-    const list = getFilteredRecords();
+    const list = getExportTargets();
     if(!list.length){ alert('ไม่มีรายการที่ตรงตามตัวกรองให้ส่งออก'); return; }
     renderExcelFieldModal();
+    /* บอกให้ชัดว่ากำลังจะส่งออกกี่คน — เลือกไว้กี่คน หรือทั้งหมด */
+    const note = document.getElementById('excelFieldWho');
+    if(note){
+      note.innerHTML = _selIds.size
+        ? `📌 ส่งออกเฉพาะ <b>${list.length} คน</b> ที่ติ๊กเลือกไว้ในตาราง <span style="color:#64748b">(ยกเลิกการติ๊กเพื่อส่งออกทั้งหมด)</span>`
+        : `ส่งออก <b>ทั้งหมด ${list.length} คน</b> ตามตัวกรองปัจจุบัน <span style="color:#64748b">(กดปุ่ม 📅 นัดหมาย แล้วติ๊กเลือก ถ้าต้องการเฉพาะบางคน)</span>`;
+    }
     document.getElementById('excelFieldModal').style.display='flex';
+    /* เลื่อนกลับขึ้นบนสุดทุกครั้งที่เปิดใหม่ */
+    const body = document.querySelector('#excelFieldModal .pm-body');
+    if(body) body.scrollTop = 0;
   }
   function closeExcelFieldModal(){ document.getElementById('excelFieldModal').style.display='none'; }
   document.getElementById('excelFieldAll').addEventListener('click', ()=>{
@@ -4269,7 +5169,7 @@ function init(){
     }
   }
   async function exportListToExcel(selectedKeys){
-    const list = getFilteredRecords();
+    const list = getExportTargets();   /* เฉพาะคนที่ติ๊กเลือกไว้ ถ้าไม่ได้ติ๊ก = ทั้งหมดตามตัวกรอง */
     if(!list.length){ alert('ไม่มีรายการที่ตรงตามตัวกรองให้ส่งออก'); return; }
     const keys = (selectedKeys && selectedKeys.length) ? selectedKeys : loadExportFieldSelection();
     const fields = EXPORT_FIELDS.filter(f=> keys.indexOf(f.key)>=0);
@@ -4287,14 +5187,18 @@ function init(){
             ยิงครั้งเดียวแบบเป็นชุด (getRecordsBulk) และเขียนแคชในเครื่องครั้งเดียวตอนจบ
             ถ้าเซิร์ฟเวอร์ยังเป็นเวอร์ชันเก่า (ไม่รู้จักคำสั่งชุด) จะถอยไปดึงทีละราย
             แต่ยิงพร้อมกันหลายเส้นแทนการรอทีละรอบ ── */
-      const needDetail = fields.some(f=>['address','rightType','phone','fu1','fu2','fu3','note'].indexOf(f.key)>=0);
+      const needDetail = fields.some(f=>['address','rightType','phone','fu1','fu2','fu3','note','citizenId','reimburse'].indexOf(f.key)>=0);
       if(needDetail && !offline && window.hcsApi){
         const t = localStorage.getItem('hcs_token');
         /* เช็คเฉพาะคอลัมน์ที่ผู้ใช้ติ๊กจริง — ไม่ต้องวิ่งดึงข้อมูลที่ไม่ได้เอาไปใช้ */
         const wantAddr  = fields.some(f=>f.key==='address');
         const wantRight = fields.some(f=>f.key==='rightType');
         const wantPhone = fields.some(f=>f.key==='phone');
-        const isMissing = m => (wantAddr && !m.address) || (wantRight && !m.rightType) || (wantPhone && !m.phone);
+        /* ICD ต้องใช้ตารางผลการได้ยิน (audTh) หรืออย่างน้อยข้อความแปลผล (diag1) */
+        const wantCid = fields.some(f=>f.key==='citizenId');
+        const wantIcd = fields.some(f=>f.key==='reimburse');
+        const isMissing = m => (wantAddr && !m.address) || (wantRight && !m.rightType) || (wantPhone && !m.phone)
+                            || (wantCid && !m.citizenId) || (wantIcd && !m.audTh && !m.diag1);
         const applyDetail = (l)=>{
           if(!l || !l._id) return;
           const m = map[l._id] || (map[l._id] = {});
@@ -4308,6 +5212,10 @@ function init(){
           if(!m.fu2_date) m.fu2_date = l.fu2_date||'';
           if(!m.fu3_date) m.fu3_date = l.fu3_date||'';
           if(!m.note)    m.note    = l.note||'';
+          if(!m.citizenId) m.citizenId = l.citizenId||'';
+          if(!m.dtype)   m.dtype   = l.dtype||'';
+          if(!m.diag1)   m.diag1   = l.diag1||'';
+          if(!m.audTh)   m.audTh   = l.audTh||null;
         };
         const fetched = [];
         const missing = list.filter(r=> isMissing(map[r._id]||{}));
@@ -4528,6 +5436,101 @@ function init(){
   document.getElementById('lstPageNext').addEventListener('click', ()=>{ _lstPage=_lstPage+1; renderList(); });
   document.getElementById('lstPageLast').addEventListener('click', ()=>{ _lstPage=999999; renderList(); });
   document.getElementById('btnListRefresh').addEventListener('click', ()=>refreshRecordsCache().then(renderList));
+
+  /* ══ ระบบโทรติดตาม: ปุ่มและตัวกรอง ══ */
+  fillApptTypeSelect(document.getElementById('apptTypeIn'), false);
+  fillApptTypeSelect(document.getElementById('callTypeFilter'), true);
+  document.getElementById('apptTypeIn').addEventListener('change', e=>{
+    document.getElementById('apptOtherWrap').style.display = e.target.value===APPT_OTHER ? '' : 'none';
+  });
+  document.getElementById('btnGoCall').addEventListener('click', ()=>setMode('call'));
+  document.getElementById('btnCallBack').addEventListener('click', ()=>setMode('list'));
+  document.getElementById('btnCallRefresh').addEventListener('click', ()=>refreshRecordsCache().then(renderCallView));
+  document.getElementById('btnCallExport').addEventListener('click', exportCallCsv);
+  document.getElementById('btnCallToday').addEventListener('click', ()=>{
+    document.getElementById('callFrom').value = todayKey();
+    document.getElementById('callTo').value = todayKey();
+    renderCallView();
+  });
+  document.getElementById('btnCallClear').addEventListener('click', ()=>{
+    ['callFrom','callTo','callSearch'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('callTypeFilter').value='';
+    _callStFilter=''; renderCallView();
+  });
+  ['callFrom','callTo','callSearch','callTypeFilter'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.addEventListener('input', renderCallView); el.addEventListener('change', renderCallView);
+  });
+  document.getElementById('callSummary').addEventListener('click', e=>{
+    const c = e.target.closest('.cs-card'); if(!c) return;
+    const k = c.getAttribute('data-st');
+    _callStFilter = (_callStFilter===k) ? '' : k;
+    renderCallView();
+  });
+  /* บันทึกผลการโทร / หมายเหตุ ในตารางโทรติดตาม */
+  document.getElementById('callBody').addEventListener('change', e=>{
+    const el = e.target.closest('[data-cact]'); if(!el) return;
+    if(el.getAttribute('data-cact')==='st') setCallStatus(el.getAttribute('data-id'), el.value);
+  });
+  document.getElementById('callBody').addEventListener('blur', e=>{
+    const el = e.target.closest('[data-cact="note"]'); if(!el) return;
+    const id = el.getAttribute('data-id'), v = el.value.trim();
+    const cur = apptOf(getRecords().find(r=>r._id===id)||{});
+    if(v === (cur.cnote||'')) return;              /* ไม่ได้แก้ → ไม่ต้องบันทึกซ้ำ */
+    patchRecords([id], {callNote: v});
+  }, true);
+  document.getElementById('callBody').addEventListener('click', async e=>{
+    const btn = e.target.closest('button[data-cact]'); if(!btn) return;
+    const id = btn.getAttribute('data-id'), act = btn.getAttribute('data-cact');
+    if(act==='reappt'){
+      const cur = apptOf(getRecords().find(r=>r._id===id)||{});
+      document.getElementById('apptDateIn').value = cur.date || todayKey();
+      const sel = document.getElementById('apptTypeIn');
+      if(cur.type && APPT_TYPES.includes(cur.type)) sel.value = cur.type;
+      else if(cur.type){ sel.value = APPT_OTHER; document.getElementById('apptOtherIn').value = cur.type; }
+      document.getElementById('apptNoteIn').value = cur.note || '';
+      openApptModal([id]);
+      document.getElementById('apptOtherWrap').style.display = sel.value===APPT_OTHER ? '' : 'none';
+    } else if(act==='open'){
+      setMode('list');
+      const b = document.querySelector(`#lstBody button[data-act="edit"][data-id="${id}"]`);
+      if(b) b.click(); else alert('ไม่พบรายการนี้ในหน้ารายการ — ลองล้างตัวกรองแล้วเปิดใหม่');
+    }
+  });
+  /* ── ปุ่มนัดหมาย: เปิด/ปิดช่องติ๊กเลือกผู้ป่วย — ปกติซ่อนไว้ให้ตารางดูโล่ง ── */
+  document.getElementById('btnToggleSelect').addEventListener('click', ()=>{
+    const tb = document.getElementById('lstTable'), btn = document.getElementById('btnToggleSelect');
+    const on = tb.classList.toggle('sel-mode');
+    btn.classList.toggle('on', on);
+    btn.textContent = on ? '✕ ปิดโหมดนัดหมาย' : '📅 นัดหมาย';
+    if(!on) clearSelection();   /* ปิดโหมด = ล้างรายการที่ติ๊กไว้ กันเผลอลงนัดผิดคน */
+  });
+  /* กล่องลงนัดหมาย */
+  document.getElementById('btnBulkAppt').addEventListener('click', ()=>openApptModal([..._selIds]));
+  document.getElementById('btnBulkClear').addEventListener('click', clearSelection);
+  document.getElementById('btnApptCancel').addEventListener('click', closeApptModal);
+  document.getElementById('btnApptSave').addEventListener('click', ()=>saveAppointment(false));
+  document.getElementById('btnApptClear').addEventListener('click', ()=>saveAppointment(true));
+  document.getElementById('apptModal').addEventListener('click', e=>{ if(e.target.id==='apptModal') closeApptModal(); });
+  /* เลือกทั้งหน้า */
+  document.getElementById('lstChkAll').addEventListener('change', e=>{
+    const on = e.target.checked;
+    document.querySelectorAll('#lstBody input[data-act="sel"]').forEach(cb=>{
+      const id = cb.getAttribute('data-id');
+      if(on) _selIds.add(id); else _selIds.delete(id);
+      cb.checked = on;
+    });
+    updateBulkBar();
+  });
+  document.getElementById('lstBody').addEventListener('change', e=>{
+    const cb = e.target.closest('input[data-act="sel"]'); if(!cb) return;
+    const id = cb.getAttribute('data-id');
+    if(cb.checked) _selIds.add(id); else _selIds.delete(id);
+    updateBulkBar();
+    const chkAll = document.getElementById('lstChkAll');
+    const all = [...document.querySelectorAll('#lstBody input[data-act="sel"]')];
+    if(chkAll) chkAll.checked = all.length>0 && all.every(x=>x.checked);
+  });
   document.getElementById('btnNewPatient').addEventListener('click', ()=>{
     S = Object.assign({}, DEFAULTS);
     S.audTh = freshAudTh();
