@@ -688,8 +688,12 @@ body.aud-fs{ overflow:hidden; }
   /* ช่องค้นหาในตัวกรองรายการ/นัดหมาย: ปกติ 13.5px เล็กกว่า 16px ทำให้ Safari บนไอโฟนซูมเข้าอัตโนมัติทันทีที่แตะพิมพ์ */
   .lf-fld input, .appt-body input, .appt-body select { font-size: 16px; }
   .list-subhead { flex-direction: column; align-items: flex-start; }
-  .list-subhead-actions { width: 100%; }
-  .list-subhead-actions .btn { flex: 1; }
+  .list-subhead-actions { width: 100%; flex-wrap: wrap; }
+  .list-subhead-actions .btn { flex: 1 1 auto; min-width: 0; }
+  /* ป้าย "อัปเดตอัตโนมัติล่าสุด HH:MM:SS" (.auto-stamp) เดิมแทรกอยู่กลางแถวปุ่มด้วย insertAdjacentElement
+     พอจอแคบ แถวปุ่มไม่มีที่พอ badge เลยไปทับตัวอักษรปุ่ม "รีเฟรช/นัดหมาย" ข้างๆ
+     บนมือถือให้ badge นี้ตกไปอยู่แถวของตัวเอง เต็มความกว้าง ไม่แย่งพื้นที่ปุ่มอีก */
+  .auto-stamp { flex: 0 0 100%; order: 99; justify-content: center; margin: 4px 0 0; }
   .list-pagination { justify-content: center; text-align: center; }
   /* ตารางรายชื่อผู้ป่วย: เดิมบังคับความกว้างแต่ละคอลัมน์เป็น % (table-layout:fixed) ซึ่งออกแบบไว้สำหรับจอกว้าง
      พอจอแคบคอลัมน์ "ชื่อ–สกุล" เหลือพื้นที่ไม่กี่สิบพิกเซล ชื่อยาวๆ เลยล้นทับคอลัมน์ "วันที่/รุ่น" ข้างๆ
