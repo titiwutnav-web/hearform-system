@@ -691,6 +691,14 @@ body.aud-fs{ overflow:hidden; }
   .list-subhead-actions { width: 100%; }
   .list-subhead-actions .btn { flex: 1; }
   .list-pagination { justify-content: center; text-align: center; }
+  /* ตารางรายชื่อผู้ป่วย: เดิมบังคับความกว้างแต่ละคอลัมน์เป็น % (table-layout:fixed) ซึ่งออกแบบไว้สำหรับจอกว้าง
+     พอจอแคบคอลัมน์ "ชื่อ–สกุล" เหลือพื้นที่ไม่กี่สิบพิกเซล ชื่อยาวๆ เลยล้นทับคอลัมน์ "วันที่/รุ่น" ข้างๆ
+     บนมือถือเปลี่ยนไปให้แต่ละคอลัมน์กว้างตามเนื้อหาจริง (table-layout:auto) แล้วเลื่อนดูทั้งตารางในแนวนอนแทน
+     (.list-table-wrap มี overflow-x:auto อยู่แล้ว) ข้อความเลยไม่มีทางล้นไปทับคอลัมน์ข้างๆ อีก */
+  .list-table-wrap { -webkit-overflow-scrolling: touch; }
+  .list-table { table-layout: auto; min-width: 640px; }
+  .list-table th, .list-table td { white-space: nowrap; }
+  .list-table .th-name, .list-table .lst-name { width: auto; }
 
   /* คิวเรียก */
   #app.mode-queue #queueView { width: 100%; max-width: 100%; height: 100%; max-height: 100%; border-radius: 0; }
