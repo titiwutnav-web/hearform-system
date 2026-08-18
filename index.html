@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <script>(function(){try{var t=localStorage.getItem('hcs_token');if(!t){document.documentElement.className+=' locked';}}catch(e){document.documentElement.className+=' locked';}})();</script>
 <title>ระบบฟอร์มเครื่องช่วยฟัง (รวม) • กลุ่มงานโสต ศอ นาสิก</title>
 <!-- ══ โลโก้โปรแกรม + ตั้งค่า "เพิ่มไปยังหน้าจอโฮม" บนมือถือ (PWA) — ฝังรูปไว้ในไฟล์เดียว ไม่ต้องอัปไฟล์รูปแยก ══ -->
@@ -66,7 +66,7 @@ html.locked #lockScreen{display:flex;}
 #lockScreen .lock-err{color:#e0374a;font-size:12.5px;min-height:18px;margin-top:8px;}
 #lockScreen .lock-bootstrap-note{background:#fff7e6;border:1px solid #ffe1a8;color:#8a5a00;font-size:12px;border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.6;text-align:left;}
 #lockScreen .lock-cfg{margin-top:14px;font-size:11.5px;color:#9aa5ba;cursor:pointer;text-decoration:underline;}
-#userBar{position:fixed;right:14px;top:14px;z-index:9998;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #dde4ef;border-radius:20px;padding:6px 8px 6px 14px;box-shadow:0 4px 10px rgba(20,30,60,.08);font-size:12.5px;color:#3a4356;font-family:'Sarabun','TH Sarabun New',Tahoma,sans-serif;}
+#userBar{position:fixed;right:14px;top:calc(14px + env(safe-area-inset-top));z-index:9998;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #dde4ef;border-radius:20px;padding:6px 8px 6px 14px;box-shadow:0 4px 10px rgba(20,30,60,.08);font-size:12.5px;color:#3a4356;font-family:'Sarabun','TH Sarabun New',Tahoma,sans-serif;}
 #userBar .ub-role{background:#eef1ff;color:#3958ff;font-weight:700;border-radius:12px;padding:2px 9px;font-size:11px;}
 #userBar button{border:none;background:#f3f5fa;color:#3a4356;border-radius:14px;padding:6px 11px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:600;}
 #userBar button:hover{background:#e5e9f2;}
@@ -643,14 +643,19 @@ body.aud-fs{ overflow:hidden; }
   #lockScreen .lock-card { width: 92vw; padding: 28px 20px; }
   #lockScreen input { font-size: 16px; }
 
-  /* แถบผู้ใช้มุมบนขวา — ซ่อนตอนมีหน้าต่างกรอกข้อมูล/คิวเปิดอยู่ (มีปุ่มปิด ✕ ของตัวเองแล้ว) กันซ้อนทับปุ่มปิด */
-  #userBar { padding: 5px 6px 5px 10px; font-size: 11.5px; gap: 6px; }
+  /* แถบผู้ใช้ — ซ่อนตอนมีหน้าต่างกรอกข้อมูล/คิวเปิดอยู่ (มีปุ่มปิด ✕ ของตัวเองแล้ว) กันซ้อนทับปุ่มปิด
+     บนมือถือเปลี่ยนจากแคปซูลลอย (position:fixed) เป็นแถบเต็มความกว้างที่ค้างอยู่บนสุด (position:sticky)
+     แทน — เดิมแบบลอยไม่กินพื้นที่ในเอกสาร พอเลื่อนหน้ารายการผู้ป่วยแถบนี้เลยไปทับข้อความ/ช่องค้นหาที่เลื่อนขึ้นมา
+     แบบ sticky จะจองพื้นที่ของตัวเองไว้ที่บนสุดเสมอ เนื้อหาอื่นเลยไม่มีทางเลื่อนไปซ้อนทับได้อีก
+     เผื่อพื้นที่ safe-area-inset-top ไว้ด้วย กันมือถือจอมีรอยบาก/Dynamic Island บังข้อความตอนเปิดแบบ Add to Home Screen */
+  #userBar { position: sticky; top: 0; left: 0; right: auto; width: 100%; max-width: 100%; box-sizing: border-box; border-radius: 0; padding: calc(6px + env(safe-area-inset-top)) 14px 6px; font-size: 11.5px; gap: 6px; justify-content: flex-end; z-index: 600; }
   #userBar.ub-hide-mobile { display: none !important; }
 
   /* จัดการผู้ใช้ (admin modal) */
   #adminModal .am-card { width: 94vw; padding: 20px 16px; }
   #adminModal .am-form { flex-direction: column; align-items: stretch; }
   #adminModal .am-fld { min-width: 0; }
+  #adminModal .am-fld input, #adminModal .am-fld select { font-size: 16px; }
   #adminModal table { display: block; overflow-x: auto; }
 
   /* หน้ากรอกข้อมูลผู้ป่วย (wizard) */
@@ -680,6 +685,8 @@ body.aud-fs{ overflow:hidden; }
   #listView { padding: 16px 8px; }
   .list-head { padding: 22px 18px 20px; }
   .list-filters, .list-subhead, .list-table-wrap, .list-pagination { padding-left: 16px; padding-right: 16px; }
+  /* ช่องค้นหาในตัวกรองรายการ/นัดหมาย: ปกติ 13.5px เล็กกว่า 16px ทำให้ Safari บนไอโฟนซูมเข้าอัตโนมัติทันทีที่แตะพิมพ์ */
+  .lf-fld input, .appt-body input, .appt-body select { font-size: 16px; }
   .list-subhead { flex-direction: column; align-items: flex-start; }
   .list-subhead-actions { width: 100%; }
   .list-subhead-actions .btn { flex: 1; }
@@ -2467,7 +2474,7 @@ function buildSidebar(){
   }
   document.getElementById('forms').innerHTML = `
     ${sec('ข้อมูลผู้ป่วย (ใช้ร่วมทุกฟอร์ม)',true,`
-      <div class="row"><div class="fld" style="max-width:130px"><label>HN</label><input type="text" data-bind="hn"></div><div class="fld" style="max-width:90px"><label>คำนำหน้า</label><select data-bind="namePrefix"><option value="นาย">นาย</option><option value="นาง">นาง</option><option value="นางสาว">นางสาว</option><option value="เด็กชาย">เด็กชาย</option><option value="เด็กหญิง">เด็กหญิง</option></select></div><div class="fld"><label>ชื่อ</label><input type="text" data-bind="nameFirst"></div><div class="fld"><label>นามสกุล</label><input type="text" data-bind="nameLast"></div></div>
+      <div class="row"><div class="fld" style="max-width:130px"><label>HN</label><input type="text" data-bind="hn"></div><div class="fld" style="max-width:90px"><label>คำนำหน้า</label><select data-bind="namePrefix"><option value="นาย">นาย</option><option value="นาง">นาง</option><option value="นางสาว">นางสาว</option><option value="เด็กชาย">เด็กชาย</option><option value="เด็กหญิง">เด็กหญิง</option><option value="พระ">พระ</option><option value="แม่ชี">แม่ชี</option></select></div><div class="fld"><label>ชื่อ</label><input type="text" data-bind="nameFirst"></div><div class="fld"><label>นามสกุล</label><input type="text" data-bind="nameLast"></div></div>
       <div class="row"><div class="fld"><label>เลขบัตรประชาชน <span style="color:#94a3b8;font-weight:400">(ไม่บังคับ)</span></label><input type="text" id="inpCitizenId" data-bind="citizenId" inputmode="numeric" maxlength="17" placeholder="x-xxxx-xxxxx-xx-x"><div class="hint" id="cidHint" style="margin-top:3px"></div></div></div>
       <div class="row"><div class="fld"><label>โทรศัพท์</label><input type="text" data-bind="phone"></div><div class="fld"><label>วันเกิด (พ.ศ.)</label><input type="text" data-bind="birth" placeholder="เช่น 12 มี.ค. 2500"></div><div class="fld" style="max-width:96px"><label>หรือ อายุ (ปี)</label><input type="text" id="inpAge" inputmode="numeric" placeholder="เช่น 65"></div></div>
       <div class="fld"><label>วันที่ใส่เครื่อง/สั่งทำ/ซื้อ</label><input type="text" data-bind="fitDate"></div>
@@ -4820,7 +4827,7 @@ function init(){
        (เดิมใส่ 0=ชาย ทำให้ Noah แสดงเพศว่าง) */
     const s = String(prefix||'').trim();
     /* หญิง: นางสาว/น.ส./เด็กหญิง/ด.ญ. ต้องเช็คก่อน "นาง" (เพราะขึ้นต้นเหมือนกัน) */
-    if(/^(นางสาว|น\.ส\.|เด็กหญิง|ด\.ญ\.|นาง)/.test(s)) return '2';
+    if(/^(นางสาว|น\.ส\.|เด็กหญิง|ด\.ญ\.|แม่ชี|นาง)/.test(s)) return '2';
     if(/^(นาย|เด็กชาย|ด\.ช\.|พระ|สามเณร|ส\.ณ\.)/.test(s)) return '1';
     return '0';
   }
