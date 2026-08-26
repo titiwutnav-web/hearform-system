@@ -574,8 +574,24 @@ body.aud-fs{ overflow:hidden; }
 .list-table td:nth-child(3), .list-table td:nth-child(9) { overflow:visible; }
 .list-table input[type="checkbox"] { width:16px; height:16px; accent-color:#6D5DF6; cursor:pointer; }
 /* ── กล่องลงนัดหมาย ── */
-#apptModal { display:none; position:fixed; inset:0; z-index:99990; background:rgba(36,31,71,.42); align-items:center; justify-content:center; padding:16px; }
-#apptModal.show { display:flex; }
+#apptModal, #bulkFillModal { display:none; position:fixed; inset:0; z-index:99990; background:rgba(36,31,71,.42); align-items:center; justify-content:center; padding:16px; }
+#apptModal.show, #bulkFillModal.show { display:flex; }
+/* ── กล่อง "กรอกข้อมูลพร้อมกันหลายคน" ── */
+#bulkFillModal .bf-card { max-width:520px; max-height:88vh; display:flex; flex-direction:column; }
+#bulkFillModal .bf-body { overflow-y:auto; flex:1; min-height:0; }
+#bulkFillModal .bf-lead { font-size:12.5px; color:#6B6885; line-height:1.55; background:#F7F5FF; border:1px solid #EDEBFB;
+  border-radius:10px; padding:9px 12px; margin-bottom:14px; }
+#bulkFillModal .bf-row { border-top:1px solid #F0EEFA; padding:11px 0 3px; }
+#bulkFillModal .bf-row:first-of-type { border-top:none; }
+#bulkFillModal .bf-ck { display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:700; color:#241F47;
+  cursor:pointer; margin:0 0 7px; }
+#bulkFillModal .bf-ck input { width:17px; height:17px; accent-color:#6D5DF6; cursor:pointer; flex-shrink:0; margin:0; }
+#bulkFillModal .bf-in { opacity:.42; pointer-events:none; transition:opacity .15s; }
+#bulkFillModal .bf-in.on { opacity:1; pointer-events:auto; }
+#bulkFillModal .bf-in input, #bulkFillModal .bf-in select { margin-bottom:6px; }
+#bulkFillModal .bf-grid3 { display:grid; grid-template-columns:1.3fr .7fr 1.6fr; gap:8px; }
+#bulkFillModal .bf-note { font-size:11.5px; color:#8B88A3; margin:-2px 0 4px; }
+@media (max-width:560px){ #bulkFillModal .bf-grid3 { grid-template-columns:1fr; } }
 .appt-card { background:#fff; border-radius:18px; width:100%; max-width:430px; box-shadow:0 24px 60px rgba(76,60,190,.3); overflow:hidden; font-family:'Poppins','Sarabun','TH Sarabun New',Tahoma,sans-serif; }
 .appt-card h3 { margin:0; padding:18px 22px 14px; font-size:16px; color:#241F47; background:#F7F5FF; border-bottom:1px solid #EDEBFB; }
 .appt-body { padding:18px 22px; }
@@ -1329,7 +1345,8 @@ body::before{
         <div>รายการผู้ป่วย <span class="list-count-badge" id="lstCountBadge">0 รายการ</span></div>
         <div class="list-subhead-actions">
           <button class="btn btn-ghost" id="btnListRefresh">🔄 รีเฟรช</button>
-          <button class="btn btn-ghost" id="btnToggleSelect" title="แสดง/ซ่อนช่องติ๊กเลือกผู้ป่วยเพื่อลงนัดหมาย">📅 นัดหมาย</button>
+          <button class="btn btn-ghost" id="btnToggleSelect" title="แสดง/ซ่อนช่องติ๊กเลือกผู้ป่วย — เลือกแล้วกรอกข้อมูลพร้อมกัน / ลงนัด / ลบ / ส่งออก Excel ได้">☑️ เลือก</button>
+          <button class="btn btn-ghost" id="btnOpenTrash" style="display:none" title="ดู/กู้คืนข้อมูลผู้ป่วยที่ลบไปแล้ว">🗑️ ถังขยะ</button>
           <button class="btn btn-ghost" id="btnGoQueue">📢 เรียกคิวตรวจ</button>
           <button class="btn btn-ghost" id="btnGoCall">📞 โทรติดตาม</button>
           <button class="btn btn-primary" id="btnNewPatient">+ เพิ่มผู้ป่วยใหม่</button>
@@ -1338,7 +1355,10 @@ body::before{
       <div class="lst-bulk" id="lstBulkBar">
         <span id="lstBulkCount">เลือก 0 คน</span>
         <span class="spacer"></span>
+        <button class="btn btn-primary" id="btnBulkFill">✏️ กรอกข้อมูลพร้อมกัน</button>
         <button class="btn btn-primary" id="btnBulkAppt">📅 ลงนัดหมาย</button>
+        <button class="btn btn-primary" id="btnBulkNoah" title="รวมผู้ป่วยที่เลือกไว้เป็นไฟล์ Noah ไฟล์เดียว — นำเข้า Noah ครั้งเดียวจบ">📤 ส่งออก Noah ทั้งคิว</button>
+        <button class="btn btn-ghost lst-bulk-del" id="btnBulkDel" style="display:none">🗑️ ลบที่เลือก</button>
         <button class="btn btn-ghost" id="btnBulkClear">✕ ยกเลิกการเลือก</button>
       </div>
       <div class="list-table-wrap">
@@ -1505,8 +1525,8 @@ body::before{
           <label>แนวกระดาษ</label>
           <select id="pmOrientation"><option value="portrait">แนวตั้ง (Portrait)</option></select>
         </div>
-        <div class="pm-check-line"><label><input type="checkbox" id="pmNewTab"> เปิดในแท็บใหม่แทน Preview</label></div>
-        <div class="pm-check-line pm-sub"><label><input type="checkbox" id="pmAutoPrint" disabled> สั่งพิมพ์อัตโนมัติเมื่อเปิดแท็บใหม่</label></div>
+        <div class="pm-check-line"><label><input type="checkbox" id="pmNewTab" checked> เปิดในแท็บใหม่แทน Preview</label></div>
+        <div class="pm-check-line pm-sub"><label><input type="checkbox" id="pmAutoPrint" checked> สั่งพิมพ์อัตโนมัติเมื่อเปิดแท็บใหม่</label></div>
         <div class="pm-fld">
           <label>ขยาย/ย่อ (เฉพาะ Preview) — <span id="pmZoomVal">100%</span></label>
           <input type="range" id="pmZoom" min="50" max="150" value="100">
@@ -1562,9 +1582,33 @@ const todayThai = `${_today.getDate()} ${_thM[_today.getMonth()]} ${(_today.getF
 
 /* ── ระบบคิวตรวจ: เลขคิวเรียงตามลำดับผู้ป่วยที่มาในแต่ละวัน (รีเซ็ตทุกวัน) ── */
 function todayKey(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+/* ── เลขคิวถัดไปของวันนี้ ──
+   เดิมนับจาก localStorage ของเครื่องตัวเองอย่างเดียว → ห้องตรวจกับห้องกรอกฟอร์มต่างเครื่องกัน
+   ตัวนับจึงไม่ตรงกัน แล้วแจกเลขคิวซ้ำให้คนละคน
+   ตอนนี้ยึด "เลขคิวสูงสุดของวันนี้ที่มีอยู่จริงในรายชื่อผู้ป่วย" เป็นหลัก แล้วเทียบกับตัวนับในเครื่อง
+   (ตัวนับยังใช้กันชนกรณีออฟไลน์/ยังซิงก์ไม่ถึง) เอาค่าที่มากกว่า +1 */
+function maxQueueNoToday(){
+  let mx = 0;
+  try{
+    const tk = todayKey();
+    getRecords().forEach(r=>{
+      if(!r || r.queueDate!==tk) return;
+      const n = parseInt(r.queueNo,10);
+      if(!isNaN(n) && n>mx) mx = n;
+    });
+    (_outbox||[]).forEach(r=>{                 // รายการที่ยังค้างคิวส่งขึ้นเซิร์ฟเวอร์
+      if(!r || r.queueDate!==tk) return;
+      const n = parseInt(r.queueNo,10);
+      if(!isNaN(n) && n>mx) mx = n;
+    });
+  }catch(e){}
+  return mx;
+}
 function nextQueueNo(){
   const qkey = 'hcs_queue_counter_'+todayKey();
-  let n = parseInt(localStorage.getItem(qkey)||'0',10) + 1;
+  let cnt = 0;
+  try{ cnt = parseInt(localStorage.getItem(qkey)||'0',10) || 0; }catch(e){}
+  const n = Math.max(cnt, maxQueueNoToday()) + 1;
   try{ localStorage.setItem(qkey, String(n)); }catch(e){}
   return n;
 }
@@ -1672,6 +1716,8 @@ const FREQ_ALL=[125,250,500,750,1000,1500,2000,3000,4000,6000,8000];
 const OCTAVES=FREQ_MAIN;
 const INTER=[750,1500,3000,6000];
 const PTA_FREQS=[500,1000,2000];
+/* PTA 4 ความถี่ (four-frequency average) — ใช้เป็นคอลัมน์เสริมตอนส่งออก Excel */
+const PTA4_FREQS=[500,1000,2000,4000];
 const EARTYPES=[
   {k:'RAC',ear:'R',type:'AC',label:'ขวา·AIR',cls:'colhdr-R',g:'gR'},
   {k:'RBC',ear:'R',type:'BC',label:'ขวา·BONE',cls:'colhdr-R',g:'gR'},
@@ -1679,6 +1725,80 @@ const EARTYPES=[
   {k:'LBC',ear:'L',type:'BC',label:'ซ้าย·BONE',cls:'colhdr-L',g:'gL'},
 ];
 const CH={ml:42,mr:42,mt:44,mb:26,dbMin:-10,dbMax:120,oct:42};
+/* สไตล์ toast + ปุ่มล้างตัวเลือก (ฉีดครั้งเดียวตอนโหลด) */
+(function(){ const st=document.createElement('style'); st.textContent=`
+#hcsToast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(16px);
+  max-width:min(92vw,460px);background:#1f2937;color:#fff;font-size:14px;line-height:1.45;padding:11px 16px;border-radius:11px;
+  box-shadow:0 8px 28px rgba(0,0,0,.28);z-index:99999;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;text-align:center}
+#hcsToast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media print{#hcsToast{display:none!important}}
+#missModal{position:fixed;inset:0;z-index:100000;display:none;align-items:center;justify-content:center;
+  background:rgba(15,23,42,.55);padding:18px;backdrop-filter:blur(2px)}
+#missModal.show{display:flex}
+#missModal .mm-box{width:min(94vw,440px);max-height:86vh;display:flex;flex-direction:column;background:#fff;
+  border-radius:16px;overflow:hidden;box-shadow:0 22px 60px rgba(0,0,0,.35);animation:mmPop .16s ease-out}
+@keyframes mmPop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+#missModal .mm-head{display:flex;align-items:center;gap:9px;background:#DC2626;color:#fff;padding:14px 18px;
+  font-size:17px;font-weight:700;flex-shrink:0}
+#missModal .mm-ic{font-size:20px;line-height:1}
+#missModal .mm-body{padding:14px 18px 6px;overflow-y:auto;flex:1;min-height:0}
+#missModal .mm-lead{font-size:13px;color:#475569;margin-bottom:12px;line-height:1.5}
+#missModal .mm-grp{border:1.5px solid #fecaca;background:#fef2f2;border-radius:11px;padding:10px 13px;margin-bottom:11px}
+#missModal .mm-grp-t{font-size:14px;font-weight:700;color:#991b1b;margin-bottom:5px}
+#missModal .mm-list{margin:0;padding-left:20px;color:#7f1d1d;font-size:13.5px;line-height:1.75}
+#missModal .mm-foot{display:flex;gap:9px;padding:12px 18px 16px;flex-shrink:0;border-top:1px solid #eef1f6}
+#missModal .mm-btn{flex:1;padding:11px 12px;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;border:1.5px solid transparent}
+#missModal .mm-back{background:#DC2626;color:#fff}
+#missModal .mm-back:hover{background:#b91c1c}
+#missModal .mm-go{background:#fff;color:#64748b;border-color:#d7dceb;font-weight:600}
+#missModal .mm-go:hover{background:#f8fafc;color:#334155}
+@media print{#missModal{display:none!important}}
+.dup-hint{margin:2px 0 10px;padding:9px 12px;border:1.5px solid #fca5a5;background:#fef2f2;color:#991b1b;
+  border-radius:9px;font-size:12.5px;line-height:1.55;font-weight:600}
+@media print{.dup-hint{display:none!important}}
+.chk-clear{border:1px dashed #cbd5e1;background:#fff;color:#64748b;border-radius:999px;font-family:inherit;font-size:12px;
+  padding:3px 10px;cursor:pointer;line-height:1.3;align-self:center}
+.chk-clear:hover{border-color:#94a3b8;color:#334155;background:#f8fafc}
+.dt-wrap{position:relative;display:flex;align-items:center;gap:6px}
+.dt-wrap .dt-text{flex:1;min-width:0}
+.dt-wrap .dt-native{position:absolute;right:38px;bottom:0;width:1px;height:1px;opacity:0;padding:0;border:0;margin:0;pointer-events:none}
+.dt-wrap .dt-btn,.dt-wrap .dt-today{flex-shrink:0;border:1.5px solid #dde4ef;background:#fff;border-radius:8px;
+  font-family:inherit;cursor:pointer;color:#475569;line-height:1;padding:0 10px;height:38px}
+.dt-wrap .dt-btn{font-size:16px;padding:0 9px}
+.dt-wrap .dt-today{font-size:12.5px;font-weight:600;color:#0C6EA8;border-color:#CFE3F7;background:#F4F9FF}
+.dt-wrap .dt-btn:hover{background:#f8fafc;border-color:#94a3b8}
+.dt-wrap .dt-today:hover{background:#E7F2FD;border-color:#7FB6E8}
+@media print{.dt-wrap .dt-btn,.dt-wrap .dt-today{display:none!important}}
+#trashModal{position:fixed;inset:0;z-index:99991;display:none;align-items:center;justify-content:center;
+  background:rgba(36,31,71,.45);padding:16px}
+#trashModal.show{display:flex}
+#trashModal .tr-card{background:#fff;border-radius:18px;width:100%;max-width:760px;max-height:88vh;display:flex;flex-direction:column;
+  box-shadow:0 24px 60px rgba(76,60,190,.3);overflow:hidden;font-family:'Poppins','Sarabun','TH Sarabun New',Tahoma,sans-serif}
+#trashModal .tr-head{display:flex;align-items:center;gap:10px;padding:16px 20px;background:#F7F5FF;border-bottom:1px solid #EDEBFB;
+  font-size:16px;font-weight:700;color:#241F47;flex-shrink:0}
+#trashModal .tr-head .sp{flex:1}
+#trashModal .tr-lead{font-size:12.5px;color:#6B6885;padding:10px 20px 0;line-height:1.55}
+#trashModal .tr-body{overflow:auto;flex:1;min-height:0;padding:10px 20px 6px}
+#trashModal table{width:100%;border-collapse:collapse;font-size:13px}
+#trashModal th{text-align:left;font-size:11.5px;color:#8B88A3;font-weight:700;padding:6px 8px;border-bottom:1.5px solid #EDEBFB;
+  position:sticky;top:0;background:#fff}
+#trashModal td{padding:8px;border-bottom:1px solid #F4F2FC;color:#241F47;vertical-align:top}
+#trashModal tr.tr-empty td{text-align:center;color:#8B88A3;padding:26px 8px}
+#trashModal input[type="checkbox"]{width:16px;height:16px;accent-color:#6D5DF6;cursor:pointer}
+#trashModal .tr-src{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:9999px;white-space:nowrap}
+#trashModal .tr-src.cloud{background:#EDE9FE;color:#5B21B6}
+#trashModal .tr-src.local{background:#FEF3C7;color:#92400E}
+#trashModal .tr-foot{display:flex;gap:9px;align-items:center;padding:12px 20px 16px;border-top:1px solid #EDEBFB;flex-shrink:0;flex-wrap:wrap}
+#trashModal .tr-foot .sp{flex:1}
+#btnTrashPurge{border-color:#fca5a5;color:#b91c1c}
+#btnTrashPurge:hover{background:#fef2f2;border-color:#ef4444}
+#btnBulkDel.lst-bulk-del{border-color:#fca5a5;color:#b91c1c}
+#btnBulkDel.lst-bulk-del:hover{background:#fef2f2;border-color:#ef4444;color:#991b1b}
+.ha-clear-row{display:flex;justify-content:flex-end;margin-top:14px}
+.chk-clear.ha-clear{border:1.5px dashed #fca5a5;color:#b91c1c;background:#fff;font-size:13px;font-weight:600;padding:8px 15px}
+.chk-clear.ha-clear:hover{background:#fef2f2;border-color:#ef4444;color:#991b1b}
+@media print{.ha-clear-row{display:none!important}}
+`; document.head.appendChild(st); })();
 
 const SEC3 = [
   'ไม่สามารถรักษาให้หายขาดได้ด้วยยาหรือการผ่าตัด',
@@ -1693,7 +1813,8 @@ const DEFAULTS = {
   hospital:'', place:'', namePrefix:'นาย',
   audiologist:'นายธิติวุฒิ นวคุณไพโรจน์', positionNum:'513', officer:'นายธิติวุฒิ นวคุณไพโรจน์',
   citizenId:'', examiner:'', examinerPosition:'',
-  fitDate: todayThai, audioVisitDate: todayThai, date: todayThai, weber:'Not heard', rinne_r:'Not heard', rinne_l:'Not heard', audio_cc:'Hearing Evaluation For Fit HA',
+  fitDate: '',                 /* ไม่เติมวันที่ให้อัตโนมัติ — ต้องกดปุ่ม "วันนี้" หรือเลือกจากปฏิทินเอง */
+  audioVisitDate: todayThai, date: todayThai, weber:'Not heard', rinne_r:'Not heard', rinne_l:'Not heard', audio_cc:'Hearing Evaluation For Fit HA',
   ear:'', dtype:'bte', earmold:true, mSoft:true, aRemoval:true,
   tool_spr:true, tool_audiometer:true, tool_tympanometer:false, tool_soundfield:true, tool_rem:true,
   s6_word:true, s6_sfg:false, s6_quality:true, s6_probe:true,
@@ -1728,6 +1849,59 @@ function parseBirth(s){
   if(year>2300) year=year-543;
   return {day,mon,year};
 }
+/* ══════════════ ช่องกรอกวันที่: พิมพ์เองก็ได้ / กดปฏิทินเลือก วัน-เดือน-ปี ก็ได้ ══════════════
+   ค่าที่เก็บยังเป็นข้อความไทยเหมือนเดิม (เช่น "22 ส.ค. 2569") เพื่อให้ฟอร์มที่ปริ้นออกมาไม่เปลี่ยน
+   ปฏิทินใช้ <input type="date"> ของเบราว์เซอร์ (มือถือขึ้นล้อเลื่อน วัน/เดือน/ปี ให้เอง) */
+function todayThaiFull(){ const d=new Date(); return `${d.getDate()} ${_thM[d.getMonth()]} ${d.getFullYear()+543}`; }
+function thaiDateToIso(txt){
+  const b = parseBirth(txt);                       /* คืนปีเป็น ค.ศ. แล้ว */
+  if(!b || !b.year || !b.mon || !b.day) return '';
+  const pad = n => String(n).padStart(2,'0');
+  return `${b.year}-${pad(b.mon)}-${pad(b.day)}`;
+}
+function isoToThaiDate(iso){
+  const p = String(iso||'').split('-');
+  if(p.length!==3) return '';
+  const y=Number(p[0]), m=Number(p[1]), d=Number(p[2]);
+  if(!y || !m || !d) return '';
+  return `${d} ${_thM[m-1]||m} ${y+543}`;
+}
+/* สร้าง HTML ช่องวันที่ 1 ช่อง — opts: {today:true} = มีปุ่ม "วันนี้", ph = ข้อความจาง, id */
+function dateInputHtml(bind, opts){
+  const o = opts || {};
+  return `<div class="dt-wrap">`
+    + `<input type="text"${bind?` data-bind="${bind}"`:''}${o.id?` id="${o.id}"`:''} class="dt-text" autocomplete="off" placeholder="${o.ph || ('เช่น '+todayThaiFull())}">`
+    + `<input type="date" class="dt-native" tabindex="-1" aria-hidden="true">`
+    + `<button type="button" class="dt-btn" title="เลือกวันที่จากปฏิทิน">📅</button>`
+    + (o.today ? `<button type="button" class="dt-today" title="ใส่วันที่วันนี้">วันนี้</button>` : '')
+    + `</div>`;
+}
+/* ผูก event ครั้งเดียวแบบ delegate — ใช้ได้กับช่องวันที่ทุกช่องที่สร้างขึ้นภายหลังด้วย */
+(function bindDatePickers(){
+  document.addEventListener('click', e=>{
+    const btn = e.target.closest && e.target.closest('.dt-btn, .dt-today');
+    if(!btn) return;
+    const wrap = btn.closest('.dt-wrap'); if(!wrap) return;
+    const txt = wrap.querySelector('.dt-text'); if(!txt) return;
+    if(btn.classList.contains('dt-today')){
+      txt.value = todayThaiFull();
+      txt.dispatchEvent(new Event('input',{bubbles:true}));
+      return;
+    }
+    const nat = wrap.querySelector('.dt-native'); if(!nat) return;
+    nat.value = thaiDateToIso(txt.value) || '';
+    try{ if(nat.showPicker) nat.showPicker(); else nat.click(); }catch(err){ try{ nat.click(); }catch(e2){} }
+  });
+  document.addEventListener('change', e=>{
+    const nat = e.target;
+    if(!nat || !nat.classList || !nat.classList.contains('dt-native')) return;
+    const wrap = nat.closest('.dt-wrap'); if(!wrap) return;
+    const txt = wrap.querySelector('.dt-text'); if(!txt) return;
+    const v = isoToThaiDate(nat.value);
+    if(v){ txt.value = v; txt.dispatchEvent(new Event('input',{bubbles:true})); }
+  });
+})();
+
 /* ตรวจความถูกต้องเลขบัตรประชาชนไทย 13 หลัก (หลักที่ 13 เป็น check digit) */
 function validCitizenId(s){
   const d = String(s||'').replace(/\D/g,'');
@@ -1750,6 +1924,15 @@ function computeAge(s){
   return (age>=0 && age<=130) ? String(age) : '';
 }
 function num(v){ if(v===undefined||v===null||v==='') return null; const n=parseFloat(v); return isNaN(n)?null:n; }
+/* ── ข้อความเตือนลอย (toast) — แจ้งสั้นๆ โดยไม่ต้องกด OK เหมือน alert ── */
+function hcsToast(msg, ms){
+  try{
+    let el=document.getElementById('hcsToast');
+    if(!el){ el=document.createElement('div'); el.id='hcsToast'; document.body.appendChild(el); }
+    el.textContent=msg; el.classList.add('show');
+    clearTimeout(el._t); el._t=setTimeout(()=>{ el.classList.remove('show'); }, ms||3600);
+  }catch(e){ console.warn(msg); }
+}
 
 /* ── audiogram threshold state (per-frequency, per ear/type cell: {v,m,nr}) ── */
 function audCell(){ return {v:'',m:false,nr:false}; }
@@ -2092,6 +2275,7 @@ function copyEarDataSmart(type){
     const s=S.audTh[fr][src+type];
     S.audTh[fr][dst+type] = { v:s.v, m:s.m, nr:s.nr };
   });
+  boneAirToast(enforceBoneNotWorseThanAir(dst));   /* คัดลอกมาแล้วต้องยังคงกฎ Bone ≤ Air ของข้างปลายทาง */
   /* สลับปากกาไปเป็นหูข้างที่เพิ่งคัดลอกไป — คลิกบนกราฟครั้งต่อไปจะแก้ข้างนั้นทันที
      (เช่น ลงซ้ายไว้ กด ⇄ Air → ได้ขวามา แล้วสลับเป็นลง AC ขวาต่อได้เลย) */
   setAudTool('sym', dst + '|' + type + '|' + (audTool.masked ? 'm' : ''));
@@ -2119,6 +2303,10 @@ function audChartClick(e){
   if(audTool.mode!=='nr' && celld.v!=='' && celld.v===String(db) && !celld.nr){ celld.v=''; celld.m=false; celld.nr=false; }
   else { celld.v=String(db); celld.m=audTool.masked; celld.nr=(audTool.mode==='nr'); }
   if(audTool.type==='BC') clampBoneCell(best, celld);   /* Bone เกินเพดาน → เด้งเป็นค่าสูงสุด + ตก */
+  /* Bone ห้ามแย่กว่า Air — ลง Bone เกินกว่าก็ดึงขึ้นมาเท่า Air / แก้ Air ให้ดีขึ้นก็ดึง Bone ตาม */
+  boneAirToast(audTool.type==='BC'
+    ? (clampBoneToAir(best, audTool.ear, celld) ? 1 : 0)
+    : enforceBoneNotWorseThanAir(audTool.ear));
   buildAudTable(); renderAudAll(); updateDerived(); render(); syncComputedFields(); autosave(); pushAudHistory();
 }
 /* ══ กราฟ Audiogram เต็มจอ ══
@@ -2201,6 +2389,32 @@ function clampBoneCell(fr,cell){
   if(v>mx){ cell.v=String(mx); cell.nr=true; return true; }
   return false;
 }
+/* ══ กฎทางคลินิก: Bone ต้องไม่แย่กว่า Air ที่ความถี่/ข้างเดียวกัน (bone dB ≤ air dB เสมอ) ══
+   ถ้าลง Bone ต่ำกว่าเส้น Air บนกราฟ → ดึงขึ้นมาเท่า Air แล้วแจ้งเตือน
+   ข้อยกเว้น: ถ้า Air จุดนั้นเป็น NR (ไม่ตอบสนองที่ค่าสูงสุด) เกณฑ์นี้ไม่ใช้ — เพราะธรณ์จริงของ Air แย่กว่าค่าที่แสดง */
+function clampBoneToAir(fr, ear, cell){
+  if(!cell) return false;
+  const b=num(cell.v); if(b===null) return false;
+  const a=(S.audTh[fr]||{})[ear+'AC'];
+  if(!a || a.nr) return false;
+  const av=num(a.v); if(av===null) return false;
+  if(b>av){ cell.v=String(av); cell.nr=false; return true; }
+  return false;
+}
+/* ตรวจซ้ำทั้งข้าง/ทุกความถี่ — ใช้ตอนแก้ค่า Air ด้วย (Air ดีขึ้น → Bone ที่เคยลงไว้ต้องขยับตาม) */
+function enforceBoneNotWorseThanAir(ear){
+  let n=0;
+  (ear ? [ear] : ['R','L']).forEach(e=>BONE_FREQS.forEach(fr=>{
+    if(clampBoneToAir(fr, e, (S.audTh[fr]||{})[e+'BC'])) n++;
+  }));
+  return n;
+}
+function boneAirToast(n){
+  if(!n) return;
+  hcsToast(n===1
+    ? '⚠️ Bone ต้องไม่แย่กว่า Air — ปรับจุด Bone ขึ้นมาเท่า Air ให้แล้ว'
+    : '⚠️ Bone ต้องไม่แย่กว่า Air — ปรับ Bone ขึ้นมาเท่า Air แล้ว '+n+' จุด');
+}
 function audActiveFreqs(){ return FREQ_ALL; }
 function onAudTableInput(){
   audActiveFreqs().forEach(fr=>EARTYPES.forEach(c=>{
@@ -2211,6 +2425,18 @@ function onAudTableInput(){
     /* Bone เกินเพดาน max output → เด้งลงมาที่ค่าสูงสุด + ติ๊ก NR ให้ */
     if(c.type==='BC' && clampBoneCell(fr,d)){ if(ve) ve.value=d.v; if(ne) ne.checked=true; }
   }));
+  /* Bone ต้องไม่แย่กว่า Air — ตรวจหลังอ่านค่าครบทุกช่องแล้ว (แก้ช่อง Air ก็มีผลกับ Bone) */
+  let _baFix=0;
+  ['R','L'].forEach(e=>BONE_FREQS.forEach(fr=>{
+    const d=(S.audTh[fr]||{})[e+'BC']; if(!d) return;
+    if(clampBoneToAir(fr,e,d)){
+      _baFix++;
+      const id=`aud_${e}BC_${fr}`;
+      const v2=document.getElementById(id+'_v'); if(v2) v2.value=d.v;
+      const n2=document.getElementById(id+'_nr'); if(n2) n2.checked=!!d.nr;
+    }
+  }));
+  boneAirToast(_baFix);
   onAnyChange(); pushAudHistory();
 }
 function buildAudTable(){
@@ -2333,7 +2559,7 @@ function audiogramSectionBody(){
       <div class="subhead" style="margin-top:0">เงื่อนไขการทดสอบ</div>
       <div class="fld" style="max-width:160px"><label>Test environment</label><select data-bind="audio_env"><option value="vq">Very quiet</option><option value="q">Quiet</option><option value="mn">Mod. noise</option><option value="n">Noisy</option></select></div>
       ${rad('audio_reliab','Test reliability',[['good','Good'],['fair','Fair'],['poor','Poor']])}
-      <div class="row"><div class="fld"><label>วันที่เข้ารับบริการ</label><input type="text" data-bind="audioVisitDate"></div></div>
+      <div class="row"><div class="fld"><label>วันที่เข้ารับบริการ</label>${dateInputHtml('audioVisitDate',{today:true})}</div></div>
       <div class="fld"><label>Chief complaint</label><input type="text" data-bind="audio_cc"></div>
       <div class="fld"><label>โรคประจำตัว</label><input type="text" data-bind="audio_medhx"></div>
       <div class="row"><div class="fld"><label>ประวัติสัมผัสเสียงดัง</label><input type="text" data-bind="audio_noisehx"></div><div class="fld"><label>ครอบครัวสูญเสียการได้ยิน</label><input type="text" data-bind="audio_famhx"></div></div>
@@ -2435,12 +2661,14 @@ function hearingAidBody(){
         <label class="chk"><input type="radio" name="ear" data-bind-radio="ear" value="left"> ซ้าย</label>
         <label class="chk"><input type="radio" name="ear" data-bind-radio="ear" value="right"> ขวา</label>
         <label class="chk"><input type="radio" name="ear" data-bind-radio="ear" value="both"> สองข้าง</label>
+        <button type="button" class="chk-clear" data-radio-clear="ear" title="ล้างข้างที่ใส่">✕ ล้าง</button>
       </div>
       <div class="chk-row">
         <label class="chk"><input type="radio" name="dtype" data-bind-radio="dtype" value="body"> Body</label>
         <label class="chk"><input type="radio" name="dtype" data-bind-radio="dtype" value="bte"> BTE</label>
         <label class="chk"><input type="radio" name="dtype" data-bind-radio="dtype" value="ite"> ในช่องหู</label>
         <label class="chk"><input type="radio" name="dtype" data-bind-radio="dtype" value="ric"> RIC</label>
+        <button type="button" class="chk-clear" data-radio-clear="dtype" title="ล้างชนิดเครื่อง">✕ ล้าง</button>
       </div>
       <div class="subhead">เครื่องช่วยฟังที่เลือก</div>
       <div id="sec7_card1">${sec7html_1()}</div>
@@ -2449,7 +2677,33 @@ function hearingAidBody(){
       <div class="chk-row">${ck('sHalf','Half Shell','shellType')}${ck('sFull','Full Shell','shellType')}${ck('sSkel','Skeleton','shellType')}${ck('sCanal','Canal','shellType')}</div>
       <div class="chk-row">${ck('aRemoval','Removal Cord')}${ck('aCanalLock','Canal Lock')}${ck('aVent','Vent')}</div>
       <div class="fld" id="ventSizeWrap"><label>ขนาด Vent</label><input type="text" data-bind="ventSize"></div>
+      <div class="ha-clear-row"><button type="button" class="chk-clear ha-clear" id="btnClearHA">🧹 ล้างข้อมูลเครื่องช่วยฟังทั้งหมด</button></div>
   `;
+}
+/* ══════════════ ล้างข้อมูลเครื่องช่วยฟังของผู้ป่วยรายนี้ทั้งชุด ══════════════
+   ล้างเฉพาะช่องในแถบ 🦻 (รวมคู่เทียบ + รายละเอียดพิมพ์หู) — ไม่แตะข้อมูลผู้ป่วยและ Audiogram
+   brand/model เป็นค่า derived จะถูกคำนวณใหม่เป็นค่าว่างเองใน updateDerived() */
+const HA_CLEAR_KEYS = [
+  'ear','dtype',
+  's7_resound','s7_resound_level','s7_resound_level_L','s7_resound_level_R',
+  's7_resound_model','s7_resound_model_L','s7_resound_model_R','s7_resound_result',
+  'sn','sn_L','sn_R',
+  'mSoft','mHard','sHalf','sFull','sSkel','sCanal','aRemoval','aCanalLock','aVent','ventSize',
+  's7_am','s7_am_model','s7_am_model_L','s7_am_model_R','s7_am_result','price',
+  'brand','model','modelL','modelR','brandL','brandR','snL','snR','cmp_reason','_reason_manual'
+];
+function clearHearingAidData(){
+  if(!confirm('ล้างข้อมูลเครื่องช่วยฟังของผู้ป่วยรายนี้ทั้งหมด?\n\n'
+    + '• ข้างที่ใส่ · ชนิดเครื่อง\n'
+    + '• ยี่ห้อ / กำลังขยาย / รุ่น / S/N\n'
+    + '• ผลการทดลอง + เครื่องคู่เทียบ + ราคา\n'
+    + '• รายละเอียดพิมพ์หู (Soft/Hard, Shell, Vent)\n\n'
+    + 'ข้อมูลผู้ป่วยและกราฟ Audiogram ไม่ถูกแตะ\nต้องกด "บันทึก" อีกครั้งถึงจะมีผลจริง')) return;
+  HA_CLEAR_KEYS.forEach(k=>{ S[k] = (typeof DEFAULTS[k] === 'boolean') ? false : ''; });
+  _legacyHA = false;            /* ล้างเองแล้ว → ห้ามให้กลไกเคสเก่าเอาค่าเดิมกลับมา */
+  reflectInputs();              /* วาดช่องใหม่ทั้งหมด (รวม refreshDeviceCards ข้างใน) */
+  onAnyChange();
+  try{ hcsToast('🧹 ล้างข้อมูลเครื่องช่วยฟังแล้ว — กด "บันทึก" เพื่อยืนยัน'); }catch(e){}
 }
 function comparePairBody(){
   return `
@@ -2476,20 +2730,48 @@ function buildSidebar(){
     _stepTitles = [];
     document.getElementById('forms').innerHTML = `
       <div class="hint" style="margin:10px 14px 0;padding:9px 12px;background:#F4F9FF;border:1px solid #CFE3F7;border-radius:10px;color:#0C6EA8">
-        🦻 กรอกเฉพาะข้อมูลเครื่องช่วยฟัง — ข้อมูลผู้ป่วยแก้ได้จากปุ่ม ✏️ ในหน้ารายการ
+        🦻 กรอกเฉพาะข้อมูลเครื่องช่วยฟัง — ข้อมูลผู้ป่วยแก้ได้จากปุ่ม 👤 ในหน้ารายการ
       </div>
       ${sec('🦻 ข้อมูลเครื่องช่วยฟัง + พิมพ์หู',true,hearingAidBody())}
       ${sec('คู่เทียบ',false,comparePairBody())}
       ${sec('นักแก้ไขการได้ยิน',true,audiologistBody())}
+    ${secOpt('อื่นๆ',`
+        <div class="subhead" style="margin-top:0">1–2. เครื่องมือที่ใช้ตรวจการได้ยิน</div>
+        <div class="chk-row">${ck('tool_spr','ตู้ตรวจการได้ยิน (Sound Proof Room)')}${ck('tool_audiometer','Audiometer')}${ck('tool_tympanometer','Tympanometer')}${ck('tool_soundfield','Sound Field')}${ck('tool_rem','Real Ear Measurement')}</div>
+        <div class="subhead">ตรวจช่องหู (Otoscope)</div>
+        ${rad('oto_r','หูขวา (Right)',[['normal','ปกติ'],['abnormal','ผิดปกติ']])}
+        <div class="fld"><input type="text" data-bind="oto_r_note" placeholder="หมายเหตุหูขวา (ถ้ามี)"></div>
+        ${rad('oto_l','หูซ้าย (Left)',[['normal','ปกติ'],['abnormal','ผิดปกติ']])}
+        <div class="fld"><input type="text" data-bind="oto_l_note" placeholder="หมายเหตุหูซ้าย (ถ้ามี)"></div>
+        <div class="subhead">ตรวจหูชั้นกลาง (Tympanometry)</div>
+        ${rad('tym_r','หูขวา (Right)',[['normal','ปกติ'],['abnormal','ผิดปกติ']])}
+        ${rad('tym_l','หูซ้าย (Left)',[['normal','ปกติ'],['abnormal','ผิดปกติ']])}
+        <div class="subhead">4. ผู้พิจารณา (โสต ศอ นาสิกแพทย์)</div>
+        <div class="fld"><label>ระบุ นพ./พ.ญ.</label><input type="text" data-bind="doc_name"></div>
+        <div class="fld"><label>RCOT เลขที่</label><input type="text" data-bind="rcot"></div>
+        <div class="subhead">6. การประเมินการทำงาน</div>
+        <div class="chk-row">${ck('s6_word','Word recognition score')}${ck('s6_sfg','Sound field functional gain')}${ck('s6_quality','Sound quality')}${ck('s6_probe','Probe microphone instrument')}</div>
+        <div class="subhead">12. นัดติดตาม</div>
+        <div class="fld"><label>ครั้งที่ 1 (1–3 เดือน) วันที่</label>${dateInputHtml('followup1',{ph:'กด 📅 เลือกวันที่'})}</div>
+        <div class="fld"><label>ครั้งที่ 2 (6 เดือน) วันที่</label>${dateInputHtml('followup2',{ph:'กด 📅 เลือกวันที่'})}</div>
+        <div class="fld"><label>ครั้งที่ 3 (1 ปี) วันที่</label>${dateInputHtml('followup3',{ph:'กด 📅 เลือกวันที่'})}</div>
+        <div class="subhead">10. ผลประเมินหลังใส่เครื่อง</div>
+        <div class="chk-row">${ck('s10_quality','Sound quality')}${ck('s10_sfg','Sound field functional gain')}${ck('s10_rem','Real Ear Measurement')}</div>
+      `)}
     `;
     return;
   }
+  _stepTitles = [];
   document.getElementById('forms').innerHTML = `
-    ${sec('ข้อมูลผู้ป่วย (ใช้ร่วมทุกฟอร์ม)',true,`
+    <div class="hint" style="margin:10px 14px 0;padding:9px 12px;background:#F4F9FF;border:1px solid #CFE3F7;border-radius:10px;color:#0C6EA8">
+      👤 กรอกเฉพาะข้อมูลผู้ป่วย — ข้อมูลเครื่องช่วยฟังกรอกจากปุ่ม 🦻 · Audiogram จากปุ่ม 📈 ในหน้ารายการ
+    </div>
+    ${sec('👤 ข้อมูลผู้ป่วย (ใช้ร่วมทุกฟอร์ม)',true,`
       <div class="row"><div class="fld" style="max-width:130px"><label>HN</label><input type="text" data-bind="hn"></div><div class="fld" style="max-width:90px"><label>คำนำหน้า</label><select data-bind="namePrefix"><option value="นาย">นาย</option><option value="นาง">นาง</option><option value="นางสาว">นางสาว</option><option value="เด็กชาย">เด็กชาย</option><option value="เด็กหญิง">เด็กหญิง</option><option value="พระ">พระ</option><option value="แม่ชี">แม่ชี</option></select></div><div class="fld"><label>ชื่อ</label><input type="text" data-bind="nameFirst"></div><div class="fld"><label>นามสกุล</label><input type="text" data-bind="nameLast"></div></div>
+      <div id="dupHint" class="dup-hint" style="display:none"></div>
       <div class="row"><div class="fld"><label>เลขบัตรประชาชน <span style="color:#94a3b8;font-weight:400">(ไม่บังคับ)</span></label><input type="text" id="inpCitizenId" data-bind="citizenId" inputmode="numeric" maxlength="17" placeholder="x-xxxx-xxxxx-xx-x"><div class="hint" id="cidHint" style="margin-top:3px"></div></div></div>
-      <div class="row"><div class="fld"><label>โทรศัพท์</label><input type="text" data-bind="phone"></div><div class="fld"><label>วันเกิด (พ.ศ.)</label><input type="text" data-bind="birth" placeholder="เช่น 12 มี.ค. 2500"></div><div class="fld" style="max-width:96px"><label>หรือ อายุ (ปี)</label><input type="text" id="inpAge" inputmode="numeric" placeholder="เช่น 65"></div></div>
-      <div class="fld"><label>วันที่ใส่เครื่อง/สั่งทำ/ซื้อ</label><input type="text" data-bind="fitDate"></div>
+      <div class="row"><div class="fld"><label>โทรศัพท์</label><input type="text" data-bind="phone"></div><div class="fld"><label>วันเกิด (พ.ศ.)</label>${dateInputHtml('birth',{ph:'เช่น 12 มี.ค. 2500'})}</div><div class="fld" style="max-width:96px"><label>หรือ อายุ (ปี)</label><input type="text" id="inpAge" inputmode="numeric" placeholder="เช่น 65"></div></div>
+      <div class="fld"><label>วันที่ใส่เครื่อง/สั่งทำ/ซื้อ</label>${dateInputHtml('fitDate',{today:true, ph:'ยังไม่ระบุ — กด "วันนี้" หรือ 📅 เลือกวันที่'})}</div>
       ${rad('rightType','สิทธิ์การรักษา',[['disabled','ผู้พิการ'],['gov','ข้าราชการ'],['sso','ประกันสังคม']])}
       <div class="fld"><label style="color:#D3232A">📌 หมายเหตุ (แสดงสีแดงในหน้ารายการ)</label><input type="text" data-bind="note" class="note-input" placeholder="เช่น ไม่มาตามนัด / ยังไม่พิมพ์หู / ขอคืน HA"></div>
       <div class="subhead">ที่อยู่</div>
@@ -2514,32 +2796,6 @@ function buildSidebar(){
         <div class="fld" style="max-width:140px"><label>รหัสไปรษณีย์</label><input type="text" data-bind="addr_zip"></div>
       </div>
       <div class="hint">สรุปที่อยู่: ${f('addr_summary')}</div>
-    `)}
-    ${sec('🦻 ข้อมูลเครื่องช่วยฟัง + พิมพ์หู',true,hearingAidBody())}
-    ${sec('คู่เทียบ',false,comparePairBody())}
-    ${sec('นักแก้ไขการได้ยิน',true,audiologistBody())}
-    ${secOpt('อื่นๆ',`
-      <div class="subhead" style="margin-top:0">1–2. เครื่องมือที่ใช้ตรวจการได้ยิน</div>
-      <div class="chk-row">${ck('tool_spr','ตู้ตรวจการได้ยิน (Sound Proof Room)')}${ck('tool_audiometer','Audiometer')}${ck('tool_tympanometer','Tympanometer')}${ck('tool_soundfield','Sound Field')}${ck('tool_rem','Real Ear Measurement')}</div>
-      <div class="subhead">ตรวจช่องหู (Otoscope)</div>
-      ${rad('oto_r','หูขวา (Right)',[['normal','ปกติ'],['abnormal','ผิดปกติ']])}
-      <div class="fld"><input type="text" data-bind="oto_r_note" placeholder="หมายเหตุหูขวา (ถ้ามี)"></div>
-      ${rad('oto_l','หูซ้าย (Left)',[['normal','ปกติ'],['abnormal','ผิดปกติ']])}
-      <div class="fld"><input type="text" data-bind="oto_l_note" placeholder="หมายเหตุหูซ้าย (ถ้ามี)"></div>
-      <div class="subhead">ตรวจหูชั้นกลาง (Tympanometry)</div>
-      ${rad('tym_r','หูขวา (Right)',[['normal','ปกติ'],['abnormal','ผิดปกติ']])}
-      ${rad('tym_l','หูซ้าย (Left)',[['normal','ปกติ'],['abnormal','ผิดปกติ']])}
-      <div class="subhead">4. ผู้พิจารณา (โสต ศอ นาสิกแพทย์)</div>
-      <div class="fld"><label>ระบุ นพ./พ.ญ.</label><input type="text" data-bind="doc_name"></div>
-      <div class="fld"><label>RCOT เลขที่</label><input type="text" data-bind="rcot"></div>
-      <div class="subhead">6. การประเมินการทำงาน</div>
-      <div class="chk-row">${ck('s6_word','Word recognition score')}${ck('s6_sfg','Sound field functional gain')}${ck('s6_quality','Sound quality')}${ck('s6_probe','Probe microphone instrument')}</div>
-      <div class="subhead">12. นัดติดตาม</div>
-      <div class="fld"><label>ครั้งที่ 1 (1–3 เดือน) วันที่</label><input type="text" data-bind="followup1"></div>
-      <div class="fld"><label>ครั้งที่ 2 (6 เดือน) วันที่</label><input type="text" data-bind="followup2"></div>
-      <div class="fld"><label>ครั้งที่ 3 (1 ปี) วันที่</label><input type="text" data-bind="followup3"></div>
-      <div class="subhead">10. ผลประเมินหลังใส่เครื่อง</div>
-      <div class="chk-row">${ck('s10_quality','Sound quality')}${ck('s10_sfg','Sound field functional gain')}${ck('s10_rem','Real Ear Measurement')}</div>
     `)}
     `;
 }
@@ -2888,7 +3144,6 @@ function buildSheets(){
 function updateDerived(){
   S.age = computeAge(S.birth);
   S.name = ((S.namePrefix||'')+(S.nameFirst||'')+(S.nameLast?' '+S.nameLast:'')).trim();
-  S.emModel = S.model||'';
   S.position = S.positionNum ? ('นักโสตสัมผัสวิทยา  ผ.ส. '+S.positionNum) : '';
   /* ผู้ตรวจการได้ยิน (ลงชื่อท้ายใบ Audiogram) — ถ้าไม่ได้กรอกเอง ใช้ชื่อ/ตำแหน่งนักแก้ไขการได้ยินเป็นค่าเริ่มต้น
      ยกเว้นบัญชีสิทธิ์ "Sale": ใช้ชื่อ–สกุลของคนที่ล็อกอินอยู่ และไม่ใส่ตำแหน่ง (แก้เองทับได้เสมอ) */
@@ -2908,13 +3163,25 @@ function updateDerived(){
   }
   S.officer = S.audiologist||'';
   S.place = 'โรงพยาบาล'+(S.hospital||'');
-  // cascade: trial device selection auto-fills final brand/model (ต้องคำนวณก่อนใช้ด้านล่าง)
-  if(S.s7_resound){ S.brand = S.s7_resound; }
-  if(S.s7_resound_model){ S.model = S.s7_resound_model; }
-
   const EAR_TH = {left:'ซ้าย', right:'ขวา', both:'สองข้าง'};
   S.ear_label = EAR_TH[S.ear] || '';
   const bothEar = S.ear==='both';
+  /* ── ยี่ห้อ/รุ่นสรุป (brand/model) = ตามที่เลือกในการ์ด "เครื่องช่วยฟัง" เสมอ ──
+     เดิมใช้ if(S.s7_resound){...} ทำให้ "ล้างค่าแล้วไม่หาย" (ค่าเก่าค้างในรายชื่อผู้ป่วย/Excel)
+     และโหมด "สองข้าง" ไม่เคยเติม S.model เลย เพราะรุ่นอยู่ในช่องซ้าย/ขวาแยกกัน
+     ยกเว้นเคสเก่าที่บันทึกไว้ก่อนมีการ์ดนี้ (_legacyHA) — คงค่าเดิมไว้จนกว่าผู้ใช้จะแตะการ์ด */
+  if(_legacyHA && !S.s7_resound){
+    /* เคสเก่า: ปล่อย S.brand / S.model เดิมไว้ ไม่ล้างทิ้ง */
+  } else {
+    S.brand = S.s7_resound || '';
+    if(bothEar){
+      const _mL = S.s7_resound_model_L||'', _mR = S.s7_resound_model_R||'';
+      S.model = (_mL && _mR) ? (_mL===_mR ? _mL : (_mL+' / '+_mR)) : (_mL || _mR || '');
+    } else {
+      S.model = S.s7_resound_model || '';
+    }
+  }
+  S.emModel = S.model||'';        /* ต้องคำนวณหลัง S.model เสมอ ไม่งั้นได้ค่าของรอบก่อน */
   const L = S.ear==='left'||bothEar, R = S.ear==='right'||bothEar;
   if(bothEar){
     S.brandL = S.brand; S.modelL = S.s7_resound_model_L||''; S.snL = S.sn_L||'';
@@ -3103,7 +3370,7 @@ function syncComputedFields(){
   if(ageEl && document.activeElement!==ageEl) ageEl.value = S.age||'';
   renderInterpBox();
 }
-function onAnyChange(){ updateDerived(); render(); syncComputedFields(); autosave(); }
+function onAnyChange(){ updateDerived(); render(); syncComputedFields(); autosave(); try{ renderDupHint(); }catch(e){} }
 
 let _addrLastProvince = '';
 function populateDistrictDatalist(province){
@@ -3146,6 +3413,7 @@ function bindCascades(){
     const el=document.getElementById(id); if(!el) return;
     el.addEventListener('change', ()=>{
       S[field]=el.value;
+      _legacyHA = false;             // ผู้ใช้เลือก/ล้างเองแล้ว → ยี่ห้อ-รุ่นอิงการ์ดนี้เต็มตัว
       if(cascOn.includes(id)) updateCascades();
       onAnyChange();
     });
@@ -3214,6 +3482,28 @@ function bindInputs(){
   document.querySelectorAll('#sidebar [data-bind-radio]').forEach(el=>{
     const k=el.getAttribute('data-bind-radio');
     el.addEventListener('change', ()=>{ if(el.checked){ S[k]=el.value; if(k==='ear') refreshDeviceCards(); onAnyChange(); } });
+    /* กดซ้ำที่ตัวเลือกที่ติ๊กอยู่แล้ว = ยกเลิกการเลือก (เดิมวงกลมนี้ล้างไม่ได้เลย)
+       เบราว์เซอร์ยิง click ก่อน change และตั้ง checked ให้ตั้งแต่ก่อน dispatch จึงต้องจำสถานะไว้ตอน pointerdown */
+    el.addEventListener('pointerdown', ()=>{ el._wasChecked = el.checked; });
+    el.addEventListener('click', ()=>{
+      const was = el._wasChecked; el._wasChecked = false;
+      if(!was) return;
+      el.checked=false; S[k]='';
+      if(k==='ear') refreshDeviceCards();
+      onAnyChange();
+    });
+  });
+  const _btnClrHA = document.getElementById('btnClearHA');
+  if(_btnClrHA) _btnClrHA.addEventListener('click', clearHearingAidData);
+  /* ปุ่ม "✕ ล้าง" ท้ายแถวตัวเลือก */
+  document.querySelectorAll('#sidebar [data-radio-clear]').forEach(btn=>{
+    const k=btn.getAttribute('data-radio-clear');
+    btn.addEventListener('click', ()=>{
+      S[k]='';
+      document.querySelectorAll(`#sidebar [data-bind-radio="${k}"]`).forEach(r=>{ r.checked=false; });
+      if(k==='ear') refreshDeviceCards();
+      onAnyChange();
+    });
   });
   bindCascades();
   bindAddrCascade();
@@ -3330,6 +3620,32 @@ function bindInputs(){
   });
 }
 
+/* true = เคสนี้มียี่ห้อ/รุ่นติดมาแบบที่ผูกกับการ์ดเลือกเครื่องไม่ได้ (ยี่ห้อไม่อยู่ในรายการ) → คงค่าเดิมไว้ ห้ามล้าง */
+let _legacyHA = false;
+/* ══════════════ ย้ายยี่ห้อ/รุ่นของเคสเก่าขึ้น "การ์ดเลือกเครื่อง" ══════════════
+   เคสที่บันทึกด้วยเวอร์ชันก่อนหน้า (หรือโดนบั๊ก "ล้างค่าแล้วไม่หาย") จะมี brand/model ค้างอยู่
+   แต่ช่องในการ์ด (s7_resound / s7_resound_model) ว่าง → ผู้ใช้กดล้างยังไงก็ไม่หาย เพราะไม่มีอะไรให้ล้าง
+   แก้โดยเติมค่ากลับขึ้นการ์ดให้ตอนเปิดเคส ผู้ใช้จะเห็นยี่ห้อ/รุ่นในดรอปดาวน์จริง ๆ แล้วล้างออกได้
+   (ถ้ายี่ห้อไม่อยู่ในรายการ BRANDS จับคู่ไม่ได้ ค่อยตกไปใช้ _legacyHA คงค่าเดิมไว้เหมือนเดิม) */
+function backfillHACard(){
+  _legacyHA = false;
+  const bn = String((S && S.brand) || '').trim();
+  if(!bn || S.s7_resound) return;          // เลือกผ่านการ์ดอยู่แล้ว / ไม่มียี่ห้อ → ไม่ต้องทำอะไร
+  if(!BRANDS[bn]){ _legacyHA = true; return; }   // ยี่ห้อนอกรายการ → คงค่าเดิมไว้ ไม่ล้างทิ้ง
+  S.s7_resound = bn;
+  const levelOf = m => {
+    if(!m) return null;
+    const lv = ['M','P','HP'];
+    for(let i=0;i<lv.length;i++){ if((BRANDS[bn][lv[i]]||[]).indexOf(m) >= 0) return lv[i]; }
+    return null;
+  };
+  if(S.ear==='both'){
+    if(!S.s7_resound_model_L && S.modelL){ const lv=levelOf(S.modelL); if(lv){ S.s7_resound_level_L=lv; S.s7_resound_model_L=S.modelL; } }
+    if(!S.s7_resound_model_R && S.modelR){ const lv=levelOf(S.modelR); if(lv){ S.s7_resound_level_R=lv; S.s7_resound_model_R=S.modelR; } }
+  } else if(!S.s7_resound_model && S.model){
+    const lv=levelOf(S.model); if(lv){ S.s7_resound_level=lv; S.s7_resound_model=S.model; }
+  }
+}
 function reflectInputs(){
   refreshDeviceCards();
   document.querySelectorAll('#sidebar [data-bind]').forEach(el=>{
@@ -3543,43 +3859,110 @@ function fitDateIsToday(){
   const now = new Date();
   return b.day===now.getDate() && b.mon===(now.getMonth()+1) && b.year===now.getFullYear();
 }
-async function doSave(){
-  /* ── เตือนเมื่อข้อมูลผู้ป่วยยังไม่ครบ (รวมสิทธิ์การรักษา): แจ้งรายการที่ขาด ให้เลือกได้ว่าจะกลับไปกรอกหรือบันทึกต่อ ── */
+/* ══════════════ หน้าต่างเตือน "ข้อมูลยังไม่ครบ" (กล่องแดงกลางจอ) ══════════════
+   แยกกลุ่มให้ชัดระหว่าง 👤 ข้อมูลผู้ป่วย กับ 🦻 ข้อมูลเครื่องช่วยฟัง
+   คืนค่า true = ผู้ใช้เลือก "บันทึกทั้งที่ยังไม่ครบ" · false = กลับไปกรอกต่อ */
+function showMissingModal(groups){
+  return new Promise(resolve=>{
+    let ov = document.getElementById('missModal');
+    if(!ov){
+      ov = document.createElement('div');
+      ov.id = 'missModal';
+      ov.innerHTML = '<div class="mm-box" role="dialog" aria-modal="true">'
+        + '<div class="mm-head"><span class="mm-ic">⚠️</span><span>ข้อมูลยังไม่ครบ</span></div>'
+        + '<div class="mm-body"><div class="mm-lead" id="mmLead"></div><div id="mmGroups"></div></div>'
+        + '<div class="mm-foot">'
+        +   '<button type="button" class="mm-btn mm-back" id="mmBack">↩ กลับไปกรอกให้ครบ</button>'
+        +   '<button type="button" class="mm-btn mm-go" id="mmGo">บันทึกทั้งที่ยังไม่ครบ</button>'
+        + '</div></div>';
+      document.body.appendChild(ov);
+    }
+    const eh = t => String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const names = groups.map(g=>g.title.replace(/^[^ ]+ /,''));
+    ov.querySelector('#mmLead').textContent = 'ยังกรอก' + names.join(' และ ') + 'ไม่ครบ — ช่องที่ขาดมีดังนี้';
+    ov.querySelector('#mmGroups').innerHTML = groups.map(g=>
+      '<div class="mm-grp"><div class="mm-grp-t">'+eh(g.title)+'</div><ul class="mm-list">'
+      + g.items.map(x=>'<li>'+eh(x)+'</li>').join('') + '</ul></div>').join('');
+    const back = ov.querySelector('#mmBack'), go = ov.querySelector('#mmGo');
+    const onKey = e=>{ if(e.key==='Escape') finish(false); };
+    function finish(v){
+      ov.classList.remove('show');
+      back.onclick = null; go.onclick = null; ov.onclick = null;
+      document.removeEventListener('keydown', onKey);
+      resolve(v);
+    }
+    back.onclick = ()=>finish(false);
+    go.onclick   = ()=>finish(true);
+    ov.onclick   = e=>{ if(e.target===ov) finish(false); };
+    document.addEventListener('keydown', onKey);
+    ov.classList.add('show');
+    setTimeout(()=>{ try{ back.focus(); }catch(e){} }, 30);
+  });
+}
+/* รายการช่องที่ยังไม่ได้กรอก — แยกเป็น 2 ชุดตามหน้าที่กำลังกรอกอยู่ */
+function missingPatientFields(){
+  const _v = k => String(S[k]||'').trim();
+  const m = [];
+  if(!_v('hospital')) m.push('โรงพยาบาล');
+  if(!_v('hn')) m.push('HN');
+  if(!_v('nameFirst') && !_v('name')) m.push('ชื่อ');
+  if(!_v('nameLast')) m.push('นามสกุล');
+  if(!_v('phone')) m.push('โทรศัพท์');
+  if(!_v('birth')) m.push('วันเกิด');
+  if(!_v('fitDate')) m.push('วันที่ใส่เครื่อง');
+  if(!_v('rightType')) m.push('สิทธิ์การรักษา');
+  if(!_v('addr_no') && !_v('addr_moo') && !_v('addr_province')) m.push('ที่อยู่');
+  /* เลขบัตรประชาชนไม่บังคับ — แต่ถ้ากรอกมาแล้วไม่ครบ 13 หลัก ให้เตือน */
+  const cid = String(S.citizenId||'').replace(/\D/g,'');
+  if(cid && cid.length!==13) m.push('เลขบัตรประชาชน (ต้องครบ 13 หลัก)');
+  return m;
+}
+function missingHearingAidFields(){
+  const _v = k => String(S[k]||'').trim();
+  const m = [];
+  if(!_v('ear')) m.push('ข้างที่ใส่');
+  if(!_v('dtype')) m.push('ชนิดเครื่อง');
+  const both = S.ear==='both';
+  if(!_v('s7_resound')) m.push('ยี่ห้อเครื่องช่วยฟัง');
+  if(!(both ? (_v('s7_resound_model_L') || _v('s7_resound_model_R')) : _v('s7_resound_model'))) m.push('รุ่นเครื่องช่วยฟัง');
+  if(!(both ? (_v('sn_L') || _v('sn_R')) : _v('sn'))) m.push('S/N เครื่อง');
+  if(!_v('audiologist')) m.push('ชื่อนักแก้ไขการได้ยิน');
+  return m;
+}
+
+/* scope: 'patient' = ตรวจเฉพาะข้อมูลผู้ป่วย · 'hearingaid' = เฉพาะข้อมูลเครื่องช่วยฟัง
+          'audiogram' = ไม่ตรวจ (มาจากหน้ากราฟ) · 'all' = ตรวจทั้งสองชุด (ใช้ตอนสั่งปริ้น)
+   ไม่ส่งมา = ใช้หน้าที่กำลังเปิดอยู่ (_sidebarMode) */
+async function doSave(scope){
+  /* ── กันลงข้อมูลซ้ำ: HN หรือ ชื่อ-สกุล ตรงกับผู้ป่วยรายอื่นในโรงพยาบาลเดียวกัน = บันทึกไม่ได้ ── */
   {
-    const _v = k => String(S[k]||'').trim();
-    const missing = [];
-    if(!_v('hospital')) missing.push('โรงพยาบาล');
-    if(!_v('hn')) missing.push('HN');
-    if(!_v('nameFirst') && !_v('name')) missing.push('ชื่อ');
-    if(!_v('nameLast')) missing.push('นามสกุล');
-    if(!_v('phone')) missing.push('โทรศัพท์');
-    if(!_v('birth')) missing.push('วันเกิด');
-    if(!_v('fitDate')) missing.push('วันที่ใส่เครื่อง');
-    if(!_v('rightType')) missing.push('สิทธิ์การรักษา');
-    if(!_v('addr_no') && !_v('addr_moo') && !_v('addr_province')) missing.push('ที่อยู่');
-    /* เลขบัตรประชาชนไม่บังคับ — แต่ถ้ากรอกมาแล้วไม่ครบ 13 หลัก ให้เตือน */
-    const cidDigits = String(S.citizenId||'').replace(/\D/g,'');
-    if(cidDigits && cidDigits.length!==13) missing.push('เลขบัตรประชาชน (ต้องครบ 13 หลัก)');
-
-    /* ── ข้อมูลเครื่องช่วยฟัง (แถบ 🦻) ── */
-    const haMissing = [];
-    if(!_v('ear')) haMissing.push('ข้างที่ใส่');
-    if(!_v('dtype')) haMissing.push('ชนิดเครื่อง');
-    const _both = S.ear==='both';
-    const _brand = _v('s7_resound');
-    const _model = _both ? (_v('s7_resound_model_L') || _v('s7_resound_model_R')) : _v('s7_resound_model');
-    if(!_brand) haMissing.push('ยี่ห้อเครื่องช่วยฟัง');
-    if(!_model) haMissing.push('รุ่นเครื่องช่วยฟัง');
-    const _sn = _both ? (_v('sn_L') || _v('sn_R')) : _v('sn');
-    if(!_sn) haMissing.push('S/N เครื่อง');
-    if(!_v('audiologist')) haMissing.push('ชื่อนักแก้ไขการได้ยิน');
-
-    if((missing.length || haMissing.length)){
-      let msg = '⚠️ ข้อมูลยังไม่ครบ\n';
-      if(missing.length)   msg += '\n👤 ข้อมูลผู้ป่วย — ขาด: ' + missing.join(', ') + '\n';
-      if(haMissing.length) msg += '\n🦻 ข้อมูลเครื่องช่วยฟัง — ขาด: ' + haMissing.join(', ') + '\n';
-      msg += '\nกด "ตกลง" เพื่อบันทึกต่อทั้งที่ยังไม่ครบ\nกด "ยกเลิก" เพื่อกลับไปกรอกให้ครบก่อน';
-      if(!confirm(msg)) return false;
+    const dup = findDupRecords();
+    if(dup.hn || dup.name){
+      let m = '⛔ บันทึกไม่ได้ — ข้อมูลซ้ำกับผู้ป่วยที่มีอยู่แล้ว\n';
+      if(dup.hn)   m += '\n• HN ซ้ำ → '+dupDescr(dup.hn);
+      if(dup.name && dup.name!==dup.hn) m += '\n• ชื่อ-สกุลซ้ำ → '+dupDescr(dup.name);
+      m += '\n\nถ้าเป็นคนเดียวกัน: กลับไปหน้ารายชื่อผู้ป่วย แล้วกด ✏️ แก้ไขรายการเดิมแทน'
+         + '\nถ้าเป็นคนละคนจริง ๆ: แก้ HN / ชื่อ-สกุล ให้ต่างกันก่อน';
+      alert(m);
+      try{ renderDupHint(); jump('forms'); }catch(e){}
+      return false;
+    }
+  }
+  /* ── เตือนเมื่อข้อมูลยังไม่ครบ — เตือนเฉพาะชุดที่กำลังกรอกอยู่ (ผู้ป่วย / เครื่องช่วยฟัง) ── */
+  {
+    const sc = scope || _sidebarMode || 'patient';
+    const groups = [];
+    if(sc==='patient' || sc==='all'){
+      const m = missingPatientFields();
+      if(m.length) groups.push({title:'👤 ข้อมูลผู้ป่วย', items:m});
+    }
+    if(sc==='hearingaid' || sc==='all'){
+      const m = missingHearingAidFields();
+      if(m.length) groups.push({title:'🦻 ข้อมูลเครื่องช่วยฟัง', items:m});
+    }
+    if(groups.length){
+      const go = await showMissingModal(groups);
+      if(!go){ try{ jump('forms'); }catch(e){} return false; }
     }
   }
   try{
@@ -3612,6 +3995,65 @@ const RKEY = KEY + '_records';
 let _recordsCache = [];
 let _recordsLoaded = false;
 function getRecords(){ return _recordsCache; }
+
+/* ══════════════ กันลงข้อมูลผู้ป่วยซ้ำ (HN / ชื่อ-สกุล ในโรงพยาบาลเดียวกัน) ══════════════
+   ทั้งสองห้องกรอกคนละเครื่อง จึงเผลอสร้างรายการใหม่ให้คนเดิมได้ง่าย — ถ้าซ้ำจะบันทึกไม่ผ่าน
+   ให้กลับไปกด ✏️ แก้ไขรายการเดิมแทน */
+const NAME_PREFIXES = ['นางสาว','เด็กชาย','เด็กหญิง','ด.ช.','ด.ญ.','น.ส.','นาย','นาง','พระ','แม่ชี'];
+function stripNamePrefix(v){
+  let t = String(v||'').trim();
+  for(let i=0;i<NAME_PREFIXES.length;i++){
+    const pf = NAME_PREFIXES[i];
+    if(t.indexOf(pf)===0){ return t.slice(pf.length).trim(); }
+  }
+  return t;
+}
+function normHosp(v){ return String(v||'').trim().replace(/\s+/g,'').toLowerCase(); }
+function normHN(v){ return String(v||'').trim().replace(/\s+/g,'').toUpperCase(); }
+function normPersonName(v){ return stripNamePrefix(v).replace(/\s+/g,' ').trim().toLowerCase(); }
+function fullNameOfS(){
+  const n = ((S.namePrefix||'')+(S.nameFirst||'')+(S.nameLast?' '+S.nameLast:'')).trim();
+  return n || String(S.name||'');
+}
+/* คืน {hn: record|null, name: record|null} ของรายการที่ซ้ำกับข้อมูลที่กำลังกรอกอยู่ */
+function findDupRecords(){
+  const out = {hn:null, name:null};
+  const hosp = normHosp(S.hospital);
+  const hn   = normHN(S.hn);
+  const nm   = normPersonName(fullNameOfS());
+  if(!hosp) return out;                       // ยังไม่ระบุโรงพยาบาล → เทียบไม่ได้
+  const list = getRecords()||[];
+  for(let i=0;i<list.length;i++){
+    const r = list[i];
+    if(!r || r._id===S._id) continue;
+    if(normHosp(r.hospital)!==hosp) continue;
+    if(hn && !out.hn   && normHN(r.hn)===hn)             out.hn = r;
+    if(nm && !out.name && normPersonName(r.name)===nm)   out.name = r;
+    if(out.hn && out.name) break;
+  }
+  return out;
+}
+function dupDescr(r){
+  const bits = [];
+  if(r.hn) bits.push('HN '+r.hn);
+  if(r.name) bits.push(r.name);
+  if(r.fitDate) bits.push('ใส่เครื่อง '+r.fitDate);
+  if(r.queueNo) bits.push('คิว '+r.queueNo);
+  return bits.join(' · ');
+}
+/* แถบเตือนสดใต้ช่องชื่อ — เห็นตั้งแต่ตอนพิมพ์ ไม่ต้องรอกดบันทึก */
+function renderDupHint(){
+  const box = document.getElementById('dupHint'); if(!box) return;
+  const d = findDupRecords();
+  if(!d.hn && !d.name){ box.style.display='none'; box.innerHTML=''; return; }
+  const lines = [];
+  const eh = t => String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  if(d.hn)   lines.push('HN นี้มีอยู่แล้ว → '+eh(dupDescr(d.hn)));
+  if(d.name && d.name!==d.hn) lines.push('ชื่อ-สกุลนี้มีอยู่แล้ว → '+eh(dupDescr(d.name)));
+  box.style.display='';
+  box.innerHTML = '⛔ ซ้ำกับผู้ป่วยที่มีอยู่ในระบบ<br>'+lines.join('<br>')
+    + '<br><span style="font-weight:400">ถ้าเป็นคนเดียวกัน ให้กลับไปหน้ารายชื่อผู้ป่วยแล้วกด ✏️ แก้ไขรายการเดิม</span>';
+}
 async function refreshRecordsCache(_retry){
   const api = window.hcsApi;
   if(!api){ return _recordsCache; }
@@ -3644,7 +4086,39 @@ async function refreshRecordsCache(_retry){
   _recordsLoaded = true;
   return _recordsCache;
 }
+/* ══════════════ สำรองข้อมูลที่ลบไว้ในเครื่องนี้ (ตาข่ายกันข้อมูลหายชั้นที่ 2) ══════════════
+   ชั้นแรกคือ "ถังขยะ" บน Google Sheet (กู้ได้จากทุกเครื่อง) — ชั้นนี้เก็บไว้ในเบราว์เซอร์ของคนที่กดลบ
+   ใช้กรณีเซิร์ฟเวอร์ยังไม่ได้อัปเดต หรือถังขยะบนชีตมีปัญหา · เก็บรายการล่าสุดเท่าที่พื้นที่ไหว */
+const LTRASH_KEY = KEY + '_localtrash';
+const LTRASH_MAX = 60;
+let _localTrash = [];
+function loadLocalTrash(){
+  try{ _localTrash = JSON.parse(localStorage.getItem(LTRASH_KEY)||'[]'); }catch(e){ _localTrash = []; }
+  if(!Array.isArray(_localTrash)) _localTrash = [];
+}
+function saveLocalTrash(){
+  try{ localStorage.setItem(LTRASH_KEY, JSON.stringify(_localTrash)); }
+  catch(e){                                  // พื้นที่เต็ม — ตัดของเก่าทิ้งครึ่งหนึ่งแล้วลองใหม่
+    try{ _localTrash = _localTrash.slice(0, Math.max(5, Math.floor(_localTrash.length/2)));
+         localStorage.setItem(LTRASH_KEY, JSON.stringify(_localTrash)); }catch(e2){}
+  }
+}
+function pushLocalTrash(rec){
+  if(!rec || !rec._id) return;
+  loadLocalTrash();
+  _localTrash = _localTrash.filter(t=>t && t.rec && t.rec._id!==rec._id);
+  let copy; try{ copy = JSON.parse(JSON.stringify(rec)); }catch(e){ copy = rec; }
+  _localTrash.unshift({
+    trashId: 'L'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),
+    rec: copy,
+    deletedAt: new Date().toISOString(),
+    deletedBy: localStorage.getItem('hcs_display_name') || localStorage.getItem('hcs_username') || ''
+  });
+  if(_localTrash.length > LTRASH_MAX) _localTrash = _localTrash.slice(0, LTRASH_MAX);
+  saveLocalTrash();
+}
 function deleteRecord(id){
+  try{ pushLocalTrash(_fullCache[id] || _recordsCache.find(r=>r._id===id)); }catch(e){}
   _recordsCache = _recordsCache.filter(r=>r._id!==id);
   _outbox = _outbox.filter(r=>r._id!==id); saveOutbox(); updateSyncBadge();
   try{ delete _fullCache[id]; saveFullCache(); }catch(e){}
@@ -3674,15 +4148,30 @@ function loadRecordIntoS(rec){
   snapBase(rec);        // baseline = เวอร์ชันที่เห็นตอนเปิดฟอร์ม
   _entryOpen = true;    // ล็อก baseline ไว้ระหว่างกรอก ห้ามให้การรีเฟรชเบื้องหลังมาเลื่อน
   S = Object.assign({}, DEFAULTS, rec);
+  backfillHACard();   // เคสเก่า: ย้ายยี่ห้อ/รุ่นขึ้นการ์ดให้ ผู้ใช้จะได้ล้างค่าออกได้จริง
   S.audTh = mergeAudTh(rec.audTh);
   resetAudHistory();
   reflectInputs(); buildAudTable(); paintAudTools(); updateDerived(); render(); syncComputedFields();
   updateQueueBadge();
 }
-function avgForRec(rec, ear, type){
+function avgForRec(rec, ear, type, freqs){
   let s=0,c=0; const th = rec.audTh||{};
-  PTA_FREQS.forEach(fr=>{ const d = th[fr] && th[fr][ear+type]; const v = d?num(d.v):null; if(v!==null){ s+=v; c++; } });
+  (freqs||PTA_FREQS).forEach(fr=>{ const d = th[fr] && th[fr][ear+type]; const v = d?num(d.v):null; if(v!==null){ s+=v; c++; } });
   return c ? Math.round(s/c) : null;
+}
+/* PTA 4 ความถี่ — ต้องมีครบทั้ง 4 จุด (500/1000/2000/4000) ถึงจะคิดค่า ไม่งั้นคืนค่าว่าง
+   เพื่อไม่ให้ตัวเลขที่ออกไปในไฟล์เบิกดูเหมือนครบทั้งที่ตรวจไม่ครบ */
+function pta4ForRec(rec, ear){
+  const th = (rec && rec.audTh) || {};
+  let s=0;
+  for(let i=0;i<PTA4_FREQS.length;i++){
+    const fr=PTA4_FREQS[i];
+    const d = th[fr] && th[fr][ear+'AC'];
+    const v = d ? num(d.v) : null;
+    if(v===null) return null;
+    s+=v;
+  }
+  return Math.round(s/PTA4_FREQS.length);
 }
 
 /* ══════════════════ ICD-10 / ICD-9 จากผลการได้ยิน ══════════════════
@@ -3772,6 +4261,7 @@ function init(){
   S.audTh = freshAudTh();
   const auto = localStorage.getItem(KEY+'_auto');
   if(auto){ try{ const parsed=JSON.parse(auto); S = Object.assign({}, DEFAULTS, parsed); S.audTh = mergeAudTh(parsed.audTh); }catch(e){} }
+  backfillHACard();
   applyUserHospital();
   resetAudHistory();
   buildSidebar();
@@ -3906,19 +4396,41 @@ function init(){
   document.getElementById('printModalGo').addEventListener('click', doPrintFromModal);
   document.getElementById('printModal').addEventListener('click', e=>{ if(e.target.id==='printModal') closePrintModal(); });
   document.getElementById('pmZoom').addEventListener('input', applyPmZoom);
+  /* ── ค่าเริ่มต้น: เปิดในแท็บใหม่ + สั่งพิมพ์อัตโนมัติ (ลดการกดปุ่มซ้ำตอนพิมพ์ทีละคน)
+        ผู้ใช้ปิดเองได้ แล้วโปรแกรมจะจำค่าไว้ในเครื่องนั้น ── */
+  (function initPrintTabPrefs(){
+    const nt = document.getElementById('pmNewTab'), ap = document.getElementById('pmAutoPrint');
+    if(!nt || !ap) return;
+    try{
+      const savedNt = localStorage.getItem('hcs_pm_newtab');
+      const savedAp = localStorage.getItem('hcs_pm_autoprint');
+      if(savedNt !== null) nt.checked = (savedNt === '1');
+      if(savedAp !== null) ap.checked = (savedAp === '1');
+    }catch(e){}
+    ap.disabled = !nt.checked;
+    if(!nt.checked) ap.checked = false;
+  })();
   document.getElementById('pmNewTab').addEventListener('change', e=>{
     const auto = document.getElementById('pmAutoPrint');
     auto.disabled = !e.target.checked;
     if(!e.target.checked) auto.checked = false;
+    try{
+      localStorage.setItem('hcs_pm_newtab', e.target.checked ? '1' : '0');
+      localStorage.setItem('hcs_pm_autoprint', auto.checked ? '1' : '0');
+    }catch(err){}
+  });
+  document.getElementById('pmAutoPrint').addEventListener('change', e=>{
+    try{ localStorage.setItem('hcs_pm_autoprint', e.target.checked ? '1' : '0'); }catch(err){}
   });
   document.getElementById('btnPreviewPrint').addEventListener('click', ()=>window.print());
   /* ── หลังปิดหน้าต่างปริ้น (ปริ้นเสร็จ/บันทึกเป็น PDF เสร็จ): บันทึกข้อมูล แล้วล้างฟอร์มกลับไปหน้าแรกให้พร้อมรับผู้ป่วยคนถัดไป ── */
   window.addEventListener('afterprint', async ()=>{
     document.querySelectorAll('#sheets > .sheet.sheet-copy-clone').forEach(n=>n.remove());
     /* ถ้ายังไม่เลือกสิทธิ์การรักษา: ไม่บันทึกและไม่ล้างฟอร์ม — พากลับไปหน้ากรอกให้เลือกก่อน (กันข้อมูลหาย) */
-    if(await doSave() === false){ showAllSheets(); hidePreviewBar(); openEntryModal('patient'); return; }
+    if(await doSave('all') === false){ showAllSheets(); hidePreviewBar(); openEntryModal('patient'); return; }
     S = Object.assign({}, DEFAULTS);
     S.audTh = freshAudTh();
+    backfillHACard();
     applyUserHospital();
     resetAudHistory();
     reflectInputs(); buildAudTable(); paintAudTools(); updateDerived(); render(); syncComputedFields(); autosave();
@@ -4343,10 +4855,8 @@ function init(){
     buildSidebar();
     const optionalPanel = document.getElementById('optionalPanel');
     optionalPanel.innerHTML = '';
-    if(view==='patient'){
-      const _optNode = document.querySelector('#forms .optional-section');
-      if(_optNode) optionalPanel.appendChild(_optNode);
-    }
+    const _optNode = document.querySelector('#forms .optional-section');   /* กล่อง "อื่นๆ" ย้ายไปแผงข้าง (ตอนนี้อยู่หน้า 🦻) */
+    if(_optNode) optionalPanel.appendChild(_optNode);
     const titleEl = document.querySelector('#sidebar .side-head h1');
     if(titleEl) titleEl.textContent = view==='audiogram' ? 'กรอกข้อมูล Audiogram'
                                     : (view==='hearingaid' ? '🦻 กรอกข้อมูลเครื่องช่วยฟัง' : 'เพิ่ม / แก้ไขข้อมูลผู้ป่วย');
@@ -4476,8 +4986,241 @@ function init(){
     bar.classList.toggle('show', _selIds.size>0);
     const c = document.getElementById('lstBulkCount');
     if(c) c.textContent = 'เลือก ' + _selIds.size + ' คน';
+    const del = document.getElementById('btnBulkDel');
+    if(del) del.style.display = canDeleteRecords() ? '' : 'none';
   }
   function clearSelection(){ _selIds.clear(); updateBulkBar(); renderList(); }
+
+  /* ══════════════════ ลบผู้ป่วยหลายคนพร้อมกัน ══════════════════
+     ใช้ได้เฉพาะผู้ดูแลระบบ (ดู canDeleteRecords) · ถามยืนยัน 2 ชั้นเพราะกู้คืนไม่ได้
+     ทางเร็ว: คำสั่ง deleteRecordsBulk (ล็อกครั้งเดียว ลบจากแถวล่างขึ้นบน)
+     ทางสำรอง: ถ้าเซิร์ฟเวอร์ยังไม่ได้อัปเดต จะวนลบทีละคนด้วยคำสั่งเดิม */
+  async function bulkDeleteRecords(ids){
+    if(!canDeleteRecords()){ alert('สิทธิ์ไม่เพียงพอ — การลบรายชื่อผู้ป่วยทำได้เฉพาะผู้ดูแลระบบ (admin) เท่านั้น'); return; }
+    if(!ids.length){ alert('ยังไม่ได้เลือกผู้ป่วย — ติ๊กช่องหน้าแถวในตารางก่อน'); return; }
+
+    const all = getRecords();
+    const names = ids.map(id=>{
+      const r = all.find(x=>x._id===id) || {};
+      return '• ' + (r.name || '(ไม่มีชื่อ)') + (r.hn ? ('  HN '+r.hn) : '');
+    });
+    const show = names.slice(0,12).join('\n') + (names.length>12 ? ('\n… และอีก '+(names.length-12)+' คน') : '');
+    if(!confirm('ลบผู้ป่วย '+ids.length+' คนต่อไปนี้?\n\n'+show)) return;
+    if(!confirm('⚠️ ยืนยันอีกครั้ง\n\nข้อมูลทั้งหมดของ '+ids.length+' คนนี้ (ฟอร์ม + Audiogram) จะถูกลบถาวร\nกู้คืนไม่ได้\n\nกด "ตกลง" เพื่อลบ')) return;
+
+    const api = window.hcsApi, t = localStorage.getItem('hcs_token');
+    if(!api || !t){ alert('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ — ลองใหม่อีกครั้ง'); return; }
+
+    const btn = document.getElementById('btnBulkDel');
+    const old = btn ? btn.textContent : '';
+    if(btn){ btn.disabled = true; btn.textContent = '⏳ กำลังลบ...'; }
+
+    /* ดึงข้อมูลเต็มของคนที่ยังไม่มีในเครื่องมาก่อน — สำรองลงถังขยะในเครื่องจะได้ครบทุกช่อง */
+    const needFull = ids.filter(id=>!_fullCache[id]);
+    if(needFull.length){
+      try{
+        const rf = await api.postAction('getRecordsBulk', {token:t, ids:needFull});
+        if(rf && rf.status==='ok' && rf.records) rf.records.forEach(rec=>{ try{ upsertFullCache(rec); }catch(e){} });
+      }catch(e){}
+    }
+
+    let done = 0, failed = 0, fast = false;
+    try{
+      const res = await api.postAction('deleteRecordsBulk', {token:t, ids:ids});
+      if(res && res.status==='ok' && res.done!==undefined){
+        fast = true; done = res.done; failed = ids.length - res.done;
+      }
+    }catch(e){ /* เซิร์ฟเวอร์เวอร์ชันเก่า/เน็ตหลุด → ถอยไปลบทีละคน */ }
+
+    if(!fast){
+      for(let i=0;i<ids.length;i++){
+        if(btn) btn.textContent = '⏳ กำลังลบ '+(i+1)+'/'+ids.length;
+        try{
+          const r = await api.postAction('deleteRecord', {token:t, id:ids[i]});
+          if(r && r.status==='ok') done++; else failed++;
+        }catch(e){ failed++; }
+      }
+    }
+
+    ids.forEach(id=>{ try{ deleteRecord(id); }catch(e){} });   /* ล้างออกจากแคชในเครื่อง */
+    try{ localStorage.setItem(RKEY, JSON.stringify(_recordsCache)); }catch(e){}
+    if(btn){ btn.disabled = false; btn.textContent = old; }
+    clearSelection();
+    renderList();
+    if(failed) alert('ลบสำเร็จ '+done+' คน · ลบไม่สำเร็จ '+failed+' คน (ไม่มีสิทธิ์ในรพ.นั้น หรือหาไม่เจอ)\nลองรีเฟรชหน้าแล้วตรวจสอบอีกครั้ง');
+    else { try{ hcsToast('🗑️ ลบผู้ป่วย '+done+' คนเรียบร้อย'); }catch(e){} }
+  }
+
+  /* ══════════════════ ถังขยะ — ดู / กู้คืน / ลบถาวร ══════════════════
+     รวมรายการจาก 2 แหล่ง: ☁️ ถังขยะบน Google Sheet (ทุกเครื่องเห็นเหมือนกัน)
+     และ 💻 สำรองในเบราว์เซอร์ของเครื่องที่กดลบ (ใช้ได้แม้ Apps Script ยังไม่ได้อัปเดต) */
+  let _trashRows = [];
+  function trashWhen(iso){
+    if(!iso) return '-';
+    try{ const d=new Date(iso); return d.toLocaleDateString('th-TH')+' '+d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}); }
+    catch(e){ return String(iso).slice(0,16); }
+  }
+  async function openTrashModal(){
+    if(!canDeleteRecords()){ alert('สิทธิ์ไม่เพียงพอ — ถังขยะเปิดได้เฉพาะผู้ดูแลระบบ (admin)'); return; }
+    let m = document.getElementById('trashModal');
+    if(!m){
+      m = document.createElement('div');
+      m.id = 'trashModal';
+      m.innerHTML = `<div class="tr-card">
+        <div class="tr-head"><span>🗑️ ถังขยะ</span><span class="sp"></span>
+          <button class="btn btn-ghost" id="btnTrashReload">🔄 รีเฟรช</button>
+          <button class="btn btn-ghost" id="btnTrashClose">✕ ปิด</button></div>
+        <div class="tr-lead" id="trashLead"></div>
+        <div class="tr-body"><table><thead><tr>
+          <th style="width:26px"><input type="checkbox" id="trashChkAll" title="เลือกทั้งหมด"></th>
+          <th>ชื่อ–สกุล</th><th style="width:92px">HN</th><th style="width:110px">โรงพยาบาล</th>
+          <th style="width:130px">ลบเมื่อ</th><th style="width:110px">ลบโดย</th><th style="width:96px">ที่สำรองไว้</th>
+        </tr></thead><tbody id="trashBody"></tbody></table></div>
+        <div class="tr-foot">
+          <span id="trashSel" style="font-size:12.5px;color:#6B6885;font-weight:600">เลือก 0 รายการ</span>
+          <span class="sp"></span>
+          <button class="btn btn-ghost" id="btnTrashPurge">🔥 ลบถาวร</button>
+          <button class="btn btn-primary" id="btnTrashRestore">♻️ กู้คืนที่เลือก</button>
+        </div></div>`;
+      document.body.appendChild(m);
+      m.querySelector('#btnTrashClose').addEventListener('click', ()=>m.classList.remove('show'));
+      m.addEventListener('click', e=>{ if(e.target.id==='trashModal') m.classList.remove('show'); });
+      m.querySelector('#btnTrashReload').addEventListener('click', loadTrashList);
+      m.querySelector('#trashChkAll').addEventListener('change', e=>{
+        m.querySelectorAll('#trashBody input[type="checkbox"]').forEach(c=>{ c.checked = e.target.checked; });
+        updateTrashSelCount();
+      });
+      m.querySelector('#trashBody').addEventListener('change', updateTrashSelCount);
+      m.querySelector('#btnTrashRestore').addEventListener('click', restoreFromTrash);
+      m.querySelector('#btnTrashPurge').addEventListener('click', purgeFromTrash);
+    }
+    m.classList.add('show');
+    await loadTrashList();
+  }
+  function selectedTrashIds(){
+    return [...document.querySelectorAll('#trashBody input[type="checkbox"]:checked')].map(c=>c.getAttribute('data-tid'));
+  }
+  function updateTrashSelCount(){
+    const el = document.getElementById('trashSel');
+    if(el) el.textContent = 'เลือก ' + selectedTrashIds().length + ' รายการ';
+  }
+  async function loadTrashList(){
+    const body = document.getElementById('trashBody'), lead = document.getElementById('trashLead');
+    if(!body) return;
+    body.innerHTML = '<tr class="tr-empty"><td colspan="7">⏳ กำลังโหลด...</td></tr>';
+    const api = window.hcsApi, t = localStorage.getItem('hcs_token');
+    let server = [], serverOk = false, serverMsg = '';
+    if(api && t){
+      try{
+        const res = await api.postAction('listTrash', {token:t});
+        if(res && res.status==='ok' && Array.isArray(res.records)){ server = res.records; serverOk = true; }
+        else serverMsg = (res && res.message) || 'เซิร์ฟเวอร์ไม่ตอบ';
+      }catch(e){ serverMsg = String(e); }
+    }
+    loadLocalTrash();
+    /* ตัดสำรองในเครื่องที่ไม่จำเป็นแล้วทิ้ง — คนที่ถูกกู้กลับเข้ารายชื่อไปแล้ว ไม่ต้องค้างอยู่ในถังขยะอีก */
+    const aliveIds = new Set((getRecords()||[]).map(r=>r._id));
+    const beforeN = _localTrash.length;
+    _localTrash = _localTrash.filter(t2 => t2 && t2.rec && !aliveIds.has(t2.rec._id));
+    if(_localTrash.length !== beforeN) saveLocalTrash();
+
+    const haveIds = new Set(server.map(r=>r._id));
+    const local = _localTrash
+      .filter(t2 => !haveIds.has(t2.rec._id))
+      .map(t2 => ({ trashId:t2.trashId, _id:t2.rec._id, hospital:t2.rec.hospital||'', hn:t2.rec.hn||'',
+                    name:t2.rec.name||'', deletedAt:t2.deletedAt, deletedBy:t2.deletedBy, _local:true }));
+
+    _trashRows = server.map(r=>Object.assign({}, r, {_local:false})).concat(local)
+      .sort((a,b)=>String(b.deletedAt||'').localeCompare(String(a.deletedAt||'')));
+
+    lead.innerHTML = serverOk
+      ? `ข้อมูลที่ลบไปจะถูกเก็บไว้ที่นี่ กู้คืนกลับเข้ารายชื่อผู้ป่วยได้ตลอด — <b>${_trashRows.length} รายการ</b>`
+      : `⚠️ อ่านถังขยะบนเซิร์ฟเวอร์ไม่ได้ (${serverMsg}) — ถ้ายังไม่ได้อัปเดต Apps Script จะเห็นเฉพาะรายการที่ลบจากเครื่องนี้`;
+
+    if(!_trashRows.length){
+      body.innerHTML = '<tr class="tr-empty"><td colspan="7">ถังขยะว่าง — ยังไม่มีข้อมูลที่ถูกลบ</td></tr>';
+      updateTrashSelCount(); return;
+    }
+    const eh = x => String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    body.innerHTML = _trashRows.map(r=>`<tr>
+      <td><input type="checkbox" data-tid="${eh(r.trashId)}"></td>
+      <td><b>${eh(r.name)||'(ไม่มีชื่อ)'}</b></td>
+      <td>${eh(r.hn)||'-'}</td>
+      <td>${eh(r.hospital)||'-'}</td>
+      <td>${eh(trashWhen(r.deletedAt))}</td>
+      <td>${eh(r.deletedBy)||'-'}</td>
+      <td><span class="tr-src ${r._local?'local':'cloud'}">${r._local?'💻 เครื่องนี้':'☁️ เซิร์ฟเวอร์'}</span></td>
+    </tr>`).join('');
+    const all = document.getElementById('trashChkAll'); if(all) all.checked = false;
+    updateTrashSelCount();
+  }
+  async function restoreFromTrash(){
+    const tids = selectedTrashIds();
+    if(!tids.length){ alert('ยังไม่ได้เลือกรายการ — ติ๊กช่องหน้าแถวก่อน'); return; }
+    const picked = _trashRows.filter(r=>tids.includes(r.trashId));
+    if(!confirm('กู้คืนผู้ป่วย '+picked.length+' รายการกลับเข้ารายชื่อ?')) return;
+
+    const api = window.hcsApi, t = localStorage.getItem('hcs_token');
+    const btn = document.getElementById('btnTrashRestore');
+    const old = btn.textContent; btn.disabled = true; btn.textContent = '⏳ กำลังกู้คืน...';
+    let done = 0, failed = 0;
+
+    const cloudIds = picked.filter(r=>!r._local).map(r=>r.trashId);
+    if(cloudIds.length && api && t){
+      try{
+        const res = await api.postAction('restoreTrash', {token:t, trashIds:cloudIds});
+        if(res && res.status==='ok'){
+          done += (res.done||0) + (res.alreadyThere||0);
+          /* กู้จากเซิร์ฟเวอร์แล้ว → ลบสำรองในเครื่องของคนเดียวกันทิ้ง จะได้ไม่โผล่ซ้ำในถังขยะ */
+          const backIds = new Set(picked.filter(r=>!r._local).map(r=>r._id));
+          loadLocalTrash();
+          _localTrash = _localTrash.filter(x=>!(x && x.rec && backIds.has(x.rec._id)));
+          saveLocalTrash();
+        }
+        else failed += cloudIds.length;
+      }catch(e){ failed += cloudIds.length; }
+    }
+    /* รายการที่มีเฉพาะในเครื่องนี้ — ส่งข้อมูลเต็มกลับขึ้นไปสร้างใหม่ */
+    const localOnes = picked.filter(r=>r._local);
+    if(localOnes.length){
+      loadLocalTrash();
+      localOnes.forEach(r=>{
+        const hit = _localTrash.find(x=>x.trashId===r.trashId);
+        if(!hit || !hit.rec){ failed++; return; }
+        const rec = Object.assign({}, hit.rec);
+        rec._savedAt = new Date().toISOString();
+        try{ upsertLocalRecordsCache(rec); upsertFullCache(rec); outboxEnqueue(rec); done++; }
+        catch(e){ failed++; }
+      });
+      _localTrash = _localTrash.filter(x=>!localOnes.some(r=>r.trashId===x.trashId));
+      saveLocalTrash();
+      try{ localStorage.setItem(RKEY, JSON.stringify(_recordsCache)); }catch(e){}
+    }
+
+    btn.disabled = false; btn.textContent = old;
+    await refreshRecordsCache();
+    renderList();
+    await loadTrashList();
+    if(failed) alert('กู้คืนสำเร็จ '+done+' รายการ · ไม่สำเร็จ '+failed+' รายการ');
+    else { try{ hcsToast('♻️ กู้คืนผู้ป่วย '+done+' รายการเรียบร้อย'); }catch(e){} }
+  }
+  async function purgeFromTrash(){
+    const tids = selectedTrashIds();
+    if(!tids.length){ alert('ยังไม่ได้เลือกรายการ — ติ๊กช่องหน้าแถวก่อน'); return; }
+    if(!confirm('🔥 ลบถาวร '+tids.length+' รายการออกจากถังขยะ?\n\nหลังจากนี้จะกู้คืนไม่ได้อีกเลย')) return;
+    const picked = _trashRows.filter(r=>tids.includes(r.trashId));
+    const api = window.hcsApi, t = localStorage.getItem('hcs_token');
+    const cloudIds = picked.filter(r=>!r._local).map(r=>r.trashId);
+    if(cloudIds.length && api && t){
+      try{ await api.postAction('purgeTrash', {token:t, trashIds:cloudIds}); }
+      catch(e){ alert('ลบถาวรบนเซิร์ฟเวอร์ไม่สำเร็จ: '+e); }
+    }
+    loadLocalTrash();
+    _localTrash = _localTrash.filter(x=>!tids.includes(x.trashId));
+    saveLocalTrash();
+    await loadTrashList();
+    try{ hcsToast('🔥 ลบถาวรแล้ว '+tids.length+' รายการ'); }catch(e){}
+  }
 
   /* ── กล่องลงนัดหมาย ── */
   let _apptTargets = [];
@@ -4498,6 +5241,179 @@ function init(){
     m.classList.add('show');
   }
   function closeApptModal(){ document.getElementById('apptModal').classList.remove('show'); _apptTargets=[]; }
+
+  /* ══════════════════ กรอกข้อมูลเดียวกันให้ผู้ป่วยหลายคนพร้อมกัน ══════════════════
+     ติ๊กเลือกคนในตาราง → กด "✏️ กรอกข้อมูลพร้อมกัน" → ติ๊กเฉพาะช่องที่ต้องการเขียนทับ
+     ช่องที่ไม่ติ๊กจะไม่ถูกแตะเลย (ส่งขึ้นเซิร์ฟเวอร์แค่ช่องที่เปลี่ยน ผ่าน patchRecordsBulk รอบเดียวจบ)
+     หมายเหตุ: S/N เป็นของใครของมัน จึงไม่มีให้กรอกรวม ── ต้องเปิดทีละคนใส่เอง */
+  let _bulkTargets = [];
+  const BF_EAR = [['','— ไม่เปลี่ยน —'],['left','ซ้าย'],['right','ขวา'],['both','สองข้าง']];
+  const BF_DTYPE = [['','— ไม่เปลี่ยน —'],['body','Body'],['bte','BTE'],['ite','ในช่องหู'],['ric','RIC']];
+  function bfOpts(pairs, sel){ return pairs.map(([v,t])=>`<option value="${v}"${v===sel?' selected':''}>${t}</option>`).join(''); }
+  function bfFillModelSelect(){
+    const bEl=document.getElementById('bfBrand'), lEl=document.getElementById('bfLevel'), mEl=document.getElementById('bfModel');
+    if(!bEl||!lEl||!mEl) return;
+    const list = (bEl.value && BRANDS[bEl.value]) ? (BRANDS[bEl.value][lEl.value||'M']||[]) : [];
+    const cur = mEl.value;
+    mEl.innerHTML = '<option value="">— เลือกรุ่น —</option>' + list.map(m=>`<option value="${m}"${m===cur?' selected':''}>${m}</option>`).join('');
+    mEl.disabled = !bEl.value;
+  }
+  function openBulkFillModal(ids){
+    if(!ids.length){ alert('ยังไม่ได้เลือกผู้ป่วย — ติ๊กช่องหน้าแถวในตารางก่อน'); return; }
+    _bulkTargets = ids.slice();
+    let m = document.getElementById('bulkFillModal');
+    if(!m){
+      m = document.createElement('div');
+      m.id = 'bulkFillModal';
+      m.innerHTML = `<div class="appt-card bf-card">
+        <h3 id="bfTitle">✏️ กรอกข้อมูลพร้อมกัน</h3>
+        <div class="appt-body bf-body">
+          <div class="bf-lead">ติ๊กเฉพาะช่องที่ต้องการกรอกให้ <b>ทุกคนที่เลือกไว้</b> — ช่องที่ไม่ติ๊กจะไม่ถูกแตะต้อง<br>
+            <span style="color:#8B88A3">S/N ของเครื่องเป็นของใครของมัน ต้องเปิดทีละคนใส่เอง</span></div>
+
+          <div class="bf-row">
+            <label class="bf-ck"><input type="checkbox" data-bf="fitDate"> วันที่ใส่เครื่อง</label>
+            <div class="bf-in" data-for="fitDate">${dateInputHtml('', {id:'bfFitDate', today:true, ph:'กด "วันนี้" หรือ 📅 เลือกวันที่'})}</div>
+          </div>
+
+          <div class="bf-row">
+            <label class="bf-ck"><input type="checkbox" data-bf="device"> เครื่องช่วยฟัง — ยี่ห้อ / กำลังขยาย / รุ่น</label>
+            <div class="bf-in" data-for="device">
+              <div class="bf-grid3">
+                <select id="bfBrand"><option value="">— เลือกยี่ห้อ —</option>${BRAND_NAMES.map(b=>`<option value="${b}">${b}</option>`).join('')}</select>
+                <select id="bfLevel">${['M','P','HP'].map(l=>`<option value="${l}">${l}</option>`).join('')}</select>
+                <select id="bfModel" disabled><option value="">— เลือกรุ่น —</option></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="bf-row">
+            <label class="bf-ck"><input type="checkbox" data-bf="ear"> ข้างที่ใส่</label>
+            <div class="bf-in" data-for="ear"><select id="bfEar">${bfOpts(BF_EAR)}</select></div>
+          </div>
+
+          <div class="bf-row">
+            <label class="bf-ck"><input type="checkbox" data-bf="dtype"> ชนิดเครื่อง</label>
+            <div class="bf-in" data-for="dtype"><select id="bfDtype">${bfOpts(BF_DTYPE)}</select></div>
+          </div>
+
+          <div class="bf-row">
+            <label class="bf-ck"><input type="checkbox" data-bf="audiologist"> ชื่อนักแก้ไขการได้ยิน</label>
+            <div class="bf-in" data-for="audiologist"><input type="text" id="bfAudiologist" placeholder="ชื่อ–สกุล"></div>
+          </div>
+
+          <div class="bf-row">
+            <label class="bf-ck"><input type="checkbox" data-bf="salesperson"> ชื่อพนักงานขาย</label>
+            <div class="bf-in" data-for="salesperson"><input type="text" id="bfSalesperson" placeholder="ชื่อ–สกุล"></div>
+          </div>
+
+          <div class="bf-row">
+            <label class="bf-ck"><input type="checkbox" data-bf="note"> 📌 หมายเหตุ</label>
+            <div class="bf-in" data-for="note">
+              <input type="text" id="bfNote" placeholder="เว้นว่างไว้ = ล้างหมายเหตุของทุกคนที่เลือก">
+            </div>
+          </div>
+        </div>
+        <div class="appt-foot">
+          <button class="btn btn-ghost" id="bfCancel">ยกเลิก</button>
+          <button class="btn btn-primary" id="bfApply">✅ กรอกให้ทุกคน</button>
+        </div></div>`;
+      document.body.appendChild(m);
+      m.querySelectorAll('[data-bf]').forEach(ck=>{
+        ck.addEventListener('change', ()=>{
+          const box = m.querySelector(`.bf-in[data-for="${ck.getAttribute('data-bf')}"]`);
+          if(box) box.classList.toggle('on', ck.checked);
+        });
+      });
+      m.querySelector('#bfBrand').addEventListener('change', bfFillModelSelect);
+      m.querySelector('#bfLevel').addEventListener('change', bfFillModelSelect);
+      m.querySelector('#bfCancel').addEventListener('click', closeBulkFillModal);
+      m.querySelector('#bfApply').addEventListener('click', applyBulkFill);
+      m.addEventListener('click', e=>{ if(e.target.id==='bulkFillModal') closeBulkFillModal(); });
+    }
+    document.getElementById('bfTitle').textContent = '✏️ กรอกข้อมูลพร้อมกัน — ' + ids.length + ' คน';
+    /* ไม่เติมวันที่ให้อัตโนมัติ — กดปุ่ม "วันนี้" หรือเลือกจากปฏิทินเอง */
+    const au = document.getElementById('bfAudiologist'); if(!au.value) au.value = S.audiologist || DEFAULTS.audiologist || '';
+    const sp = document.getElementById('bfSalesperson'); if(!sp.value) sp.value = (typeof saleExaminerName==='function' ? (saleExaminerName()||'') : '');
+    bfFillModelSelect();
+    m.classList.add('show');
+  }
+  function closeBulkFillModal(){
+    const m = document.getElementById('bulkFillModal');
+    if(m) m.classList.remove('show');
+    _bulkTargets = [];
+  }
+  async function applyBulkFill(){
+    const ids = _bulkTargets.slice();
+    if(!ids.length){ closeBulkFillModal(); return; }
+    const on = k => { const el=document.querySelector(`#bulkFillModal [data-bf="${k}"]`); return !!(el && el.checked); };
+    const val = id => { const el=document.getElementById(id); return el ? String(el.value||'').trim() : ''; };
+
+    const patch = {}, summary = [];
+    if(on('fitDate')){
+      const v = val('bfFitDate');
+      if(!v){ alert('กรุณากรอกวันที่ใส่เครื่อง หรือเอาเครื่องหมายถูกออก'); return; }
+      patch.fitDate = v; summary.push('วันที่ใส่เครื่อง = '+v);
+    }
+    let earVal = null;
+    if(on('ear')){
+      earVal = val('bfEar');
+      if(!earVal){ alert('กรุณาเลือกข้างที่ใส่ หรือเอาเครื่องหมายถูกออก'); return; }
+      patch.ear = earVal;
+      patch.ear_label = {left:'ซ้าย', right:'ขวา', both:'สองข้าง'}[earVal] || '';
+      summary.push('ข้างที่ใส่ = '+patch.ear_label);
+    }
+    if(on('dtype')){
+      const v = val('bfDtype');
+      if(!v){ alert('กรุณาเลือกชนิดเครื่อง หรือเอาเครื่องหมายถูกออก'); return; }
+      patch.dtype = v; summary.push('ชนิดเครื่อง = '+({body:'Body',bte:'BTE',ite:'ในช่องหู',ric:'RIC'}[v]||v));
+    }
+    if(on('device')){
+      const brand = val('bfBrand'), level = val('bfLevel') || 'M', model = val('bfModel');
+      if(!brand){ alert('กรุณาเลือกยี่ห้อ หรือเอาเครื่องหมายถูกออก'); return; }
+      if(!model){ alert('กรุณาเลือกรุ่น หรือเอาเครื่องหมายถูกออก'); return; }
+      patch.s7_resound = brand;
+      patch.s7_resound_level = level; patch.s7_resound_level_L = level; patch.s7_resound_level_R = level;
+      patch.s7_resound_model = model; patch.s7_resound_model_L = model; patch.s7_resound_model_R = model;
+      patch.brand = brand; patch.model = model;
+      /* ช่องที่ฟอร์มปริ้นใช้ — เติมให้ครบเฉพาะตอนรู้ข้างที่ใส่ด้วย (ไม่งั้นปล่อยให้คำนวณใหม่ตอนเปิดเคส) */
+      if(earVal){
+        const L = earVal==='left' || earVal==='both', R = earVal==='right' || earVal==='both';
+        patch.brandL = L ? brand : ''; patch.modelL = L ? model : '';
+        patch.brandR = R ? brand : ''; patch.modelR = R ? model : '';
+      }
+      summary.push('เครื่อง = '+brand+' '+level+' '+model);
+    }
+    if(on('audiologist')){
+      const v = val('bfAudiologist');
+      if(!v){ alert('กรุณากรอกชื่อนักแก้ไขการได้ยิน หรือเอาเครื่องหมายถูกออก'); return; }
+      patch.audiologist = v; patch.officer = v; summary.push('นักแก้ไขการได้ยิน = '+v);
+    }
+    if(on('salesperson')){
+      const v = val('bfSalesperson');
+      if(!v){ alert('กรุณากรอกชื่อพนักงานขาย หรือเอาเครื่องหมายถูกออก'); return; }
+      patch.salesperson = v; patch._salespersonManual = true; summary.push('พนักงานขาย = '+v);
+    }
+    if(on('note')){
+      patch.note = val('bfNote');
+      summary.push(patch.note ? ('หมายเหตุ = '+patch.note) : 'ล้างหมายเหตุ');
+    }
+
+    if(!summary.length){ alert('ยังไม่ได้ติ๊กช่องไหนเลย — ติ๊กช่องที่ต้องการกรอกก่อน'); return; }
+    if(!confirm('เขียนข้อมูลต่อไปนี้ทับให้ผู้ป่วย '+ids.length+' คนที่เลือกไว้?\n\n• '+summary.join('\n• ')+'\n\nช่องอื่นทั้งหมดไม่ถูกแตะต้อง')) return;
+
+    const btn = document.getElementById('bfApply');
+    const old = btn.textContent; btn.disabled = true; btn.textContent = '⏳ กำลังบันทึก...';
+    let res;
+    try{ res = await patchRecords(ids, patch); }
+    catch(e){ btn.disabled=false; btn.textContent=old; alert('บันทึกไม่สำเร็จ: '+e); return; }
+    btn.disabled = false; btn.textContent = old;
+    closeBulkFillModal();
+    clearSelection();
+    renderList();
+    const skipped = res && res.skipped ? (' · ข้าม '+res.skipped+' คน (ไม่มีสิทธิ์/ไม่พบข้อมูล)') : '';
+    try{ hcsToast('✅ กรอกข้อมูลให้ '+((res&&res.done)||0)+' คนเรียบร้อย'+skipped); }catch(e){}
+  }
 
   async function saveAppointment(clear){
     const ids = _apptTargets.slice();
@@ -4645,9 +5561,14 @@ function init(){
     if(toQ) list = list.filter(r => r._savedAt && r._savedAt.slice(0,10) <= toQ);
     return list;
   }
-  /* ── สิทธิ์การลบรายชื่อผู้ป่วย: เฉพาะผู้ใช้ TitiwutNav เท่านั้น ── */
+  /* ลบรายชื่อผู้ป่วยได้: บัญชี titiwutnav หรือผู้ใช้สิทธิ์ "ผู้ดูแลระบบ (admin)"
+     (ฝั่ง Apps Script ยังตรวจสิทธิ์รพ.ซ้ำอีกชั้นเสมอ) */
   function canDeleteRecords(){
-    try{ return String(localStorage.getItem('hcs_username')||'').trim().toLowerCase()==='titiwutnav'; }catch(e){ return false; }
+    try{
+      const u = String(localStorage.getItem('hcs_username')||'').trim().toLowerCase();
+      if(u==='titiwutnav') return true;
+      return String(localStorage.getItem('hcs_role')||'').trim().toLowerCase()==='admin';
+    }catch(e){ return false; }
   }
   /* ── สิทธิ์เข้าถึงข้อมูลตามรพ.:
         1) admin เห็นทุกรพ.
@@ -4700,7 +5621,7 @@ function init(){
         <td>${esc(earTxt)}</td>
         <td>${LST_RIGHT_TH[rt] ? `<span class="right-pill rp-${rt}">${LST_RIGHT_TH[rt]}</span>` : '-'}</td>
         <td class="lst-actions">
-          <button class="lst-btn lst-edit" data-act="edit" data-id="${r._id}" title="แก้ไขข้อมูลผู้ป่วย">✏️</button>
+          <button class="lst-btn lst-edit" data-act="edit" data-id="${r._id}" title="แก้ไขข้อมูลผู้ป่วย">👤</button>
           <button class="lst-btn lst-ha" data-act="ha" data-id="${r._id}" title="กรอกข้อมูลเครื่องช่วยฟัง">🦻</button>
           <button class="lst-btn lst-audio" data-act="audio" data-id="${r._id}" title="กรอก Audiogram">📈</button>
           <button class="lst-btn lst-print" data-act="print" data-id="${r._id}" title="พิมพ์ฟอร์ม">🖨️</button>
@@ -4716,6 +5637,8 @@ function init(){
     fillMissingRightTypes(list);
     clearExpiredQueues();
     updateBulkBar();
+    const _tb = document.getElementById('btnOpenTrash');      /* ถังขยะ: เปิดได้เฉพาะผู้ที่ลบข้อมูลได้ */
+    if(_tb) _tb.style.display = canDeleteRecords() ? '' : 'none';
     const chkAll = document.getElementById('lstChkAll');
     if(chkAll) chkAll.checked = pageList.length>0 && pageList.every(r=>_selIds.has(r._id));
   }
@@ -4832,7 +5755,9 @@ function init(){
      ข้อมูล Audiogram ฝังในรูปแบบมาตรฐาน HIMSA "Format 500" (HIMSAAudiometricStandard)
      หมายเหตุ: เพศ (Gender) เดา 0=ชาย/1=หญิง จากคำนำหน้าชื่อ — ยังไม่มีเอกสารทางการยืนยัน 100%
      กรุณาตรวจสอบข้อมูลอีกครั้งหลัง import เข้า Noah ทุกครั้ง ── */
-  const NOAH_FREQS = [250,500,1000,2000,3000,4000,6000,8000];
+  /* ความถี่ที่ส่งออกไป Noah — ต้องครบเท่ากับที่กรอกได้ในเว็บ (FREQ_ALL) รวม half-octave 750/1500/3000/6000
+     เดิมตกหล่น 125/750/1500 ทำให้จุด half-octave ที่กรอกไว้หายไปตอน import เข้า Noah */
+  const NOAH_FREQS = FREQ_ALL.slice();
   function xmlEsc(s){ return String(s===undefined||s===null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;'); }
   function noahGenderCode(prefix){
     /* รหัสเพศตามมาตรฐาน ISO 5218 ที่ Noah ใช้: 0=ไม่ระบุ, 1=ชาย, 2=หญิง
@@ -4858,42 +5783,59 @@ function init(){
     for(let i=0;i<bytes.length;i+=chunk){ binary += String.fromCharCode.apply(null, bytes.subarray(i,i+chunk)); }
     return btoa(binary);
   }
-  /* ── จุดวัดแต่ละความถี่ — แยกตาม masked/ไม่ masked (wantMasked) และใส่สถานะ NoResponse ตาม flag ที่กรอกไว้ ──
-     HIMSA Format 500: จุด No response ต้องส่ง <TonePointStatus>NoResponse</TonePointStatus>
-     จุด Masked ต้องอยู่ในบล็อก ToneThresholdAudiogram ที่ประกาศ MaskingSignalType/MaskingSignalOutput ว่ามีการ mask
-     (เดิมส่งทุกจุดเป็น Normal + NoSignalApplied หมด ทำให้สัญลักษณ์ No response กับ Masked ไม่ขึ้นใน Noah) ── */
-  function noahTonePointsXml(audTh, ear, type, wantMasked){
-    let xml='';
+  /* ── จุดวัดแต่ละความถี่ของหู+ชนิดหนึ่ง ๆ — รวมทุกจุดไว้ในบล็อกเดียว ──────────────────────
+     สำคัญ: มาตรฐาน HIMSA ให้ 1 ToneThresholdAudiogram = 1 เงื่อนไขการวัด (หู+ตัวปล่อยเสียง)
+     ห้ามแตกหูเดียวกันเป็นหลายบล็อก เพราะโปรแกรม Noah/โมดูลปรับเครื่องหลายตัวจะอ่านบล็อกแรก
+     ของหูนั้นเพียงบล็อกเดียว ทำให้จุดที่อยู่บล็อกหลังหายไป กราฟจึงเพี้ยน/ใช้ปรับเครื่องไม่ได้
+     (เดิมแยกจุด masked ออกเป็นอีกบล็อก จึงเกิดอาการนี้)
+     การใส่ mask จึงระบุ "รายจุด" ด้วย MaskingFrequency + MaskingLevel ตามสเปก แทนการแยกบล็อก ── */
+  /* ระดับเสียงกลบโดยประมาณ: โปรแกรมไม่ได้เก็บค่าจริงไว้ แต่สเปกบังคับว่าถ้าจะบอกว่าจุดนี้ mask
+     ต้องส่ง MaskingFrequency กับ MaskingLevel คู่กัน จึงประมาณจากค่า AC ของหูตรงข้าม + 30 dB */
+  function noahMaskLevel(audTh, ear, fr){
+    const other = (ear==='R' ? 'L' : 'R') + 'AC';
+    const cell = audTh && audTh[fr] ? audTh[fr][other] : null;
+    const v = cell ? num(cell.v) : null;
+    const lv = (v===null ? 40 : v + 30);
+    return Math.max(0, Math.min(110, Math.round(lv/5)*5));
+  }
+  function noahTonePointsXml(audTh, ear, type){
+    let xml='', anyMasked=false, n=0;
     NOAH_FREQS.forEach(fr=>{
-      const cell = audTh && audTh[fr] && audTh[fr][ear+type];
+      if(n>=24) return;                       // สเปกจำกัด 24 จุดต่อบล็อก
+      const cell = audTh && audTh[fr] ? audTh[fr][ear+type] : null;
       if(!cell) return;
-      if(!!cell.m !== !!wantMasked) return; // บล็อกนี้เอาเฉพาะจุดที่ masked ตรงกับที่ขอ
       const v = num(cell.v); if(v===null) return;
       const status = cell.nr ? 'NoResponse' : 'Normal';
-      xml += `<TonePoints><StimulusFrequency>${fr}</StimulusFrequency><StimulusLevel>${v.toFixed(1)}</StimulusLevel><TonePointStatus>${status}</TonePointStatus></TonePoints>`;
+      let mask = '';
+      if(cell.m){
+        anyMasked = true;
+        mask = `<MaskingFrequency>${fr}</MaskingFrequency><MaskingLevel>${noahMaskLevel(audTh,ear,fr).toFixed(1)}</MaskingLevel>`;
+      }
+      xml += `<TonePoints><StimulusFrequency>${fr}</StimulusFrequency><StimulusLevel>${v.toFixed(1)}</StimulusLevel>${mask}<TonePointStatus>${status}</TonePointStatus></TonePoints>`;
+      n++;
     });
-    return xml;
+    return {xml, anyMasked};
   }
-  function noahToneBlockXml(audTh, ear, type, wantMasked){
-    const points = noahTonePointsXml(audTh, ear, type, wantMasked);
-    if(!points) return '';
+  function noahToneBlockXml(audTh, ear, type){
+    const res = noahTonePointsXml(audTh, ear, type);
+    if(!res.xml) return '';
     const stimOutput = (type==='AC' ? 'AirConductor' : 'BoneConductor') + (ear==='R'?'Right':'Left');
-    let maskType, maskOutput;
-    if(wantMasked){
-      maskType = 'NarrowBandNoise';                       // masking มาตรฐานเป็น narrow band noise
-      maskOutput = 'AirConductor' + (ear==='R'?'Left':'Right'); // ปล่อยเสียง mask เข้าหูตรงข้ามเสมอ
-    } else {
-      maskType = 'NoSignalApplied';
-      maskOutput = (type==='AC' && ear==='R') ? 'AirConductorLeft' : 'NoSignalOutput'; // คงรูปแบบเดิมตามไฟล์ตัวอย่างที่ import ผ่าน
-    }
-    return `<ToneThresholdAudiogram><AudMeasurementConditions><StimulusSignalType>PureTone</StimulusSignalType><MaskingSignalType>${maskType}</MaskingSignalType><StimulusSignalOutput>${stimOutput}</StimulusSignalOutput><MaskingSignalOutput>${maskOutput}</MaskingSignalOutput><StimulusdBWeighting>HL</StimulusdBWeighting><MaskingdBWeighting>HL</MaskingdBWeighting><StimulusPresentationType>Continuous</StimulusPresentationType><MaskingPresentationType>Continuous</MaskingPresentationType><HearingInstrument_1_Condition>UnAided</HearingInstrument_1_Condition></AudMeasurementConditions>${points}</ToneThresholdAudiogram>`;
+    /* เงื่อนไขระดับบล็อก: ถ้ามีจุดที่ใส่ mask อย่างน้อย 1 จุด ให้ประกาศชนิดเสียงกลบเป็น narrow band noise
+       และปล่อยเข้าหูตรงข้าม — ถ้าไม่มีเลยให้เป็น NoSignalApplied/NoSignalOutput (ตรงกับไฟล์จากเครื่องวัดจริง) */
+    const maskType   = res.anyMasked ? 'NarrowBandNoise' : 'NoSignalApplied';
+    const maskOutput = res.anyMasked ? ('AirConductor' + (ear==='R'?'Left':'Right')) : 'NoSignalOutput';
+    return `<ToneThresholdAudiogram><AudMeasurementConditions><StimulusSignalType>PureTone</StimulusSignalType><MaskingSignalType>${maskType}</MaskingSignalType><StimulusSignalOutput>${stimOutput}</StimulusSignalOutput><MaskingSignalOutput>${maskOutput}</MaskingSignalOutput><StimulusdBWeighting>HL</StimulusdBWeighting><MaskingdBWeighting>HL</MaskingdBWeighting><StimulusPresentationType>Continuous</StimulusPresentationType><MaskingPresentationType>Continuous</MaskingPresentationType><HearingInstrument_1_Condition>UnAided</HearingInstrument_1_Condition></AudMeasurementConditions>${res.xml}</ToneThresholdAudiogram>`;
   }
   function noahAudiogramXml(audTh){
-    // แต่ละหู/ชนิดการวัด แยกเป็น 2 บล็อก: จุดไม่ masked + จุด masked (บล็อกที่ไม่มีจุดจะถูกข้ามอัตโนมัติ)
+    // 1 บล็อกต่อ 1 หู+ชนิดการวัด (สูงสุด 4 บล็อก) — บล็อกที่ไม่มีจุดจะถูกข้ามอัตโนมัติ
     const blocks = [['R','AC'],['L','AC'],['R','BC'],['L','BC']].map(([ear,type])=>
-      noahToneBlockXml(audTh, ear, type, false) + noahToneBlockXml(audTh, ear, type, true)
+      noahToneBlockXml(audTh, ear, type)
     ).join('');
-    return `<?xml version="1.0" encoding="utf-8"?><HIMSAAudiometricStandard xmlns="http://www.himsa.com/Measurement/Audiogram" Version="500">${blocks}</HIMSAAudiometricStandard>`;
+    /* บอก Noah ว่าค่าเฉลี่ย PTA ใช้ความถี่ใด (ตรงกับ PTA_FREQS ในเว็บ) เหมือนไฟล์จากเครื่องวัดจริง */
+    const ptaFreqs = PTA_FREQS.map(f=>`<LeftEar1>${f}</LeftEar1>`).join('')
+                   + PTA_FREQS.map(f=>`<RightEar1>${f}</RightEar1>`).join('');
+    const avg = blocks ? `<FrequenciesUsedForToneAverage>${ptaFreqs}</FrequenciesUsedForToneAverage>` : '';
+    return `<?xml version="1.0" encoding="utf-8"?><HIMSAAudiometricStandard xmlns="http://www.himsa.com/Measurement/Audiogram" Version="500">${blocks}${avg}</HIMSAAudiometricStandard>`;
   }
   function u32le(n){ const b=new Uint8Array(4); new DataView(b.buffer).setUint32(0, n>>>0, true); return b; }
   function u64leSmall(n){ const b=new Uint8Array(8), dv=new DataView(b.buffer); dv.setUint32(0, n>>>0, true); dv.setUint32(4, Math.floor(n/4294967296)>>>0, true); return b; }
@@ -4912,6 +5854,44 @@ function init(){
     const header = concatBytes([u32le(40), u32le(0x0201)]);
     return concatBytes([header, struct]);
   }
+  /* ══════════════ รหัสโรงพยาบาลสำหรับ Noah — ตัวอักษรแรก + ตัวอักษรท้ายของชื่อ รพ. ══════════════
+     เช่น "บ้านโป่ง" → บง · "โพธาราม" → พม   แล้วนำไปต่อหน้า HN เป็น "บง-1234"
+     รายละเอียด:
+       • ตัดคำว่า "โรงพยาบาล" / "รพ." / "รพ" ที่นำหน้าออกก่อน (ผู้ใช้บางคนพิมพ์มาเต็ม)
+       • สระหน้า (เ แ โ ใ ไ) ไม่นับเป็นตัวแรก — ข้ามไปเอาพยัญชนะตัวถัดไป (โพธาราม → พ ไม่ใช่ โ)
+       • วรรณยุกต์/สระบน-ล่าง ท้ายคำไม่นับเป็นตัวท้าย (เช่น ...ปุ่ม → ม)
+     ถ้าไม่มีชื่อ รพ. จะไม่เติมรหัส ใช้ HN เปล่า ๆ เหมือนเดิม */
+  const THAI_LEAD_VOWELS = 'เแโใไ';
+  const THAI_COMBINING = /[\u0e31\u0e33-\u0e3a\u0e47-\u0e4e]/;   /* ั ำ สระบน-ล่าง วรรณยุกต์ ์ */
+  function hospitalNoahCode(hospital){
+    let t = String(hospital||'').trim();
+    t = t.replace(/^(โรงพยาบาล|รพ\.สต\.|รพ\.|รพ)\s*/,'').trim();
+    t = t.replace(/[\s\u0e46\u0e2f]/g,'');            /* ตัดช่องว่าง ๆ ฯ */
+    if(!t) return '';
+    let first = '';
+    for(let i=0;i<t.length;i++){
+      const c = t.charAt(i);
+      if(THAI_COMBINING.test(c)) continue;
+      if(THAI_LEAD_VOWELS.indexOf(c) >= 0) continue;    /* สระหน้า → ข้ามไปพยัญชนะจริง */
+      first = c; break;
+    }
+    if(!first) first = t.charAt(0);
+    let last = '';
+    for(let i=t.length-1;i>=0;i--){
+      const c = t.charAt(i);
+      if(THAI_COMBINING.test(c)) continue;
+      last = c; break;
+    }
+    if(!last) last = t.charAt(t.length-1);
+    return (t.length===1) ? first : (first + last);
+  }
+  /* HN ที่จะเขียนลงไฟล์ Noah = <รหัส รพ.>-<HN>  (จำกัด 20 ตัวอักษรตามคอลัมน์ Patient No ของ Noah) */
+  function noahPatientNo(rec){
+    const hn = String((rec&&rec.hn)||'').trim();
+    const code = hospitalNoahCode(rec && rec.hospital);
+    if(!hn) return code || 'NA';                       /* ยังไม่ได้กรอก HN → ใช้รหัส รพ. เปล่า ๆ ไม่ต้องมีขีดค้าง */
+    return (code ? (code+'-'+hn) : hn).slice(0,20);
+  }
   function buildNoahNhax(rec){
     const initials = ((localStorage.getItem('hcs_username')||'WEB').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,3)) || 'WEB';
     const guid = genGuid();
@@ -4923,10 +5903,9 @@ function init(){
        จึงต้องจำกัดความยาวทุกช่องให้อยู่ในเกณฑ์ปลอดภัย */
     const firstName = xmlEsc(((rec.namePrefix||'')+(rec.nameFirst||rec.name||'')).trim().slice(0,40));
     const lastName = xmlEsc(String(rec.nameLast||'').trim().slice(0,40));
-    const hnRaw = (rec.hn||'').toString().trim();
-    /* PatientNo ใช้ HN อย่างเดียว จำกัด 20 ตัวอักษร — เดิมเอาชื่อ รพ.มาต่อหน้า HN ทำให้ยาวเกิน
-       คอลัมน์ Patient No ของ Noah แล้ว import ไม่เข้า (ชื่อ รพ.ดูได้จากช่องโรงพยาบาลในเว็บ/Excel อยู่แล้ว) */
-    const hn = xmlEsc(hnRaw.slice(0,20) || 'NA');
+    /* PatientNo = รหัส รพ. 2 ตัว + "-" + HN (เช่น บง-1234) จำกัด 20 ตัวอักษรตามคอลัมน์ของ Noah
+       — เดิมเคยเอาชื่อ รพ.เต็ม ๆ มาต่อหน้า ทำให้ยาวเกินแล้ว import ไม่เข้า */
+    const hn = xmlEsc(noahPatientNo(rec) || 'NA');
     const sessionDateIso = noahIsoDate(rec.audioVisitDate||rec.fitDate) || nowIso.slice(0,10);
     const audioB64 = utf8Base64(noahAudiogramXml(rec.audTh));
     const uid = String(Date.now()).slice(-7);
@@ -4950,11 +5929,112 @@ function init(){
       const blob = new Blob([bytes], {type:'application/octet-stream'});
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      const safeName = (rec.hn||rec.name||'patient').toString().replace(/[^\w฀-๿-]/g,'_');
+      /* ชื่อไฟล์ใช้รหัสเดียวกับ Patient No — ดาวน์โหลดหลาย รพ.มากองรวมกันก็ยังแยกออก */
+      const safeName = (noahPatientNo(rec)||rec.name||'patient').toString().replace(/[^\w฀-๿-]/g,'_');
       a.download = `Noah_${safeName}.nhax`;
       a.click();
       setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
+      try{ hcsToast('📤 ส่งออกไฟล์ Noah แล้ว — Patient No = '+noahPatientNo(rec)); }catch(e){}
     }catch(err){ alert('สร้างไฟล์ Noah ไม่สำเร็จ: '+err); }
+  }
+
+
+  /* ══════════════════ ส่งออก Noah ทั้งคิว (หลายคนในไฟล์เดียว) ══════════════════
+     เดิมส่งออกได้ทีละคน → ต้องเปิดไฟล์และกด OK ใน Noah ซ้ำทุกคน
+     ตัวนี้รวมผู้ป่วยที่ติ๊กเลือกไว้เป็นไฟล์ .nhax เดียว นำเข้า Noah ครั้งเดียวจบทั้งคิว
+
+     โครงไฟล์ (ต่อยอดจาก buildNoahNhax ที่ถอดรหัสจากไฟล์ตัวอย่างจริง):
+       RootSection (40 ไบต์)
+       → PatientSection ของผู้ป่วยทีละคนเรียงต่อกัน
+       → UserSection
+       → PatientDirectory ที่ระบุ PatientRecordOffset ของแต่ละคน
+     Noah อ่าน PatientDirectory ก่อน แล้วกระโดดไปอ่านข้อมูลตาม offset ที่ระบุ
+     จึงต้องคิด offset ของทุกคนให้ถูก (ของเดิมมีคนเดียวเลยฮาร์ดโค้ดเป็น 40 ได้)
+
+     ⚠️ ควรทดสอบกับผู้ป่วย 2 คนก่อนใช้จริงกับทั้งคิว แล้วเช็กใน Noah ว่าเข้าครบทุกคน
+        และ audiogram ตรงกับเจ้าของจริง ══════════════════════════════════════ */
+  function noahPatientBlocks(rec, initials, nowIso, idx){
+    const guid = genGuid();
+    const gender = noahGenderCode(rec.namePrefix || rec.name);
+    const birthIso = noahIsoDate(rec.birth) || '1900-01-01';
+    const firstName = xmlEsc(((rec.namePrefix||'')+(rec.nameFirst||rec.name||'')).trim().slice(0,40));
+    const lastName = xmlEsc(String(rec.nameLast||'').trim().slice(0,40));
+    const hn = xmlEsc(noahPatientNo(rec) || 'NA');
+    const sessionDateIso = noahIsoDate(rec.audioVisitDate||rec.fitDate) || nowIso.slice(0,10);
+    const audioB64 = utf8Base64(noahAudiogramXml(rec.audTh));
+    /* UniqueId ห้ามซ้ำกันในไฟล์เดียว — บวกลำดับคนเข้าไปกันชนกัน */
+    const uid = String(Date.now() + (idx||0)).slice(-7);
+    const attrs = `PatientNo="${hn}" PatientGUID="${guid}" CreateDate="${nowIso}" UserInitials="${initials}" FirstName="${firstName}" LastName="${lastName}" Gender="${gender}" BirthDate="${birthIso}"`;
+    const patientXml = `<?xml version="1.0" encoding="utf-8"?><Patient PatientNo="${hn}" ActivePatient="1" PatientGUID="${guid}" CreateDate="${nowIso}" UserInitials="${initials}" FirstName="${firstName}" LastName="${lastName}" Gender="${gender}" BirthDate="${birthIso}"><Sessions><Session CreateDate="${sessionDateIso}"><Action UniqueId="${uid}" UserInitials="${initials}" CreateDate="${nowIso}" ModuleId="65596" Description="New Audiogram" LastModifiedDate="${nowIso}" DataTypeCode="1" DataFmtCodeStd="500" DataFmtCodePriv="0" DevTypeCode="0" Hidden="false" Removed="false" IsArchived="false"><PublicData>${audioB64}</PublicData></Action></Session></Sessions></Patient>`;
+    return { patientXml, attrs };
+  }
+
+  function buildNoahNhaxMulti(recs){
+    const initials = ((localStorage.getItem('hcs_username')||'WEB').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,3)) || 'WEB';
+    const nowIso = new Date().toISOString().slice(0,19);
+    const blocks = recs.map((r,i)=>noahPatientBlocks(r, initials, nowIso, i));
+    const patientSections = blocks.map(b=>noahCompressedSection(b.patientXml, 0x0205));
+    /* ตำแหน่งเริ่มต้นของข้อมูลผู้ป่วยแต่ละคนในไฟล์ — เริ่มนับหลัง RootSection (40 ไบต์) */
+    const offsets = [];
+    let off = 40;
+    patientSections.forEach(sec=>{ offsets.push(off); off += sec.length; });
+    const userXml = `<?xml version="1.0" encoding="utf-8"?><Users><User><Initials>${initials}</Initials><Name>${initials}</Name><UserName>${initials}</UserName></User></Users>`;
+    const patDirXml = `<?xml version="1.0" encoding="utf-8"?><Patients>`
+      + blocks.map((b,i)=>`<Patient ${b.attrs} PatientRecordOffset="${offsets[i]}" />`).join('')
+      + `</Patients>`;
+    const userSection = noahCompressedSection(userXml, 0x0203);
+    const patDirSection = noahCompressedSection(patDirXml, 0x0202);
+    const userOffset = off;
+    const patDirOffset = userOffset + userSection.length;
+    const rootSection = buildNoahRoot(patDirOffset, userOffset);
+    return concatBytes([rootSection].concat(patientSections, [userSection, patDirSection]));
+  }
+
+  /* ดึงข้อมูลฟอร์มเต็มของผู้ป่วย 1 คน (ใช้ตรรกะเดียวกับตอนกดปุ่มในแถว: แคชในเครื่อง vs เซิร์ฟเวอร์ เอาตัวใหม่กว่า) */
+  async function fetchFullRecord(id){
+    const api = window.hcsApi, t = localStorage.getItem('hcs_token');
+    const cached = _fullCache[id];
+    const pending = _outbox.some(o=>o._id===id);   /* ยังไม่ได้ส่งขึ้นเซิร์ฟเวอร์ = ตัวในเครื่องใหม่สุด */
+    if(cached && pending) return cached;
+    let res = null;
+    try{ res = api ? await api.postAction('getRecord', {token:t, id}) : null; }catch(e){}
+    if(res && res.status==='ok' && res.record){
+      const serverRec = res.record;
+      if(cached && String(cached._savedAt||'') > String(serverRec._savedAt||'')) return cached;
+      upsertFullCache(serverRec);
+      return serverRec;
+    }
+    return cached || null;
+  }
+
+  async function exportManyToNoah(ids){
+    if(typeof pako === 'undefined'){ alert('โหลดไลบรารีสำหรับสร้างไฟล์ Noah ไม่สำเร็จ (ตรวจสอบอินเทอร์เน็ต) กรุณาลองใหม่'); return; }
+    if(!ids || !ids.length){ alert('ยังไม่ได้เลือกผู้ป่วย — กดปุ่ม ☑️ เลือก แล้วติ๊กคนที่จะส่งออกก่อน'); return; }
+    const btn = document.getElementById('btnBulkNoah');
+    const oldTxt = btn ? btn.textContent : '';
+    const recs = [], failed = [];
+    try{
+      for(let i=0;i<ids.length;i++){
+        if(btn){ btn.disabled = true; btn.textContent = '⏳ ดึงข้อมูล ' + (i+1) + '/' + ids.length; }
+        const rec = await fetchFullRecord(ids[i]);
+        if(rec) recs.push(rec); else failed.push(ids[i]);
+      }
+    } finally {
+      if(btn){ btn.disabled = false; btn.textContent = oldTxt; }
+    }
+    if(!recs.length){ alert('ดึงข้อมูลผู้ป่วยไม่สำเร็จเลยสักคน — ตรวจการเชื่อมต่อแล้วลองใหม่'); return; }
+    if(failed.length && !confirm('ดึงข้อมูลไม่สำเร็จ ' + failed.length + ' คน\n\nส่งออกเฉพาะ ' + recs.length + ' คนที่ดึงได้เลยหรือไม่?')) return;
+    try{
+      const bytes = buildNoahNhaxMulti(recs);
+      const blob = new Blob([bytes], {type:'application/octet-stream'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      const d = new Date(), pad = n=>String(n).padStart(2,'0');
+      a.download = 'Noah_queue_' + d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + '_' + recs.length + 'p.nhax';
+      a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
+      try{ hcsToast('📤 ส่งออก Noah ทั้งคิวแล้ว — ' + recs.length + ' คนในไฟล์เดียว'); }catch(e){}
+    }catch(err){ alert('สร้างไฟล์ Noah ไม่สำเร็จ: ' + err); }
   }
 
   document.getElementById('lstBody').addEventListener('click', async e=>{
@@ -4964,8 +6044,12 @@ function init(){
     const api = window.hcsApi;
     const t = localStorage.getItem('hcs_token');
     if(act==='del'){
-      if(!canDeleteRecords()){ alert('สิทธิ์ไม่เพียงพอ — การลบรายชื่อผู้ป่วยทำได้เฉพาะผู้ใช้ TitiwutNav เท่านั้น'); return; }
-      if(!confirm('ลบรายการผู้ป่วยนี้?')) return;
+      if(!canDeleteRecords()){ alert('สิทธิ์ไม่เพียงพอ — การลบรายชื่อผู้ป่วยทำได้เฉพาะผู้ดูแลระบบ (admin) เท่านั้น'); return; }
+      if(!confirm('ลบรายการผู้ป่วยนี้?\n\n(กู้คืนได้จากปุ่ม 🗑️ ถังขยะ)')) return;
+      if(api && t && !_fullCache[id]){    /* ดึงข้อมูลเต็มมาก่อน จะได้สำรองลงถังขยะในเครื่องได้ครบ */
+        try{ const rf = await api.postAction('getRecord', {token:t, id});
+             if(rf && rf.status==='ok' && rf.record) upsertFullCache(rf.record); }catch(e){}
+      }
       const res = api ? await api.postAction('deleteRecord', {token:t, id}) : null;
       if(res && res.status==='ok'){ deleteRecord(id); renderList(); }
       else alert('ลบไม่สำเร็จ: '+((res&&res.message)||'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'));
@@ -5173,6 +6257,9 @@ function init(){
     {key:'icd9',      group:'รหัสเบิก', label:'ICD-9',            width:15, align:'center', sub:true, get:er=> exportIcdDx(er).length ? ICD9_CODES.join(', ') : ''},
     {key:'ptaR',      group:'รหัสเบิก', label:'PTA หูขวา',         width:10, align:'center', get:er=> (er.r.ptaR===null||er.r.ptaR===undefined||er.r.ptaR==='')?'':er.r.ptaR},
     {key:'ptaL',      group:'รหัสเบิก', label:'PTA หูซ้าย',        width:10, align:'center', get:er=> (er.r.ptaL===null||er.r.ptaL===undefined||er.r.ptaL==='')?'':er.r.ptaL},
+    /* PTA 4 ความถี่ (500/1000/2000/4000) — คิดจากกราฟ Audiogram ที่บันทึกไว้ ต้องมีครบทั้ง 4 จุดถึงจะออกตัวเลข */
+    {key:'pta4R',     group:'รหัสเบิก', label:'PTA 4 ความถี่ หูขวา',  width:16, align:'center', get:er=>{ const v=pta4ForRec(exportFullRec(er),'R'); return v===null?'':v; }},
+    {key:'pta4L',     group:'รหัสเบิก', label:'PTA 4 ความถี่ หูซ้าย', width:16, align:'center', get:er=>{ const v=pta4ForRec(exportFullRec(er),'L'); return v===null?'':v; }},
 
     /* ── นัดหมาย (ดึงจากหน้าโทรติดตาม) ── */
     {key:'apptDate',  group:'นัดหมาย', label:'วันที่นัดหมาย',     width:16, align:'center', get:er=> thaiShort(apptOf(er.r).date||'')},
@@ -5188,7 +6275,7 @@ function init(){
     {key:'note', group:'คิว · ติดตามผล', label:'หมายเหตุ', width:28, align:'left', get:er=> er.r.note || er.d.note || (_fullCache[er.r._id]||{}).note || ''},
   ];
   const EXPORT_FIELDS_KEY = 'hcs_export_fields_sel_v1';
-  const EXPORT_FIELDS_DEFAULT = ['idx','hn','name','citizenId','phone','address','ear','brand','model','sn','fitDate','reimburse'];
+  const EXPORT_FIELDS_DEFAULT = ['idx','hn','name','citizenId','phone','address','ear','brand','model','sn','fitDate','reimburse','pta4R','pta4L'];
   // Snapshot of EXPORT_FIELDS_DEFAULT before citizenId / ICD columns were added. Used only to
   // migrate selections saved by returning users so newly-added default fields show up
   // automatically, without resurrecting fields the user explicitly unchecked.
@@ -5270,7 +6357,7 @@ function init(){
     if(note){
       note.innerHTML = _selIds.size
         ? `📌 ส่งออกเฉพาะ <b>${list.length} คน</b> ที่ติ๊กเลือกไว้ในตาราง <span style="color:#64748b">(ยกเลิกการติ๊กเพื่อส่งออกทั้งหมด)</span>`
-        : `ส่งออก <b>ทั้งหมด ${list.length} คน</b> ตามตัวกรองปัจจุบัน <span style="color:#64748b">(กดปุ่ม 📅 นัดหมาย แล้วติ๊กเลือก ถ้าต้องการเฉพาะบางคน)</span>`;
+        : `ส่งออก <b>ทั้งหมด ${list.length} คน</b> ตามตัวกรองปัจจุบัน <span style="color:#64748b">(กดปุ่ม ☑️ เลือก แล้วติ๊กหน้าแถว ถ้าต้องการเฉพาะบางคน)</span>`;
     }
     document.getElementById('excelFieldModal').style.display='flex';
     /* เลื่อนกลับขึ้นบนสุดทุกครั้งที่เปิดใหม่ */
@@ -5564,7 +6651,7 @@ function init(){
       const earColIdx  = fields.findIndex(f=>f.key==='ear') + 1;
       const modelColIdx= fields.findIndex(f=>f.key==='model') + 1;
       const snColIdx   = fields.findIndex(f=>f.key==='sn') + 1;
-      const ptaColIdxs = fields.reduce((a,f,i)=>{ if(f.key==='ptaR'||f.key==='ptaL') a.push(i+1); return a; }, []);
+      const ptaColIdxs = fields.reduce((a,f,i)=>{ if(f.key==='ptaR'||f.key==='ptaL'||f.key==='pta4R'||f.key==='pta4L') a.push(i+1); return a; }, []);
       const earSplitCols = new Set([earColIdx, modelColIdx, snColIdx].filter(n=>n>0)); // คอลัมน์ที่ค่าต่างกันระหว่างหูซ้าย/ขวา ไม่รวมกล่อง
       const expRows = [];
       list.forEach((r, patIdx)=>{
@@ -5729,11 +6816,15 @@ function init(){
     const tb = document.getElementById('lstTable'), btn = document.getElementById('btnToggleSelect');
     const on = tb.classList.toggle('sel-mode');
     btn.classList.toggle('on', on);
-    btn.textContent = on ? '✕ ปิดโหมดนัดหมาย' : '📅 นัดหมาย';
-    if(!on) clearSelection();   /* ปิดโหมด = ล้างรายการที่ติ๊กไว้ กันเผลอลงนัดผิดคน */
+    btn.textContent = on ? '✕ ปิดโหมดเลือก' : '☑️ เลือก';
+    if(!on) clearSelection();   /* ปิดโหมด = ล้างรายการที่ติ๊กไว้ กันเผลอทำผิดคน */
   });
   /* กล่องลงนัดหมาย */
+  document.getElementById('btnBulkFill').addEventListener('click', ()=>openBulkFillModal([..._selIds]));
+  document.getElementById('btnBulkDel').addEventListener('click', ()=>bulkDeleteRecords([..._selIds]));
+  document.getElementById('btnOpenTrash').addEventListener('click', openTrashModal);
   document.getElementById('btnBulkAppt').addEventListener('click', ()=>openApptModal([..._selIds]));
+  document.getElementById('btnBulkNoah').addEventListener('click', ()=>exportManyToNoah([..._selIds]));
   document.getElementById('btnBulkClear').addEventListener('click', clearSelection);
   document.getElementById('btnApptCancel').addEventListener('click', closeApptModal);
   document.getElementById('btnApptSave').addEventListener('click', ()=>saveAppointment(false));
@@ -5761,6 +6852,7 @@ function init(){
   document.getElementById('btnNewPatient').addEventListener('click', ()=>{
     S = Object.assign({}, DEFAULTS);
     S.audTh = freshAudTh();
+    backfillHACard();
     applyUserHospital();
     resetAudHistory();
     randomizeTrialResults(S);
