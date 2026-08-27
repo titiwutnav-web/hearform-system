@@ -1357,7 +1357,6 @@ body::before{
         <span class="spacer"></span>
         <button class="btn btn-primary" id="btnBulkFill">✏️ กรอกข้อมูลพร้อมกัน</button>
         <button class="btn btn-primary" id="btnBulkAppt">📅 ลงนัดหมาย</button>
-        <button class="btn btn-primary" id="btnBulkNoah" title="รวมผู้ป่วยที่เลือกไว้เป็นไฟล์ Noah ไฟล์เดียว — นำเข้า Noah ครั้งเดียวจบ">📤 ส่งออก Noah ทั้งคิว</button>
         <button class="btn btn-ghost lst-bulk-del" id="btnBulkDel" style="display:none">🗑️ ลบที่เลือก</button>
         <button class="btn btn-ghost" id="btnBulkClear">✕ ยกเลิกการเลือก</button>
       </div>
@@ -1525,8 +1524,8 @@ body::before{
           <label>แนวกระดาษ</label>
           <select id="pmOrientation"><option value="portrait">แนวตั้ง (Portrait)</option></select>
         </div>
-        <div class="pm-check-line"><label><input type="checkbox" id="pmNewTab" checked> เปิดในแท็บใหม่แทน Preview</label></div>
-        <div class="pm-check-line pm-sub"><label><input type="checkbox" id="pmAutoPrint" checked> สั่งพิมพ์อัตโนมัติเมื่อเปิดแท็บใหม่</label></div>
+        <div class="pm-check-line"><label><input type="checkbox" id="pmNewTab"> เปิดในแท็บใหม่แทน Preview</label></div>
+        <div class="pm-check-line pm-sub"><label><input type="checkbox" id="pmAutoPrint" disabled> สั่งพิมพ์อัตโนมัติเมื่อเปิดแท็บใหม่</label></div>
         <div class="pm-fld">
           <label>ขยาย/ย่อ (เฉพาะ Preview) — <span id="pmZoomVal">100%</span></label>
           <input type="range" id="pmZoom" min="50" max="150" value="100">
@@ -4396,31 +4395,10 @@ function init(){
   document.getElementById('printModalGo').addEventListener('click', doPrintFromModal);
   document.getElementById('printModal').addEventListener('click', e=>{ if(e.target.id==='printModal') closePrintModal(); });
   document.getElementById('pmZoom').addEventListener('input', applyPmZoom);
-  /* ── ค่าเริ่มต้น: เปิดในแท็บใหม่ + สั่งพิมพ์อัตโนมัติ (ลดการกดปุ่มซ้ำตอนพิมพ์ทีละคน)
-        ผู้ใช้ปิดเองได้ แล้วโปรแกรมจะจำค่าไว้ในเครื่องนั้น ── */
-  (function initPrintTabPrefs(){
-    const nt = document.getElementById('pmNewTab'), ap = document.getElementById('pmAutoPrint');
-    if(!nt || !ap) return;
-    try{
-      const savedNt = localStorage.getItem('hcs_pm_newtab');
-      const savedAp = localStorage.getItem('hcs_pm_autoprint');
-      if(savedNt !== null) nt.checked = (savedNt === '1');
-      if(savedAp !== null) ap.checked = (savedAp === '1');
-    }catch(e){}
-    ap.disabled = !nt.checked;
-    if(!nt.checked) ap.checked = false;
-  })();
   document.getElementById('pmNewTab').addEventListener('change', e=>{
     const auto = document.getElementById('pmAutoPrint');
     auto.disabled = !e.target.checked;
     if(!e.target.checked) auto.checked = false;
-    try{
-      localStorage.setItem('hcs_pm_newtab', e.target.checked ? '1' : '0');
-      localStorage.setItem('hcs_pm_autoprint', auto.checked ? '1' : '0');
-    }catch(err){}
-  });
-  document.getElementById('pmAutoPrint').addEventListener('change', e=>{
-    try{ localStorage.setItem('hcs_pm_autoprint', e.target.checked ? '1' : '0'); }catch(err){}
   });
   document.getElementById('btnPreviewPrint').addEventListener('click', ()=>window.print());
   /* ── หลังปิดหน้าต่างปริ้น (ปริ้นเสร็จ/บันทึกเป็น PDF เสร็จ): บันทึกข้อมูล แล้วล้างฟอร์มกลับไปหน้าแรกให้พร้อมรับผู้ป่วยคนถัดไป ── */
@@ -5938,105 +5916,6 @@ function init(){
     }catch(err){ alert('สร้างไฟล์ Noah ไม่สำเร็จ: '+err); }
   }
 
-
-  /* ══════════════════ ส่งออก Noah ทั้งคิว (หลายคนในไฟล์เดียว) ══════════════════
-     เดิมส่งออกได้ทีละคน → ต้องเปิดไฟล์และกด OK ใน Noah ซ้ำทุกคน
-     ตัวนี้รวมผู้ป่วยที่ติ๊กเลือกไว้เป็นไฟล์ .nhax เดียว นำเข้า Noah ครั้งเดียวจบทั้งคิว
-
-     โครงไฟล์ (ต่อยอดจาก buildNoahNhax ที่ถอดรหัสจากไฟล์ตัวอย่างจริง):
-       RootSection (40 ไบต์)
-       → PatientSection ของผู้ป่วยทีละคนเรียงต่อกัน
-       → UserSection
-       → PatientDirectory ที่ระบุ PatientRecordOffset ของแต่ละคน
-     Noah อ่าน PatientDirectory ก่อน แล้วกระโดดไปอ่านข้อมูลตาม offset ที่ระบุ
-     จึงต้องคิด offset ของทุกคนให้ถูก (ของเดิมมีคนเดียวเลยฮาร์ดโค้ดเป็น 40 ได้)
-
-     ⚠️ ควรทดสอบกับผู้ป่วย 2 คนก่อนใช้จริงกับทั้งคิว แล้วเช็กใน Noah ว่าเข้าครบทุกคน
-        และ audiogram ตรงกับเจ้าของจริง ══════════════════════════════════════ */
-  function noahPatientBlocks(rec, initials, nowIso, idx){
-    const guid = genGuid();
-    const gender = noahGenderCode(rec.namePrefix || rec.name);
-    const birthIso = noahIsoDate(rec.birth) || '1900-01-01';
-    const firstName = xmlEsc(((rec.namePrefix||'')+(rec.nameFirst||rec.name||'')).trim().slice(0,40));
-    const lastName = xmlEsc(String(rec.nameLast||'').trim().slice(0,40));
-    const hn = xmlEsc(noahPatientNo(rec) || 'NA');
-    const sessionDateIso = noahIsoDate(rec.audioVisitDate||rec.fitDate) || nowIso.slice(0,10);
-    const audioB64 = utf8Base64(noahAudiogramXml(rec.audTh));
-    /* UniqueId ห้ามซ้ำกันในไฟล์เดียว — บวกลำดับคนเข้าไปกันชนกัน */
-    const uid = String(Date.now() + (idx||0)).slice(-7);
-    const attrs = `PatientNo="${hn}" PatientGUID="${guid}" CreateDate="${nowIso}" UserInitials="${initials}" FirstName="${firstName}" LastName="${lastName}" Gender="${gender}" BirthDate="${birthIso}"`;
-    const patientXml = `<?xml version="1.0" encoding="utf-8"?><Patient PatientNo="${hn}" ActivePatient="1" PatientGUID="${guid}" CreateDate="${nowIso}" UserInitials="${initials}" FirstName="${firstName}" LastName="${lastName}" Gender="${gender}" BirthDate="${birthIso}"><Sessions><Session CreateDate="${sessionDateIso}"><Action UniqueId="${uid}" UserInitials="${initials}" CreateDate="${nowIso}" ModuleId="65596" Description="New Audiogram" LastModifiedDate="${nowIso}" DataTypeCode="1" DataFmtCodeStd="500" DataFmtCodePriv="0" DevTypeCode="0" Hidden="false" Removed="false" IsArchived="false"><PublicData>${audioB64}</PublicData></Action></Session></Sessions></Patient>`;
-    return { patientXml, attrs };
-  }
-
-  function buildNoahNhaxMulti(recs){
-    const initials = ((localStorage.getItem('hcs_username')||'WEB').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,3)) || 'WEB';
-    const nowIso = new Date().toISOString().slice(0,19);
-    const blocks = recs.map((r,i)=>noahPatientBlocks(r, initials, nowIso, i));
-    const patientSections = blocks.map(b=>noahCompressedSection(b.patientXml, 0x0205));
-    /* ตำแหน่งเริ่มต้นของข้อมูลผู้ป่วยแต่ละคนในไฟล์ — เริ่มนับหลัง RootSection (40 ไบต์) */
-    const offsets = [];
-    let off = 40;
-    patientSections.forEach(sec=>{ offsets.push(off); off += sec.length; });
-    const userXml = `<?xml version="1.0" encoding="utf-8"?><Users><User><Initials>${initials}</Initials><Name>${initials}</Name><UserName>${initials}</UserName></User></Users>`;
-    const patDirXml = `<?xml version="1.0" encoding="utf-8"?><Patients>`
-      + blocks.map((b,i)=>`<Patient ${b.attrs} PatientRecordOffset="${offsets[i]}" />`).join('')
-      + `</Patients>`;
-    const userSection = noahCompressedSection(userXml, 0x0203);
-    const patDirSection = noahCompressedSection(patDirXml, 0x0202);
-    const userOffset = off;
-    const patDirOffset = userOffset + userSection.length;
-    const rootSection = buildNoahRoot(patDirOffset, userOffset);
-    return concatBytes([rootSection].concat(patientSections, [userSection, patDirSection]));
-  }
-
-  /* ดึงข้อมูลฟอร์มเต็มของผู้ป่วย 1 คน (ใช้ตรรกะเดียวกับตอนกดปุ่มในแถว: แคชในเครื่อง vs เซิร์ฟเวอร์ เอาตัวใหม่กว่า) */
-  async function fetchFullRecord(id){
-    const api = window.hcsApi, t = localStorage.getItem('hcs_token');
-    const cached = _fullCache[id];
-    const pending = _outbox.some(o=>o._id===id);   /* ยังไม่ได้ส่งขึ้นเซิร์ฟเวอร์ = ตัวในเครื่องใหม่สุด */
-    if(cached && pending) return cached;
-    let res = null;
-    try{ res = api ? await api.postAction('getRecord', {token:t, id}) : null; }catch(e){}
-    if(res && res.status==='ok' && res.record){
-      const serverRec = res.record;
-      if(cached && String(cached._savedAt||'') > String(serverRec._savedAt||'')) return cached;
-      upsertFullCache(serverRec);
-      return serverRec;
-    }
-    return cached || null;
-  }
-
-  async function exportManyToNoah(ids){
-    if(typeof pako === 'undefined'){ alert('โหลดไลบรารีสำหรับสร้างไฟล์ Noah ไม่สำเร็จ (ตรวจสอบอินเทอร์เน็ต) กรุณาลองใหม่'); return; }
-    if(!ids || !ids.length){ alert('ยังไม่ได้เลือกผู้ป่วย — กดปุ่ม ☑️ เลือก แล้วติ๊กคนที่จะส่งออกก่อน'); return; }
-    const btn = document.getElementById('btnBulkNoah');
-    const oldTxt = btn ? btn.textContent : '';
-    const recs = [], failed = [];
-    try{
-      for(let i=0;i<ids.length;i++){
-        if(btn){ btn.disabled = true; btn.textContent = '⏳ ดึงข้อมูล ' + (i+1) + '/' + ids.length; }
-        const rec = await fetchFullRecord(ids[i]);
-        if(rec) recs.push(rec); else failed.push(ids[i]);
-      }
-    } finally {
-      if(btn){ btn.disabled = false; btn.textContent = oldTxt; }
-    }
-    if(!recs.length){ alert('ดึงข้อมูลผู้ป่วยไม่สำเร็จเลยสักคน — ตรวจการเชื่อมต่อแล้วลองใหม่'); return; }
-    if(failed.length && !confirm('ดึงข้อมูลไม่สำเร็จ ' + failed.length + ' คน\n\nส่งออกเฉพาะ ' + recs.length + ' คนที่ดึงได้เลยหรือไม่?')) return;
-    try{
-      const bytes = buildNoahNhaxMulti(recs);
-      const blob = new Blob([bytes], {type:'application/octet-stream'});
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      const d = new Date(), pad = n=>String(n).padStart(2,'0');
-      a.download = 'Noah_queue_' + d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + '_' + recs.length + 'p.nhax';
-      a.click();
-      setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
-      try{ hcsToast('📤 ส่งออก Noah ทั้งคิวแล้ว — ' + recs.length + ' คนในไฟล์เดียว'); }catch(e){}
-    }catch(err){ alert('สร้างไฟล์ Noah ไม่สำเร็จ: ' + err); }
-  }
-
   document.getElementById('lstBody').addEventListener('click', async e=>{
     const btn = e.target.closest('button[data-act]'); if(!btn) return;
     const id = btn.getAttribute('data-id');
@@ -6824,7 +6703,6 @@ function init(){
   document.getElementById('btnBulkDel').addEventListener('click', ()=>bulkDeleteRecords([..._selIds]));
   document.getElementById('btnOpenTrash').addEventListener('click', openTrashModal);
   document.getElementById('btnBulkAppt').addEventListener('click', ()=>openApptModal([..._selIds]));
-  document.getElementById('btnBulkNoah').addEventListener('click', ()=>exportManyToNoah([..._selIds]));
   document.getElementById('btnBulkClear').addEventListener('click', clearSelection);
   document.getElementById('btnApptCancel').addEventListener('click', closeApptModal);
   document.getElementById('btnApptSave').addEventListener('click', ()=>saveAppointment(false));
