@@ -3938,6 +3938,7 @@ async function doSave(scope){
     const dup = findDupRecords();
     if(dup.hn || dup.name){
       let m = '⛔ บันทึกไม่ได้ — ข้อมูลซ้ำกับผู้ป่วยที่มีอยู่แล้ว\n';
+      m += '\n(ระบบเทียบเฉพาะภายในรพ. "'+(S.hospital||'')+'" ที่กำลังกรอกอยู่ในฟอร์มนี้ — ถ้าไม่ใช่รพ.ที่ต้องการ ให้แก้ช่อง "โรงพยาบาล" ก่อน)';
       if(dup.hn)   m += '\n• HN ซ้ำ → '+dupDescr(dup.hn);
       if(dup.name && dup.name!==dup.hn) m += '\n• ชื่อ-สกุลซ้ำ → '+dupDescr(dup.name);
       m += '\n\nถ้าเป็นคนเดียวกัน: กลับไปหน้ารายชื่อผู้ป่วย แล้วกด ✏️ แก้ไขรายการเดิมแทน'
@@ -4034,6 +4035,7 @@ function findDupRecords(){
 }
 function dupDescr(r){
   const bits = [];
+  if(r.hospital) bits.push('รพ.'+r.hospital);
   if(r.hn) bits.push('HN '+r.hn);
   if(r.name) bits.push(r.name);
   if(r.fitDate) bits.push('ใส่เครื่อง '+r.fitDate);
@@ -4050,8 +4052,8 @@ function renderDupHint(){
   if(d.hn)   lines.push('HN นี้มีอยู่แล้ว → '+eh(dupDescr(d.hn)));
   if(d.name && d.name!==d.hn) lines.push('ชื่อ-สกุลนี้มีอยู่แล้ว → '+eh(dupDescr(d.name)));
   box.style.display='';
-  box.innerHTML = '⛔ ซ้ำกับผู้ป่วยที่มีอยู่ในระบบ<br>'+lines.join('<br>')
-    + '<br><span style="font-weight:400">ถ้าเป็นคนเดียวกัน ให้กลับไปหน้ารายชื่อผู้ป่วยแล้วกด ✏️ แก้ไขรายการเดิม</span>';
+  box.innerHTML = '⛔ ซ้ำกับผู้ป่วยที่มีอยู่ในระบบ (เทียบเฉพาะภายในรพ. "'+eh(S.hospital||'')+'" ที่กำลังกรอกอยู่)<br>'+lines.join('<br>')
+    + '<br><span style="font-weight:400">ถ้าเป็นคนเดียวกัน ให้กลับไปหน้ารายชื่อผู้ป่วยแล้วกด ✏️ แก้ไขรายการเดิม<br>ถ้าไม่ใช่รพ.ที่ต้องการ ให้ตรวจช่อง "โรงพยาบาล" ในฟอร์มก่อนว่าตรงหรือไม่</span>';
 }
 async function refreshRecordsCache(_retry){
   const api = window.hcsApi;
