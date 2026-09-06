@@ -528,31 +528,30 @@ body.aud-fs{ overflow:hidden; }
 .call-head-actions { margin-left:auto; display:flex; gap:8px; align-items:center; }
 .call-head-close { background:rgba(255,255,255,.2); border:none; color:#fff; width:32px; height:32px; border-radius:9999px; font-size:15px; cursor:pointer; }
 .call-filters { padding:20px 32px; border-bottom:1px solid #EDEBFB; }
-.call-sum { display:grid; grid-template-columns:repeat(auto-fill, minmax(128px,1fr)); gap:9px; padding:16px 32px; border-bottom:1px solid #EDEBFB; }
-.cs-card { border:1.5px solid #EDEBFB; border-radius:12px; padding:9px 12px; background:#FBFAFF; cursor:pointer; min-width:0; }
+/* การ์ดสรุป: บังคับอยู่บรรทัดเดียวทั้งแถว (grid-auto-flow:column) — เพิ่ม/ลดการ์ดกี่ใบก็ยังแถวเดียว
+   จอแคบลงค่อยตัดเป็นหลายแถวใน @media ด้านล่าง */
+.call-sum { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr); gap:8px; padding:16px 24px; border-bottom:1px solid #EDEBFB; }
+.cs-card { border:1.5px solid #EDEBFB; border-radius:12px; padding:9px 10px; background:#FBFAFF; cursor:pointer; min-width:0; }
 .cs-card:hover { border-color:#C9C2F5; }
 .cs-card.on { border-color:#6D5DF6; box-shadow:0 0 0 3px rgba(109,93,246,.13); }
 .cs-card .n { font-size:20px; font-weight:800; color:#241F47; line-height:1.1; }
-.cs-card .t { font-size:11px; color:#8B88A3; font-weight:700; margin-top:2px; }
+.cs-card .t { font-size:10.5px; color:#8B88A3; font-weight:700; margin-top:2px; line-height:1.3; overflow-wrap:anywhere; }
 .cs-card.cs-zero .n { color:#C7C3DC; }
 .cs-card.cs-zero .t { color:#B8B4CC; }
 .cs-card.cs-noappt { border-color:#F3B77A; background:#FFF7ED; }
 .cs-card.cs-noappt .n { color:#C2540A; }
 .cs-card.cs-noappt.on { border-color:#EA7E1D; box-shadow:0 0 0 3px rgba(234,126,29,.18); }
-.call-table { width:100%; border-collapse:collapse; font-size:12.5px; table-layout:fixed; }
+.call-table { width:100%; border-collapse:collapse; font-size:12.5px; table-layout:auto; }
 .call-table th { text-align:left; padding:10px 8px; font-size:10.5px; color:#8B88A3; font-weight:700; text-transform:uppercase; letter-spacing:0.02em; border-bottom:1.5px solid #EDEBFB; white-space:nowrap; }
 .call-table td { padding:9px 8px; border-bottom:1px solid #F3F1FC; color:#241F47; vertical-align:middle; }
-/* สัดส่วนคอลัมน์ (table-layout:fixed) — 1 NO. · 2 ชื่อ · 3 โทรศัพท์ · 4 วันนัด · 5 เรื่องที่นัด · 6 ผลการโทร · 7 หมายเหตุ · 8 จัดการ */
-.call-table th:nth-child(1) { width:4%; }
-.call-table th:nth-child(2) { width:15%; }
-.call-table th:nth-child(3) { width:10%; }
-.call-table th:nth-child(4) { width:12%; }
-.call-table th:nth-child(5) { width:16%; }
-.call-table th:nth-child(6) { width:16%; }
-.call-table th:nth-child(7) { width:17%; }
-.call-table th:nth-child(8) { width:10%; }
-.call-table td { overflow:hidden; text-overflow:ellipsis; }
-.call-table td.ct-quickappt, .call-table td:last-child { overflow:visible; }
+/* คอลัมน์กว้างตามเนื้อหาจริง (table-layout:auto): ช่องที่ความยาวคงที่ (ลำดับ/ชื่อ/เบอร์/วันนัด/เรื่องนัด/จัดการ)
+   ใช้ width:1% + nowrap = หดพอดีข้อความ · เหลือพื้นที่ทั้งหมดให้ช่อง "หมายเหตุ" ที่ต้องพิมพ์ยาว */
+.call-table th:nth-child(1), .call-table td:nth-child(1) { width:1%; white-space:nowrap; }   /* NO. */
+.call-table .ct-name    { width:1%; white-space:nowrap; }
+.call-table .ct-phone   { width:1%; white-space:nowrap; }
+.call-table td.ct-quickappt { white-space:nowrap; }
+.call-table .lst-actions{ width:1%; white-space:nowrap; }
+.call-table .call-note-in { min-width:150px; max-width:420px; }
 .call-table .ct-name { color:#241F47; }
 /* ปุ่มไอคอนในคอลัมน์ "จัดการ" — กฎเดิมผูกกับ .list-table เท่านั้น ตารางนี้เลยไม่ได้สไตล์ */
 .call-table .lst-actions { white-space:nowrap; }
@@ -579,7 +578,7 @@ body.aud-fs{ overflow:hidden; }
 .call-note-in { height:32px; width:100%; min-width:110px; border:1.5px solid #EDEBFB; border-radius:8px; font-family:inherit; font-size:12.5px; padding:0 9px; box-sizing:border-box; }
 .call-when { font-size:10.5px; color:#A29DBE; margin-top:3px; white-space:nowrap; }
 .ct-quickappt { background:#FFF7ED; }
-.qa-row { display:flex; gap:5px; align-items:center; flex-wrap:wrap; }
+.qa-row { display:flex; gap:5px; align-items:center; flex-wrap:nowrap; }
 .qa-date, .qa-type { height:32px; border:1.5px solid #F3D9B8; border-radius:8px; font-family:inherit; font-size:12px; padding:0 7px; color:#241F47; background:#fff; box-sizing:border-box; }
 .qa-date { flex:0 1 auto; max-width:126px; min-width:0; }
 .qa-type { flex:1 1 100px; min-width:88px; max-width:158px; }
@@ -595,18 +594,20 @@ body.aud-fs{ overflow:hidden; }
 .list-table.sel-mode .th-chk, .list-table.sel-mode .td-chk { display:table-cell; }
 #btnToggleSelect.on { background:#e7edff; border-color:#3d6df6; color:var(--lg-tint-deep); font-weight:700; }
 /* ── สัดส่วนความกว้างแต่ละคอลัมน์ (table-layout:fixed) ให้พอดีจอ ไม่ต้องเลื่อนแนวนอน
-      ลำดับคอลัมน์: 1 ติ๊กเลือก · 2 NO. · 3 คิว · 4 ชื่อ-สกุล · 5 วันที่ใส่เครื่อง
-                    6 รุ่น · 7 ข้างที่ใส่ · 8 สิทธิ์ · 9 จัดการ ── */
-.list-table th:nth-child(2), .list-table td:nth-child(2) { width:5%; }   /* NO. */
-.list-table th:nth-child(3), .list-table td:nth-child(3) { width:9%; }   /* คิว */
-.list-table th:nth-child(5), .list-table td:nth-child(5) { width:12%; }  /* วันที่ใส่เครื่อง */
-.list-table th:nth-child(6), .list-table td:nth-child(6) { width:12%; }  /* รุ่น */
-.list-table th:nth-child(7), .list-table td:nth-child(7) { width:8%; }   /* ข้างที่ใส่ */
-.list-table th:nth-child(8), .list-table td:nth-child(8) { width:9%; }   /* สิทธิ์ */
-.list-table th:nth-child(9), .list-table td:nth-child(9) { width:17%; }  /* จัดการ */
+      ลำดับคอลัมน์: 1 ติ๊กเลือก · 2 NO. · 3 คิว · 4 ชื่อ-สกุล · 5 ติดตาม · 6 วันที่ใส่เครื่อง
+                    7 รุ่น · 8 ข้างที่ใส่ · 9 สิทธิ์ · 10 จัดการ
+      ⚠️ ถ้าเพิ่ม/ลบคอลัมน์ในตารางนี้ ต้องเลื่อนเลข nth-child ทั้งบล็อกตามด้วย ── */
+.list-table th:nth-child(2), .list-table td:nth-child(2) { width:5%; }    /* NO. */
+.list-table th:nth-child(3), .list-table td:nth-child(3) { width:9%; }    /* คิว */
+.list-table th:nth-child(5), .list-table td:nth-child(5) { width:7%; }    /* ติดตาม (จุด 3 จุด) */
+.list-table th:nth-child(6), .list-table td:nth-child(6) { width:11%; }   /* วันที่ใส่เครื่อง */
+.list-table th:nth-child(7), .list-table td:nth-child(7) { width:12%; }   /* รุ่น */
+.list-table th:nth-child(8), .list-table td:nth-child(8) { width:8%; }    /* ข้างที่ใส่ */
+.list-table th:nth-child(9), .list-table td:nth-child(9) { width:8%; }    /* สิทธิ์ — พอดีข้อความ ไม่ต้องกว้าง */
+.list-table th:nth-child(10), .list-table td:nth-child(10) { width:17%; } /* จัดการ */
 .list-table .lst-name, .list-table .ct-name, .list-table td:nth-child(4) { overflow:visible; text-overflow:clip; }
-.list-table .lst-model, .list-table td:nth-child(6) { white-space:nowrap; }
-.list-table td:nth-child(3), .list-table td:nth-child(9) { overflow:visible; }
+.list-table .lst-model, .list-table td:nth-child(7) { white-space:nowrap; }
+.list-table td:nth-child(3), .list-table td:nth-child(5), .list-table td:nth-child(10) { overflow:visible; }
 .list-table input[type="checkbox"] { width:16px; height:16px; accent-color:#6D5DF6; cursor:pointer; }
 /* ── กล่องลงนัดหมาย ── */
 #apptModal, #bulkFillModal { display:none; position:fixed; inset:0; z-index:99990; background:rgba(36,31,71,.42); align-items:center; justify-content:center; padding:16px; }
@@ -633,6 +634,10 @@ body.aud-fs{ overflow:hidden; }
 .appt-body label { display:block; font-size:11.5px; color:#8B88A3; font-weight:700; margin:0 0 5px; }
 .appt-body input, .appt-body select { width:100%; height:38px; padding:0 12px; border:1.5px solid #E5E2F7; border-radius:10px; font-family:inherit; font-size:13.5px; color:#241F47; box-sizing:border-box; margin-bottom:13px; background:#fff; }
 .appt-foot { display:flex; gap:9px; justify-content:flex-end; padding:0 22px 20px; }
+@media (max-width:1180px){
+  /* จอแคบ: เลิกบังคับแถวเดียว กลับไปตัดบรรทัดตามพื้นที่ */
+  .call-sum { grid-auto-flow:row; grid-template-columns:repeat(auto-fill, minmax(122px,1fr)); }
+}
 @media (max-width:640px){
   #callView { padding:16px 8px; }
   .call-filters, .call-sum { padding:14px 14px; }
@@ -757,6 +762,7 @@ body.aud-fs{ overflow:hidden; }
   /* ตารางโทรติดตาม: ใช้กติกาเดียวกัน — จอแคบให้เลื่อนแนวนอนแทนการบีบคอลัมน์จนอ่านไม่ออก */
   .call-table { table-layout: auto; min-width: 860px; }
   .call-table th, .call-table td { white-space: nowrap; }
+  .qa-row { flex-wrap: wrap; }
   .call-table th:nth-child(n) { width: auto; }
   .call-table .call-note-in { min-width: 150px; }
 
