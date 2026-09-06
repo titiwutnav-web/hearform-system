@@ -471,6 +471,8 @@ body.aud-fs{ overflow:hidden; }
 .lf-fld input { width:100%; height:38px; padding:0 14px; border:1.5px solid #E5E2F7; border-radius:10px; font-family:inherit; font-size:13.5px; color:#241F47; box-sizing:border-box; }
 .lf-fld input::placeholder { color:#B4AFCB; }
 .lf-fld input:focus { outline:none; border-color:#6D5DF6; box-shadow:0 0 0 3px rgba(109,93,246,0.15); }
+.lf-fld select { width:100%; height:38px; padding:0 12px; border:1.5px solid #E5E2F7; border-radius:10px; font-family:inherit; font-size:13.5px; color:#241F47; box-sizing:border-box; background:#fff; }
+.lf-fld select:focus { outline:none; border-color:#6D5DF6; box-shadow:0 0 0 3px rgba(109,93,246,0.15); }
 .list-subhead { display:flex; align-items:center; justify-content:space-between; padding:18px 32px 4px; flex-wrap:wrap; gap:10px; font-size:15px; font-weight:700; color:#241F47; }
 .list-count-badge { background:#EDE9FE; color:#6D5DF6; font-size:12px; font-weight:700; padding:3px 10px; border-radius:9999px; margin-left:6px; }
 .list-subhead-actions { display:flex; gap:10px; }
@@ -518,23 +520,48 @@ body.aud-fs{ overflow:hidden; }
 #app.mode-call #callView { display:block; }
 #app.mode-call #sidebar, #app.mode-call #main, #app.mode-call #listView { display:none; }
 #app.mode-print #callView, #app.mode-entry #callView { display:none; }
-.call-wrap { max-width:1180px; margin:0 auto; background:#fff; border-radius:20px; box-shadow:0 24px 60px rgba(76,60,190,0.16), 0 2px 8px rgba(76,60,190,0.08); overflow:hidden; font-family:'Poppins','Sarabun','TH Sarabun New',Tahoma,sans-serif; }
+.call-wrap { max-width:1500px; margin:0 auto; background:#fff; border-radius:20px; box-shadow:0 24px 60px rgba(76,60,190,0.16), 0 2px 8px rgba(76,60,190,0.08); overflow:hidden; font-family:'Poppins','Sarabun','TH Sarabun New',Tahoma,sans-serif; }
 .call-head { background:linear-gradient(135deg,#0EA5E9 0%,#6D5DF6 100%); color:#fff; padding:28px 32px 24px; display:flex; gap:16px; align-items:flex-start; }
 .call-head-icon { width:48px; height:48px; border-radius:9999px; background:rgba(255,255,255,.22); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
 .call-head h1 { margin:0 0 4px; font-size:19px; font-weight:700; }
 .call-head p { margin:0; font-size:12.5px; color:rgba(255,255,255,.82); line-height:1.6; }
 .call-head-actions { margin-left:auto; display:flex; gap:8px; align-items:center; }
 .call-head-close { background:rgba(255,255,255,.2); border:none; color:#fff; width:32px; height:32px; border-radius:9999px; font-size:15px; cursor:pointer; }
-.call-filters { padding:18px 32px; border-bottom:1px solid #EDEBFB; display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end; }
-.call-sum { display:flex; flex-wrap:wrap; gap:9px; padding:16px 32px; border-bottom:1px solid #EDEBFB; }
-.cs-card { flex:1 1 112px; border:1.5px solid #EDEBFB; border-radius:12px; padding:9px 12px; background:#FBFAFF; cursor:pointer; }
+.call-filters { padding:20px 32px; border-bottom:1px solid #EDEBFB; }
+.call-sum { display:grid; grid-template-columns:repeat(auto-fill, minmax(128px,1fr)); gap:9px; padding:16px 32px; border-bottom:1px solid #EDEBFB; }
+.cs-card { border:1.5px solid #EDEBFB; border-radius:12px; padding:9px 12px; background:#FBFAFF; cursor:pointer; min-width:0; }
 .cs-card:hover { border-color:#C9C2F5; }
 .cs-card.on { border-color:#6D5DF6; box-shadow:0 0 0 3px rgba(109,93,246,.13); }
 .cs-card .n { font-size:20px; font-weight:800; color:#241F47; line-height:1.1; }
 .cs-card .t { font-size:11px; color:#8B88A3; font-weight:700; margin-top:2px; }
-.call-table { width:100%; border-collapse:collapse; font-size:13.5px; }
-.call-table th { text-align:left; padding:10px 12px; font-size:11px; color:#8B88A3; font-weight:700; text-transform:uppercase; letter-spacing:.04em; border-bottom:1.5px solid #EDEBFB; white-space:nowrap; }
-.call-table td { padding:10px 12px; border-bottom:1px solid #F3F1FC; color:#241F47; vertical-align:middle; }
+.cs-card.cs-zero .n { color:#C7C3DC; }
+.cs-card.cs-zero .t { color:#B8B4CC; }
+.cs-card.cs-noappt { border-color:#F3B77A; background:#FFF7ED; }
+.cs-card.cs-noappt .n { color:#C2540A; }
+.cs-card.cs-noappt.on { border-color:#EA7E1D; box-shadow:0 0 0 3px rgba(234,126,29,.18); }
+.call-table { width:100%; border-collapse:collapse; font-size:12.5px; table-layout:fixed; }
+.call-table th { text-align:left; padding:10px 8px; font-size:10.5px; color:#8B88A3; font-weight:700; text-transform:uppercase; letter-spacing:0.02em; border-bottom:1.5px solid #EDEBFB; white-space:nowrap; }
+.call-table td { padding:9px 8px; border-bottom:1px solid #F3F1FC; color:#241F47; vertical-align:middle; }
+/* สัดส่วนคอลัมน์ (table-layout:fixed) — 1 NO. · 2 ชื่อ · 3 โทรศัพท์ · 4 วันนัด · 5 เรื่องที่นัด · 6 ผลการโทร · 7 หมายเหตุ · 8 จัดการ */
+.call-table th:nth-child(1) { width:4%; }
+.call-table th:nth-child(2) { width:15%; }
+.call-table th:nth-child(3) { width:10%; }
+.call-table th:nth-child(4) { width:12%; }
+.call-table th:nth-child(5) { width:16%; }
+.call-table th:nth-child(6) { width:16%; }
+.call-table th:nth-child(7) { width:17%; }
+.call-table th:nth-child(8) { width:10%; }
+.call-table td { overflow:hidden; text-overflow:ellipsis; }
+.call-table td.ct-quickappt, .call-table td:last-child { overflow:visible; }
+.call-table .ct-name { color:#241F47; }
+/* ปุ่มไอคอนในคอลัมน์ "จัดการ" — กฎเดิมผูกกับ .list-table เท่านั้น ตารางนี้เลยไม่ได้สไตล์ */
+.call-table .lst-actions { white-space:nowrap; }
+.call-table .lst-btn { border:none; border-radius:7px; padding:6px 8px; font-size:15px; line-height:1; min-width:32px;
+  font-weight:600; cursor:pointer; margin-right:5px; font-family:inherit; }
+.call-table .lst-edit { background:#EDE9FE; color:#5B21B6; }
+.call-table .lst-edit:hover { background:#DDD6FE; }
+.call-table .lst-queue { background:#FFEDD5; color:#C2410C; }
+.call-table .lst-queue:hover { background:#FED7AA; }
 .call-table tr:hover td { background:#FBFAFF; }
 .call-table .ct-name { font-weight:600; white-space:nowrap; }
 .call-table .ct-phone { white-space:nowrap; font-variant-numeric:tabular-nums; }
@@ -551,6 +578,14 @@ body.aud-fs{ overflow:hidden; }
 .call-sel { height:34px; border:1.5px solid #E5E2F7; border-radius:9px; font-family:inherit; font-size:12.5px; padding:0 8px; color:#241F47; background:#fff; max-width:190px; }
 .call-note-in { height:32px; width:100%; min-width:110px; border:1.5px solid #EDEBFB; border-radius:8px; font-family:inherit; font-size:12.5px; padding:0 9px; box-sizing:border-box; }
 .call-when { font-size:10.5px; color:#A29DBE; margin-top:3px; white-space:nowrap; }
+.ct-quickappt { background:#FFF7ED; }
+.qa-row { display:flex; gap:5px; align-items:center; flex-wrap:wrap; }
+.qa-date, .qa-type { height:32px; border:1.5px solid #F3D9B8; border-radius:8px; font-family:inherit; font-size:12px; padding:0 7px; color:#241F47; background:#fff; box-sizing:border-box; }
+.qa-date { flex:0 1 auto; max-width:126px; min-width:0; }
+.qa-type { flex:1 1 100px; min-width:88px; max-width:158px; }
+.qa-save { flex:0 0 auto; background:#EA7E1D; color:#fff; border:none; border-radius:8px; padding:0 10px; height:32px; font-weight:700; font-size:12px; cursor:pointer; white-space:nowrap; }
+.qa-save:hover { background:#D5700F; }
+.qa-save:disabled { opacity:.6; cursor:default; }
 /* ── แถบเลือกหลายคนในหน้ารายการ ── */
 .lst-bulk { display:none; align-items:center; gap:12px; margin:0 32px 8px; padding:10px 16px; background:#EDE9FE; border:1.5px solid #C9C2F5; border-radius:12px; font-size:13px; font-weight:700; color:#4C3CBE; }
 .lst-bulk.show { display:flex; }
@@ -601,7 +636,7 @@ body.aud-fs{ overflow:hidden; }
 @media (max-width:640px){
   #callView { padding:16px 8px; }
   .call-filters, .call-sum { padding:14px 14px; }
-  .cs-card { flex:1 1 44%; }
+  .call-sum { grid-template-columns:repeat(auto-fill, minmax(42%,1fr)); }
 }
 .queue-pill { display:inline-block; background:#F1F0FB; color:#5B5675; font-weight:700; font-size:12px; padding:3px 10px; border-radius:9999px; }
 .queue-pill.today { background:#EDE9FE; color:#6D5DF6; }
@@ -719,6 +754,11 @@ body.aud-fs{ overflow:hidden; }
   .list-table { table-layout: auto; min-width: 640px; }
   .list-table th, .list-table td { white-space: nowrap; }
   .list-table .th-name, .list-table .lst-name { width: auto; }
+  /* ตารางโทรติดตาม: ใช้กติกาเดียวกัน — จอแคบให้เลื่อนแนวนอนแทนการบีบคอลัมน์จนอ่านไม่ออก */
+  .call-table { table-layout: auto; min-width: 860px; }
+  .call-table th, .call-table td { white-space: nowrap; }
+  .call-table th:nth-child(n) { width: auto; }
+  .call-table .call-note-in { min-width: 150px; }
 
   /* คิวเรียก */
   #app.mode-queue #queueView { width: 100%; max-width: 100%; height: 100%; max-height: 100%; border-radius: 0; }
@@ -1202,10 +1242,93 @@ body::before{
 /* ── การเข้าถึง: คีย์บอร์ดโฟกัสเห็นชัดเสมอ ── */
 :focus-visible{ outline:3px solid rgba(61,109,246,.55); outline-offset:2px; }
 
+/* ── หน้าโทรติดตาม: ใช้สูตรกระจกเหลวชุดเดียวกับหน้ารายการผู้ป่วย (เดิมธีมไม่ครอบถึง เลยดูเป็นคนละหน้า) ── */
+.call-wrap{
+  background:var(--lg-glass);
+  backdrop-filter:blur(14px) saturate(1.35); -webkit-backdrop-filter:blur(14px) saturate(1.35);
+  border:none; border-radius:34px; overflow:hidden;
+  box-shadow:var(--lg-shadow), inset 0 1.5px 0 var(--lg-edge), inset 0 0 0 1px rgba(255,255,255,.4);
+}
+.call-head{
+  background:linear-gradient(168deg, rgba(255,255,255,.62) 0%, rgba(255,255,255,.22) 55%, rgba(255,255,255,.34) 100%);
+  border-bottom:1px solid rgba(255,255,255,.55);
+  color:var(--lg-ink); padding:32px 32px 28px; align-items:center;
+}
+.call-head h1{ color:var(--lg-ink); letter-spacing:.01em; }
+.call-head p{ color:var(--lg-ink-soft); }
+.call-head-icon{ background:rgba(255,255,255,.66); border:none; box-shadow:inset 0 1px 0 var(--lg-edge), 0 6px 16px rgba(50,70,100,.16); }
+.call-head-close{ background:rgba(50,70,100,.10); color:var(--lg-ink); box-shadow:inset 0 0 0 1px rgba(50,70,100,.12); }
+.call-head-close:hover{ background:rgba(50,70,100,.20); }
+.call-filters{ background:rgba(255,255,255,.26); border-bottom:1px solid rgba(255,255,255,.5); }
+.lf-fld select{
+  border:1px solid rgba(255,255,255,.5) !important; border-radius:9999px;
+  background-color:rgba(255,255,255,.62); color:var(--lg-ink);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.75), 0 0 9px rgba(0,0,0,.14), 0 3px 8px rgba(0,0,0,.11);
+  transition:all .3s ease;
+}
+.lf-fld select:focus{ background-color:rgba(255,255,255,.78); outline:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.75), 0 0 0 2px rgba(255,255,255,.6), 0 0 0 4px rgba(61,109,246,.25); }
+/* การ์ดสรุปสถานะ — แคปซูลกระจกเหมือนการ์ดอื่นในธีม */
+.call-sum{ background:rgba(255,255,255,.2); border-bottom:1px solid rgba(255,255,255,.5); }
+.cs-card{
+  background:rgba(255,255,255,.5); border:1px solid rgba(255,255,255,.5); border-radius:16px; padding:10px 13px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.75), 0 3px 10px rgba(50,70,100,.08); transition:all .2s cubic-bezier(.3,.8,.4,1);
+}
+.cs-card:hover{ background:rgba(255,255,255,.78); border-color:rgba(255,255,255,.75); transform:translateY(-1px); }
+.cs-card .n{ color:var(--lg-ink); }
+.cs-card .t{ color:var(--lg-muted); letter-spacing:.03em; }
+.cs-card.on{ background:rgba(61,109,246,.13); border-color:rgba(61,109,246,.45);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6), 0 0 0 3px rgba(61,109,246,.18); }
+.cs-card.on .n{ color:var(--lg-tint-deep); }
+.cs-card.cs-zero{ background:rgba(255,255,255,.32); box-shadow:inset 0 1px 0 rgba(255,255,255,.6); }
+.cs-card.cs-zero .n{ color:rgba(126,147,163,.6); }
+.cs-card.cs-zero .t{ color:rgba(126,147,163,.75); }
+.cs-card.cs-noappt{ background:rgba(234,126,29,.14); border-color:rgba(234,126,29,.42); }
+.cs-card.cs-noappt .n{ color:#B4590C; }
+.cs-card.cs-noappt .t{ color:#9A5311; }
+.cs-card.cs-noappt:hover{ background:rgba(234,126,29,.2); border-color:rgba(234,126,29,.6); }
+.cs-card.cs-noappt.on{ background:rgba(234,126,29,.22); border-color:rgba(234,126,29,.7);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6), 0 0 0 3px rgba(234,126,29,.22); }
+/* ตารางรายชื่อ */
+.call-table th{ color:var(--lg-muted); letter-spacing:.08em; border-bottom:1px solid var(--lg-line); }
+.call-table td{ border-bottom:1px solid rgba(140,160,180,.14); }
+.call-table tr:hover td{ background:rgba(255,255,255,.42); }
+.call-table .ct-name{ color:var(--lg-ink); }
+.call-sel, .call-note-in{
+  border:1px solid rgba(255,255,255,.6); border-radius:9999px; background-color:rgba(255,255,255,.62); color:var(--lg-ink);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.75), 0 2px 6px rgba(50,70,100,.08); transition:all .25s ease;
+}
+.call-sel:focus, .call-note-in:focus{ outline:none; background-color:rgba(255,255,255,.85);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.75), 0 0 0 3px rgba(61,109,246,.22); }
+.appt-pill{ box-shadow:inset 0 1px 0 rgba(255,255,255,.65); }
+.st-pill{ box-shadow:inset 0 1px 0 rgba(255,255,255,.6); }
+.call-table .lst-btn{ border-radius:9999px; border:1px solid rgba(255,255,255,.55);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 2px 6px rgba(50,70,100,.08); transition:all .2s ease; }
+.call-table .lst-btn:hover{ transform:translateY(-1px); }
+.call-table .lst-edit{ background:var(--lg-tint-soft); color:var(--lg-tint-deep); }
+.call-table .lst-edit:hover{ background:rgba(61,109,246,.24); }
+.call-table .lst-queue{ background:rgba(234,126,29,.16); color:#B4590C; }
+.call-table .lst-queue:hover{ background:rgba(234,126,29,.28); }
+/* ช่องลงนัดหมายแบบเร็ว (แถบ "ไม่มีนัด") */
+.ct-quickappt{ background:rgba(234,126,29,.07); }
+.call-table tr:hover td.ct-quickappt{ background:rgba(234,126,29,.11); }
+.qa-date, .qa-type{
+  border:1px solid rgba(234,126,29,.32); border-radius:9999px; background-color:rgba(255,255,255,.72); color:var(--lg-ink);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8), 0 2px 6px rgba(50,70,100,.07); transition:all .25s ease;
+}
+.qa-date:focus, .qa-type:focus{ outline:none; background-color:rgba(255,255,255,.9);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8), 0 0 0 3px rgba(234,126,29,.25); }
+.qa-save{
+  border-radius:9999px; border:none;
+  background:linear-gradient(170deg, rgba(247,157,68,.97) 0%, rgba(224,120,22,.96) 100%);
+  box-shadow:0 6px 16px rgba(224,120,22,.3), inset 0 1.5px 0 rgba(255,255,255,.5); transition:all .2s cubic-bezier(.3,.8,.4,1);
+}
+.qa-save:hover{ filter:brightness(1.07); transform:translateY(-1px); box-shadow:0 9px 20px rgba(224,120,22,.38), inset 0 1.5px 0 rgba(255,255,255,.55); }
+
 /* ── Fallback: เบราว์เซอร์ที่ไม่รองรับ backdrop-filter → พื้นขาวเกือบทึบ อ่านง่ายแทนกระจก ── */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .list-wrap, #sidebar, #lockScreen .lock-card{ background:rgba(255,255,255,.94); }
-  .btn-ghost, #sidebar .btn-ghost, .lf-fld input, #userBar{ background:rgba(255,255,255,.96); }
+  .list-wrap, .call-wrap, #sidebar, #lockScreen .lock-card{ background:rgba(255,255,255,.94); }
+  .btn-ghost, #sidebar .btn-ghost, .lf-fld input, .lf-fld select, #userBar{ background:rgba(255,255,255,.96); }
 }
 
 /* ── ผู้ใช้ที่ตั้งค่าลดความเคลื่อนไหว: ปิดแอนิเมชันลอย/ทรานสิชัน ── */
@@ -1362,7 +1485,7 @@ body::before{
       </div>
       <div class="list-table-wrap">
         <table class="list-table" id="lstTable">
-          <thead><tr><th class="th-chk"><input type="checkbox" id="lstChkAll" title="เลือกทั้งหน้า"></th><th>NO.</th><th>คิว</th><th class="th-name">ชื่อ-สกุล</th><th>วันที่ใส่เครื่อง</th><th>รุ่น</th><th>ข้างที่ใส่</th><th>สิทธิ์</th><th>จัดการ</th></tr></thead>
+          <thead><tr><th class="th-chk"><input type="checkbox" id="lstChkAll" title="เลือกทั้งหน้า"></th><th>NO.</th><th>คิว</th><th class="th-name">ชื่อ-สกุล</th><th>ติดตาม</th><th>วันที่ใส่เครื่อง</th><th>รุ่น</th><th>ข้างที่ใส่</th><th>สิทธิ์</th><th>จัดการ</th></tr></thead>
           <tbody id="lstBody"></tbody>
         </table>
       </div>
@@ -1391,25 +1514,29 @@ body::before{
         <div class="call-head-icon">📞</div>
         <div>
           <h1>โทรติดตามผลผู้ป่วย</h1>
-          <p>ตรวจสอบรายชื่อที่มีนัดหมาย โทรยืนยัน แล้วบันทึกผลการโทรของแต่ละราย</p>
+          <p>แถบ "ไม่มีนัด" = โทรนัดคนที่ยังไม่มีนัดแล้วลงนัดได้ในแถวเลย · แถบอื่น = โทรยืนยันนัดที่มีอยู่แล้วบันทึกผลการโทร</p>
         </div>
         <div class="call-head-actions">
-          <button type="button" class="btn btn-ghost" id="btnCallRefresh">🔄 รีเฟรช</button>
           <button type="button" class="call-head-close" id="btnCallBack" title="กลับหน้ารายการ">✕</button>
         </div>
       </div>
       <div class="call-filters">
-        <div class="lf-fld" style="max-width:170px"><label>นัดตั้งแต่วันที่</label><input id="callFrom" type="date"></div>
-        <div class="lf-fld" style="max-width:170px"><label>ถึงวันที่</label><input id="callTo" type="date"></div>
-        <div class="lf-fld" style="max-width:200px"><label>เรื่องที่นัด</label><select id="callTypeFilter" class="call-sel" style="max-width:none;width:100%;height:38px"><option value="">— ทั้งหมด —</option></select></div>
-        <div class="lf-fld" style="max-width:200px"><label>ค้นหาชื่อ / HN</label><input id="callSearch" placeholder="เช่น สมชาย"></div>
-        <div class="lf-fld" style="flex:0 0 auto"><button class="btn btn-ghost" id="btnCallToday">📅 เฉพาะวันนี้</button></div>
-        <div class="lf-fld" style="flex:0 0 auto"><button class="btn btn-ghost" id="btnCallClear">✕ ล้างตัวกรอง</button></div>
+        <div class="lf-row">
+          <div class="lf-fld"><label>นัดตั้งแต่วันที่</label><input id="callFrom" type="date"></div>
+          <div class="lf-fld"><label>ถึงวันที่</label><input id="callTo" type="date"></div>
+          <div class="lf-fld"><label>เรื่องที่นัด</label><select id="callTypeFilter"><option value="">— ทั้งหมด —</option></select></div>
+          <div class="lf-fld"><label>ค้นหาชื่อ / HN</label><input id="callSearch" placeholder="เช่น สมชาย"></div>
+        </div>
+        <div class="lf-row lf-row-actions">
+          <button class="btn btn-ghost" id="btnCallToday">📅 เฉพาะวันนี้</button>
+          <button class="btn btn-ghost" id="btnCallClear">✕ ล้างตัวกรอง</button>
+        </div>
       </div>
       <div class="call-sum" id="callSummary"></div>
       <div class="list-subhead">
-        <div>รายชื่อที่มีนัดหมาย <span class="list-count-badge" id="callCountBadge">0 รายการ</span></div>
+        <div><span id="callListTitle">รายชื่อที่มีนัดหมาย</span> <span class="list-count-badge" id="callCountBadge">0 รายการ</span></div>
         <div class="list-subhead-actions">
+          <button class="btn btn-ghost" id="btnCallRefresh">🔄 รีเฟรช</button>
           <button class="btn btn-ghost" id="btnCallExport">⬇️ ส่งออก CSV</button>
         </div>
       </div>
@@ -4627,7 +4754,10 @@ function init(){
       segs.push({ t:no, vol:VOL_NUMBER, slow:true, gap:520 });
       segs.push({ t:no, vol:VOL_NUMBER, slow:true, gap:650 }); // พูดเลขซ้ำ 2 ครั้ง
     }
-    if(spokenName) segs.push({ t:spokenName, vol:VOL_NORMAL, gap:480 });
+    if(spokenName){
+      segs.push({ t:spokenName, vol:VOL_NUMBER, slow:true, gap:420 });
+      segs.push({ t:spokenName, vol:VOL_NUMBER, slow:true, gap:480 }); // พูดชื่อซ้ำ 2 ครั้ง + ช้าลงให้ฟังชัด
+    }
     segs.push({ t:'เชิญที่ ' + (room||queueRoomName()), vol:VOL_NORMAL, gap:0 });
     return segs;
   }
@@ -5432,17 +5562,22 @@ function init(){
     const to   = document.getElementById('callTo').value;
     const typ  = document.getElementById('callTypeFilter').value;
     const q    = (document.getElementById('callSearch').value||'').trim().toLowerCase();
-    let list = getRecords().filter(r=>{ const a=apptOf(r); return !!a.date; });
+    const noAppt = _callStFilter === '__noappt__';
+    /* แถบ "ไม่มีนัด" — โชว์คนที่ยังไม่มีวันนัดในระบบเลย (ต้องโทรนัดก่อน) แทนที่จะกรองแบบเดิมที่ต้องมีนัดอยู่แล้ว */
+    let list = getRecords().filter(r=>{ const a=apptOf(r); return noAppt ? !a.date : !!a.date; });
     try{
       const allowed = effectiveAllowedHospitals();
       if(allowed.length) list = list.filter(r=>allowed.includes((r.hospital||'').trim()));
     }catch(e){}
-    if(from) list = list.filter(r=>apptOf(r).date >= from);
-    if(to)   list = list.filter(r=>apptOf(r).date <= to);
-    if(typ)  list = list.filter(r=>apptOf(r).type === typ);
-    if(q)    list = list.filter(r=>((r.name||'')+' '+(r.hn||'')).toLowerCase().includes(q));
-    if(_callStFilter) list = list.filter(r=>(apptOf(r).status||'') === (_callStFilter==='__none__' ? '' : _callStFilter));
+    if(!noAppt){ /* ตัวกรองวันนัด/เรื่องนัด ใช้ไม่ได้กับคนที่ยังไม่มีนัด */
+      if(from) list = list.filter(r=>apptOf(r).date >= from);
+      if(to)   list = list.filter(r=>apptOf(r).date <= to);
+      if(typ)  list = list.filter(r=>apptOf(r).type === typ);
+    }
+    if(q) list = list.filter(r=>((r.name||'')+' '+(r.hn||'')).toLowerCase().includes(q));
+    if(_callStFilter && _callStFilter!=='__noappt__') list = list.filter(r=>(apptOf(r).status||'') === (_callStFilter==='__none__' ? '' : _callStFilter));
     return list.sort((a,b)=>{
+      if(noAppt) return String(a.name||'').localeCompare(String(b.name||''),'th');
       const da=apptOf(a).date, db=apptOf(b).date;
       if(da!==db) return da<db ? -1 : 1;
       return String(a.name||'').localeCompare(String(b.name||''),'th');
@@ -5454,27 +5589,41 @@ function init(){
     /* สรุปนับจากรายชื่อก่อนกรองสถานะ — กดการ์ดเพื่อกรองเฉพาะสถานะนั้น */
     const saved = _callStFilter; _callStFilter = '';
     const all = getCallList();
+    _callStFilter = '__noappt__';
+    const noApptAll = getCallList();
     _callStFilter = saved;
     const counts = {}; CALL_STATUSES.forEach(s=>counts[s.k]=0); counts.__none__ = 0;
     all.forEach(r=>{ const st=apptOf(r).status; counts[st && CALL_ST_TH[st] ? st : '__none__']++; });
-    const cards = [{k:'', th:'ทั้งหมด', n:all.length}, {k:'__none__', th:'ยังไม่ได้โทร', n:counts.__none__}]
+    const cards = [{k:'__noappt__', th:'ไม่มีนัด', n:noApptAll.length}, {k:'', th:'ทั้งหมด', n:all.length}, {k:'__none__', th:'ยังไม่ได้โทร', n:counts.__none__}]
       .concat(CALL_STATUSES.map(s=>({k:s.k, th:s.th, n:counts[s.k]})));
     document.getElementById('callSummary').innerHTML = cards.map(c=>
-      `<div class="cs-card${_callStFilter===c.k?' on':''}" data-st="${c.k}"><div class="n">${c.n}</div><div class="t">${c.th}</div></div>`).join('');
+      `<div class="cs-card${c.k==='__noappt__'?' cs-noappt':''}${(c.n===0 && c.k!=='__noappt__')?' cs-zero':''}${_callStFilter===c.k?' on':''}" data-st="${c.k}"><div class="n">${c.n}</div><div class="t">${c.th}</div></div>`).join('');
 
     const list = getCallList();
+    const ttl = document.getElementById('callListTitle');
+    if(ttl) ttl.textContent = (_callStFilter==='__noappt__') ? 'รายชื่อที่ยังไม่มีนัด — โทรนัดแล้วลงนัดได้เลย' : 'รายชื่อที่มีนัดหมาย';
     document.getElementById('callCountBadge').textContent = list.length + ' รายการ';
     const body = document.getElementById('callBody');
     if(!list.length){ body.innerHTML = '<tr><td colspan="8" class="list-empty">ไม่มีรายชื่อที่ตรงกับตัวกรอง — ลงนัดหมายได้จากหน้ารายการผู้ป่วย</td></tr>'; return; }
     body.innerHTML = list.map((r,i)=>{
       const a = apptOf(r);
       const when = a.at ? new Date(a.at).toLocaleString('th-TH',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+      /* คนที่ยังไม่มีนัด (แถบ "ไม่มีนัด") ให้เห็นช่องลงนัดหมายทันทีในแถว ไม่ต้องเปิดโมดัล */
+      const apptCell = a.date
+        ? `<td>${thaiShort(a.date)}</td><td>${a.type ? `<span class="appt-pill">${esc(a.type)}</span>` : '-'}${a.note ? `<div class="call-when">${esc(a.note)}</div>` : ''}</td>`
+        : `<td colspan="2" class="ct-quickappt"><div class="qa-row">
+            <input type="date" class="qa-date" id="qaDate-${r._id}" value="${todayKey()}">
+            <select class="qa-type" id="qaType-${r._id}">
+              <option value="">เรื่องที่นัด…</option>
+              ${APPT_TYPES.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('')}
+            </select>
+            <button type="button" class="qa-save" data-cact="quickappt" data-id="${r._id}" title="บันทึกนัดหมาย">+ ลงนัด</button>
+          </div></td>`;
       return `<tr>
         <td>${i+1}</td>
         <td class="ct-name" title="HN ${esc(r.hn)||'-'}">${esc(r.name)||'-'}</td>
         <td class="ct-phone">${a.phone ? `<a href="tel:${esc(a.phone).replace(/[^0-9+]/g,'')}">${esc(a.phone)}</a>` : '<span style="color:#C4BFD8">ไม่มีเบอร์</span>'}</td>
-        <td>${thaiShort(a.date)}</td>
-        <td>${a.type ? `<span class="appt-pill">${esc(a.type)}</span>` : '-'}${a.note ? `<div class="call-when">${esc(a.note)}</div>` : ''}</td>
+        ${apptCell}
         <td>
           <select class="call-sel" data-cact="st" data-id="${r._id}">
             <option value="">— ยังไม่ได้โทร —</option>
@@ -5583,19 +5732,23 @@ function init(){
     const pageList = list.slice(startIdx, startIdx+pageSize);
 
     const body = document.getElementById('lstBody');
-    if(!list.length){ body.innerHTML = '<tr><td colspan="9" class="list-empty">ยังไม่มีรายการผู้ป่วย — กด "+ เพิ่มผู้ป่วยใหม่" เพื่อเริ่ม</td></tr>'; }
+    if(!list.length){ body.innerHTML = '<tr><td colspan="10" class="list-empty">ยังไม่มีรายการผู้ป่วย — กด "+ เพิ่มผู้ป่วยใหม่" เพื่อเริ่ม</td></tr>'; }
     else body.innerHTML = pageList.map((r,i)=>{
       const qToday = r.queueNo && r.queueDate===todayKey();
       const qBadge = `<button class="lst-btn lst-queue" data-act="queue" data-id="${r._id}" title="คลิกเพื่อแก้ไขหมายเลขคิว">${r.queueNo ? `<span class="queue-pill${qToday?' today':''}">คิว ${r.queueNo}</span> ✎` : '+ ใส่คิว'}</button>`;
       const earTxt = LST_EAR_TH[r.ear] || r.ear || '-';
       /* สิทธิ์การรักษา: ใช้ค่าจากเซิร์ฟเวอร์ก่อน ถ้าไม่มี (Apps Script เวอร์ชันเก่า) ดูจากแคชข้อมูลเต็มในเครื่อง */
       const rt = r.rightType || (_fullCache[r._id]||{}).rightType || '';
-      /* นัดหมาย/ติดตามผลย้ายไปดูที่หน้า "โทรติดตาม" แทน — ไม่ต้องแสดงในตารางหลักเพื่อไม่ให้รก */
       return `<tr>
         <td class="td-chk"><input type="checkbox" data-act="sel" data-id="${r._id}"${_selIds.has(r._id)?' checked':''}></td>
         <td>${startIdx+i+1}</td>
         <td>${qBadge}</td>
         <td class="lst-name" title="HN ${esc(r.hn)||'-'}">${esc(r.name)||'-'}${(()=>{ const nv = r.note || (_fullCache[r._id]||{}).note || ''; return nv ? `<div class="lst-note">📌 ${esc(nv)}</div>` : ''; })()}</td>
+        <td class="lst-fu"><span class="fu-track">${[1,2,3].map(n=>{
+          const fc = _fullCache[r._id]||{};
+          const d = r['fu'+n+'_date'] || fc['fu'+n+'_date'] || '';
+          return `<button class="fu-dot${d?' done':''}" data-act="fu" data-fu="${n}" data-id="${r._id}" title="${d ? ('มาติดตามครั้งที่ '+n+' เมื่อ '+esc(d)+' — กดเพื่อลบ/แก้ไข') : ('กดเพื่อบันทึกการมาติดตามผลครั้งที่ '+n)}">${n}</button>`;
+        }).join('')}</span></td>
         <td>${esc(r.fitDate)||'-'}</td>
         <td class="lst-model">${esc(r.model)||'-'}</td>
         <td>${esc(earTxt)}</td>
@@ -6686,6 +6839,18 @@ function init(){
       document.getElementById('apptNoteIn').value = cur.note || '';
       openApptModal([id]);
       document.getElementById('apptOtherWrap').style.display = sel.value===APPT_OTHER ? '' : 'none';
+    } else if(act==='quickappt'){
+      /* ช่องลงนัดหมายแบบเร็วสำหรับคนที่ยังไม่มีนัด — กรอกวันที่+เรื่องแล้วบันทึกในแถวเลย ไม่ต้องเปิดโมดัล */
+      const dEl = document.getElementById('qaDate-'+id), tEl = document.getElementById('qaType-'+id);
+      const date = dEl ? dEl.value : '', type = tEl ? tEl.value : '';
+      if(!date){ alert('กรุณาเลือกวันที่นัด'); return; }
+      if(!type){ alert('กรุณาเลือกเรื่องที่นัด'); return; }
+      btn.disabled = true;
+      try{
+        await patchRecords([id], {apptDate:date, apptType:type});
+        renderCallView();
+        flash('📅 ลงนัดหมายแล้ว');
+      }finally{ btn.disabled = false; }
     } else if(act==='open'){
       setMode('list');
       const b = document.querySelector(`#lstBody button[data-act="edit"][data-id="${id}"]`);
