@@ -4613,7 +4613,7 @@ function init(){
       await refreshRecordsCache();
       if(_currentMode === 'list') renderList();
       else if(_currentMode === 'queue') renderQueueView();
-      else if(_currentMode === 'call') renderCallView();
+      else if(_currentMode === 'call'){ if(!callTableBusy()) renderCallView(); } /* กำลังกรอกอยู่ = ข้ามรอบนี้ไปก่อน */
       markAutoStamp();
     }catch(e){ /* เน็ตสะดุด — รอบหน้าลองใหม่เอง */ }
     finally{ _autoBusy = false; }
@@ -5563,6 +5563,10 @@ function init(){
 
   /* ── รายชื่อที่แสดงในหน้าโทรติดตาม ── */
   let _callStFilter = '';
+  /* ค่าที่ผู้ใช้กำลังเลือกอยู่ในช่อง "ลงนัด" ของแต่ละแถว — ต้องเก็บไว้นอก DOM
+     เพราะหน้านี้รีเฟรชอัตโนมัติทุก 12 วิ (autoRefreshTick) และวาดตารางใหม่ด้วย innerHTML
+     ถ้าไม่เก็บไว้ วันที่/เรื่องที่นัดที่เพิ่งเลือกจะถูกล้างกลับเป็นค่าตั้งต้นกลางคัน */
+  const _qaDraft = {};
   function getCallList(){
     const from = document.getElementById('callFrom').value;
     const to   = document.getElementById('callTo').value;
@@ -5590,6 +5594,12 @@ function init(){
     });
   }
 
+  /* ผู้ใช้กำลังพิมพ์/เลือกอยู่ในตารางโทรติดตามหรือเปล่า — ถ้าใช่ การรีเฟรชอัตโนมัติจะไม่วาดทับ
+     (ไม่งั้นช่องที่กำลังกรอกจะโดนล้าง และโฟกัสหลุดกลางคัน) */
+  function callTableBusy(){
+    const body = document.getElementById('callBody'), a = document.activeElement;
+    return !!(body && a && body.contains(a));
+  }
   function renderCallView(){
     const from = document.getElementById('callFrom'); if(!from) return;
     /* สรุปนับจากรายชื่อก่อนกรองสถานะ — กดการ์ดเพื่อกรองเฉพาะสถานะนั้น */
@@ -5617,14 +5627,16 @@ function init(){
       /* คนที่ยังไม่มีนัด (แถบ "ไม่มีนัด") ให้เห็นช่องลงนัดหมายทันทีในแถว ไม่ต้องเปิดโมดัล */
       const apptCell = a.date
         ? `<td>${thaiShort(a.date)}</td><td>${a.type ? `<span class="appt-pill">${esc(a.type)}</span>` : '-'}${a.note ? `<div class="call-when">${esc(a.note)}</div>` : ''}</td>`
-        : `<td colspan="2" class="ct-quickappt"><div class="qa-row">
-            <input type="date" class="qa-date" id="qaDate-${r._id}" value="${todayKey()}">
+        : (()=>{ const dft = _qaDraft[r._id] || {};
+            const dv = dft.date || todayKey(), tv = dft.type || '';
+            return `<td colspan="2" class="ct-quickappt"><div class="qa-row">
+            <input type="date" class="qa-date" id="qaDate-${r._id}" value="${dv}">
             <select class="qa-type" id="qaType-${r._id}">
-              <option value="">เรื่องที่นัด…</option>
-              ${APPT_TYPES.map(t=>`<option value="${esc(t)}">${esc(t)}</option>`).join('')}
+              <option value=""${tv ? '' : ' selected'}>เรื่องที่นัด…</option>
+              ${APPT_TYPES.map(t=>`<option value="${esc(t)}"${tv===t ? ' selected' : ''}>${esc(t)}</option>`).join('')}
             </select>
             <button type="button" class="qa-save" data-cact="quickappt" data-id="${r._id}" title="บันทึกนัดหมาย">+ ลงนัด</button>
-          </div></td>`;
+          </div></td>`; })();
       return `<tr>
         <td>${i+1}</td>
         <td class="ct-name" title="HN ${esc(r.hn)||'-'}">${esc(r.name)||'-'}</td>
@@ -6826,6 +6838,15 @@ function init(){
     const el = e.target.closest('[data-cact]'); if(!el) return;
     if(el.getAttribute('data-cact')==='st') setCallStatus(el.getAttribute('data-id'), el.value);
   });
+  /* จำวันที่/เรื่องที่นัดที่กำลังเลือกไว้ในแต่ละแถว เผื่อตารางถูกวาดใหม่ระหว่างนั้น */
+  ['input','change'].forEach(ev=>{
+    document.getElementById('callBody').addEventListener(ev, e=>{
+      const el = e.target.closest('.qa-date, .qa-type'); if(!el) return;
+      const id = el.id.replace(/^qa(?:Date|Type)-/, ''); if(!id) return;
+      const d = _qaDraft[id] || (_qaDraft[id] = {});
+      if(el.classList.contains('qa-date')) d.date = el.value; else d.type = el.value;
+    });
+  });
   document.getElementById('callBody').addEventListener('blur', e=>{
     const el = e.target.closest('[data-cact="note"]'); if(!el) return;
     const id = el.getAttribute('data-id'), v = el.value.trim();
@@ -6854,6 +6875,7 @@ function init(){
       btn.disabled = true;
       try{
         await patchRecords([id], {apptDate:date, apptType:type});
+        delete _qaDraft[id];        /* บันทึกขึ้นเซิร์ฟเวอร์แล้ว ไม่ต้องเก็บค่าที่กรอกค้างไว้อีก */
         renderCallView();
         flash('📅 ลงนัดหมายแล้ว');
       }finally{ btn.disabled = false; }
