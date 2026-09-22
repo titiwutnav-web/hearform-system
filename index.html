@@ -1885,6 +1885,23 @@ const CH={ml:42,mr:42,mt:44,mb:26,dbMin:-10,dbMax:120,oct:42};
 #missModal .mm-go{background:#fff;color:#64748b;border-color:#d7dceb;font-weight:600}
 #missModal .mm-go:hover{background:#f8fafc;color:#334155}
 @media print{#missModal{display:none!important}}
+/* ── 📝 ประวัติผู้ป่วย (บันทึกพร้อมวัน-เวลา) ── */
+/* ── วันเกิดแยก วัน / เดือน / ปี ── */
+#sidebar .bd-parts{display:flex;gap:6px}
+#sidebar .bd-parts select, #sidebar .bd-parts input{min-width:0}
+#sidebar .bd-parts .bd-d{flex:0 0 74px}
+#sidebar .bd-parts .bd-m{flex:1 1 96px}
+#sidebar .bd-parts .bd-y{flex:0 0 92px}
+.hist-box{margin:4px 0 6px}
+.hist-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+.hist-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.hist-item{border:1.5px solid #E5E2F7;border-left:4px solid #6D5DF6;border-radius:10px;background:#FAFAFF;padding:8px 12px}
+.hist-meta{display:flex;align-items:center;gap:8px;font-size:12px;color:#6B6690;margin-bottom:3px}
+.hist-meta b{color:#3D3A5C;font-weight:600}
+.hist-meta .hist-del{margin-left:auto;border:none;background:none;color:#B4AFCB;cursor:pointer;font-size:14px;padding:0 4px;line-height:1}
+.hist-meta .hist-del:hover{color:#D3232A}
+.hist-text{white-space:pre-wrap;word-break:break-word;font-size:14px;color:#241F47;line-height:1.5}
+.hist-empty{font-size:13px;color:#9A96B5;margin-top:8px}
 .dup-hint{margin:2px 0 10px;padding:9px 12px;border:1.5px solid #fca5a5;background:#fef2f2;color:#991b1b;
   border-radius:9px;font-size:12.5px;line-height:1.55;font-weight:600}
 @media print{.dup-hint{display:none!important}}
@@ -1997,6 +2014,51 @@ function isoToThaiDate(iso){
   const y=Number(p[0]), m=Number(p[1]), d=Number(p[2]);
   if(!y || !m || !d) return '';
   return `${d} ${_thM[m-1]||m} ${y+543}`;
+}
+/* ══ วันเกิด: กรอกแยก วัน / เดือน / ปี พ.ศ. ══
+   ค่าที่เก็บยังเป็น S.birth ข้อความไทยเหมือนเดิม (เช่น "12 มี.ค. 2500") — ใบปริ้น / คำนวณอายุ / Noah / Excel ไม่ต้องแก้
+   มีช่องซ่อน data-bind="birth" ไว้ให้โค้ดเดิม (อ่านบัตร, ช่องอายุ) เขียนค่าลงได้ แล้ว syncBirthParts() แตกกลับเป็น 3 ช่อง */
+function birthPartsHtml(){
+  let d='<option value="">วัน</option>'; for(let i=1;i<=31;i++) d+=`<option value="${i}">${i}</option>`;
+  let m='<option value="">เดือน</option>'; _thM.forEach((t,i)=>{ m+=`<option value="${i+1}">${t}</option>`; });
+  return `<div class="bd-parts"><select id="bdDay" class="bd-d">${d}</select><select id="bdMon" class="bd-m">${m}</select>`
+    + `<input type="text" id="bdYear" class="bd-y" inputmode="numeric" maxlength="4" placeholder="ปี พ.ศ." autocomplete="off"></div>`
+    + `<input type="hidden" data-bind="birth">`;
+}
+function birthNormYear(y){
+  let n=parseInt(String(y||'').replace(/\D/g,''),10);
+  if(isNaN(n)) return '';
+  if(n<100) n+=2500;                       // พิมพ์ 2 หลัก เช่น 05 → 2505
+  else if(n>=1800 && n<2300) n+=543;       // เผลอพิมพ์ ค.ศ. → แปลงเป็น พ.ศ.
+  return (n>=2300 && n<=2700) ? String(n) : '';
+}
+function composeBirth(){
+  const dEl=document.getElementById('bdDay'), mEl=document.getElementById('bdMon'), yEl=document.getElementById('bdYear');
+  if(!dEl||!mEl||!yEl) return;
+  const y=birthNormYear(yEl.value), m=Number(mEl.value)||0, d=Number(dEl.value)||0;
+  let txt='';
+  if(y){ txt = m ? ((d?d+' ':'')+_thM[m-1]+' '+y) : y; }
+  S.birth = txt;
+  const h=document.querySelector('#sidebar [data-bind="birth"]'); if(h) h.value=txt;
+  const ageEl=document.getElementById('inpAge');
+  onAnyChange();
+  if(ageEl && document.activeElement!==ageEl) ageEl.value = S.age||'';
+}
+function syncBirthParts(){
+  const dEl=document.getElementById('bdDay'), mEl=document.getElementById('bdMon'), yEl=document.getElementById('bdYear');
+  if(!dEl||!mEl||!yEl) return;
+  const b=parseBirth(S.birth||'');
+  dEl.value = (b && b.day && b.mon) ? String(b.day) : '';
+  mEl.value = (b && b.mon) ? String(b.mon) : '';
+  if(document.activeElement!==yEl) yEl.value = (b && b.year) ? String(b.year+543) : '';
+}
+function bindBirthParts(){
+  const dEl=document.getElementById('bdDay'), mEl=document.getElementById('bdMon'), yEl=document.getElementById('bdYear');
+  if(!dEl||!mEl||!yEl) return;
+  dEl.addEventListener('change', composeBirth);
+  mEl.addEventListener('change', composeBirth);
+  yEl.addEventListener('input', ()=>{ yEl.value=yEl.value.replace(/\D/g,''); if(yEl.value.length>=4 || yEl.value==='') composeBirth(); });
+  yEl.addEventListener('blur', ()=>{ composeBirth(); syncBirthParts(); });
 }
 /* สร้าง HTML ช่องวันที่ 1 ช่อง — opts: {today:true} = มีปุ่ม "วันนี้", ph = ข้อความจาง, id */
 function dateInputHtml(bind, opts){
@@ -2902,7 +2964,7 @@ function buildSidebar(){
       <div class="row"><div class="fld" style="max-width:130px"><label>HN</label><input type="text" data-bind="hn"></div><div class="fld" style="max-width:90px"><label>คำนำหน้า</label><select data-bind="namePrefix"><option value="นาย">นาย</option><option value="นาง">นาง</option><option value="นางสาว">นางสาว</option><option value="เด็กชาย">เด็กชาย</option><option value="เด็กหญิง">เด็กหญิง</option><option value="พระ">พระ</option><option value="แม่ชี">แม่ชี</option></select></div><div class="fld"><label>ชื่อ</label><input type="text" data-bind="nameFirst"></div><div class="fld"><label>นามสกุล</label><input type="text" data-bind="nameLast"></div></div>
       <div id="dupHint" class="dup-hint" style="display:none"></div>
       <div class="row"><div class="fld"><label>เลขบัตรประชาชน <span style="color:#94a3b8;font-weight:400">(ไม่บังคับ)</span></label><input type="text" id="inpCitizenId" data-bind="citizenId" inputmode="numeric" maxlength="17" placeholder="x-xxxx-xxxxx-xx-x"><div class="hint" id="cidHint" style="margin-top:3px"></div></div></div>
-      <div class="row"><div class="fld"><label>โทรศัพท์</label><input type="text" data-bind="phone"></div><div class="fld"><label>วันเกิด (พ.ศ.)</label>${dateInputHtml('birth',{ph:'เช่น 12 มี.ค. 2500'})}</div><div class="fld" style="max-width:96px"><label>หรือ อายุ (ปี)</label><input type="text" id="inpAge" inputmode="numeric" placeholder="เช่น 65"></div></div>
+      <div class="row"><div class="fld"><label>โทรศัพท์</label><input type="text" data-bind="phone"></div><div class="fld" style="min-width:270px"><label>วันเกิด <span style="color:#94a3b8;font-weight:400">(วัน / เดือน / ปี พ.ศ.)</span></label>${birthPartsHtml()}</div><div class="fld" style="max-width:96px"><label>หรือ อายุ (ปี)</label><input type="text" id="inpAge" inputmode="numeric" placeholder="เช่น 65"></div></div>
       <div class="fld"><label>วันที่ใส่เครื่อง/สั่งทำ/ซื้อ</label>${dateInputHtml('fitDate',{today:true, ph:'ยังไม่ระบุ — กด "วันนี้" หรือ 📅 เลือกวันที่'})}</div>
       ${rad('rightType','สิทธิ์การรักษา',[['disabled','ผู้พิการ'],['gov','ข้าราชการ'],['sso','ประกันสังคม']])}
       <div class="fld"><label style="color:#D3232A">📌 หมายเหตุ (แสดงสีแดงในหน้ารายการ)</label><input type="text" data-bind="note" class="note-input" placeholder="เช่น ไม่มาตามนัด / ยังไม่พิมพ์หู / ขอคืน HA"></div>
@@ -2928,6 +2990,12 @@ function buildSidebar(){
         <div class="fld" style="max-width:140px"><label>รหัสไปรษณีย์</label><input type="text" data-bind="addr_zip"></div>
       </div>
       <div class="hint">สรุปที่อยู่: ${f('addr_summary')}</div>
+      <div class="subhead">📝 ประวัติผู้ป่วย</div>
+      <div class="hist-box">
+        <div class="fld"><label>เขียนประวัติ <span style="color:#94a3b8;font-weight:400">(ระบบลงวัน-เวลาที่เขียนให้อัตโนมัติ)</span></label><textarea id="histDraft" rows="3" placeholder="เช่น ประวัติการได้ยิน / โรคประจำตัว / อาการที่มา / สิ่งที่ผู้ป่วยแจ้ง"></textarea></div>
+        <div class="hist-actions"><button type="button" class="btn" id="btnAddHist">➕ บันทึกประวัติ</button></div>
+        <div id="histList"></div>
+      </div>
     `)}
     `;
 }
@@ -3570,6 +3638,47 @@ function bindResultCombo(selId, inputId, field){
 }
 
 /* ── การ์ดเลือกเครื่องช่วยฟัง (7.1/7.2) ต้องสร้างใหม่เมื่อสลับ "หู" ระหว่างข้างเดียว/สองข้าง ── */
+/* ══ 📝 ประวัติผู้ป่วย — เก็บเป็น S.historyLog = { id: {at: ISO เวลาที่เขียน, text, by} }
+   ใช้ object (ไม่ใช่ array) เพื่อให้ merge3 ฝั่งเซิร์ฟเวอร์รวมรายการจากหลายห้องได้ทีละรายการ ไม่ทับกัน ══ */
+function histEntries(rec){
+  const h = rec && rec.historyLog;
+  if(!h || typeof h!=='object') return [];
+  return Object.keys(h).map(id=>Object.assign({id}, h[id]||{})).filter(e=>e.text)
+    .sort((a,b)=>String(b.at||'').localeCompare(String(a.at||'')));
+}
+function histFmt(iso){
+  if(!iso) return '-';
+  try{ const d=new Date(iso);
+    return d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'})+' เวลา '+d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})+' น.';
+  }catch(e){ return '-'; }
+}
+function histEsc(t){ return String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function renderHistList(){
+  const box=document.getElementById('histList'); if(!box) return;
+  const list=histEntries(S);
+  if(!list.length){ box.innerHTML='<div class="hist-empty">ยังไม่มีประวัติที่บันทึกไว้</div>'; return; }
+  box.innerHTML='<div class="hist-list">'+list.map(e=>`<div class="hist-item"><div class="hist-meta">🕒 <b>${histFmt(e.at)}</b>${e.by?' · '+histEsc(e.by):''}<button type="button" class="hist-del" data-hist-del="${histEsc(e.id)}" title="ลบรายการนี้">✕</button></div><div class="hist-text">${histEsc(e.text)}</div></div>`).join('')+'</div>';
+  box.querySelectorAll('[data-hist-del]').forEach(b=>b.addEventListener('click',()=>{
+    const id=b.getAttribute('data-hist-del');
+    const e=(S.historyLog||{})[id]; if(!e) return;
+    if(!confirm('ลบประวัติที่เขียนเมื่อ '+histFmt(e.at)+' ?\n(ต้องกด "บันทึก" อีกครั้งถึงจะมีผลจริง)')) return;
+    const h=Object.assign({}, S.historyLog); delete h[id]; S.historyLog=h;
+    renderHistList(); onAnyChange();
+  }));
+}
+/* เพิ่มข้อความในช่องเขียนประวัติเป็นรายการใหม่ (ลงเวลาปัจจุบัน) — คืน true ถ้าเพิ่มจริง */
+function commitHistDraft(){
+  const ta=document.getElementById('histDraft'); if(!ta) return false;
+  const text=ta.value.trim(); if(!text) return false;
+  let by=''; try{ by=String(localStorage.getItem('hcs_display_name')||localStorage.getItem('hcs_username')||'').trim(); }catch(e){}
+  const id='h'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  const h=(S.historyLog && typeof S.historyLog==='object') ? Object.assign({}, S.historyLog) : {};
+  h[id]={at:new Date().toISOString(), text, by};
+  S.historyLog=h;
+  ta.value='';
+  renderHistList();
+  return true;
+}
 function bindDataBindScope(root){
   if(!root) return;
   root.querySelectorAll('[data-bind]').forEach(el=>{
@@ -3625,6 +3734,12 @@ function bindInputs(){
       onAnyChange();
     });
   });
+  bindBirthParts();
+  const _btnHist = document.getElementById('btnAddHist');
+  if(_btnHist) _btnHist.addEventListener('click', ()=>{
+    if(commitHistDraft()){ onAnyChange(); flash('📝 เพิ่มประวัติแล้ว — กด "บันทึก" เพื่อส่งขึ้นระบบ'); }
+    else { const ta=document.getElementById('histDraft'); if(ta) ta.focus(); }
+  });
   const _btnClrHA = document.getElementById('btnClearHA');
   if(_btnClrHA) _btnClrHA.addEventListener('click', clearHearingAidData);
   /* ปุ่ม "✕ ล้าง" ท้ายแถวตัวเลือก */
@@ -3664,6 +3779,7 @@ function bindInputs(){
     const y=birthYearFromAge(ageEl.value);
     S.birth = ageEl.value.trim()==='' ? '' : (y||S.birth);
     const bEl=document.querySelector('[data-bind="birth"]'); if(bEl) bEl.value=S.birth||'';
+    syncBirthParts();
     onAnyChange();
   });
 
@@ -3791,6 +3907,8 @@ function reflectInputs(){
   syncAddrCascade();
   reflectResultCombo('sel_result1','sel_result1_custom',S.s7_resound_result,R1);
   reflectResultCombo('sel_result2','sel_result2_custom',S.s7_am_result,R2);
+  renderHistList();
+  syncBirthParts();
 }
 function reflectResultCombo(selId, inputId, val, list){
   const sel=document.getElementById(selId), inp=document.getElementById(inputId);
@@ -4098,6 +4216,7 @@ async function doSave(scope){
       if(!go){ try{ jump('forms'); }catch(e){} return false; }
     }
   }
+  try{ commitHistDraft(); }catch(e){}   /* พิมพ์ประวัติค้างไว้แต่ยังไม่กด ➕ → บันทึกให้เลยพร้อมเวลาปัจจุบัน */
   try{
     /* ── รันหมายเลขคิวเฉพาะเมื่อ "วันที่ใส่เครื่อง" ตรงกับวันนี้เท่านั้น
           (ลงข้อมูลล่วงหน้า = ยังไม่ได้คิว · พอถึงวันจริงแล้วบันทึก/แก้ไขอะไรก็ตาม คิวจะรันให้ทันที) ── */
