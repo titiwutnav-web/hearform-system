@@ -1370,15 +1370,20 @@ body::before{
 <div id="adminModal">
   <div class="am-card">
     <h3>👤 จัดการผู้ใช้</h3>
-    <p class="am-sub">ผู้ดูแลระบบเท่านั้นที่ตั้ง/เปลี่ยนรหัสผ่านและสิทธิ์เข้าถึงรพ.ได้ — ผู้ใช้ทั่วไปเปลี่ยนรหัสผ่านของตัวเองไม่ได้<br><b>สิทธิ์ Sale</b> = เห็นเฉพาะรพ.ที่ติ๊กเลือกให้เท่านั้น (ไม่เลือกเลย = ไม่เห็นคนไข้) และใบ Audiogram จะลงชื่อผู้ตรวจเป็น "ชื่อ–สกุล" ของบัญชีนั้นโดยไม่มีตำแหน่ง</p>
+    <p class="am-sub">ผู้ดูแลระบบเท่านั้นที่ตั้ง/เปลี่ยนรหัสผ่านและสิทธิ์เข้าถึงรพ.ได้ — ผู้ใช้ทั่วไปเปลี่ยนรหัสผ่านของตัวเองไม่ได้<br><b>สิทธิ์ โรงพยาบาล</b> = ตั้ง "ชื่อโรงพยาบาล" แยกจากชื่อผู้ใช้ได้ (เช่น user: photharam / รพ.: โพธาราม) — บัญชีนั้นจะเห็นเฉพาะคนไข้ของรพ.ที่ระบุ และฟอร์มจะขึ้นชื่อรพ.นั้นให้อัตโนมัติ<br><b>สิทธิ์ Sale</b> = เห็นเฉพาะรพ.ที่ติ๊กเลือกให้เท่านั้น (ไม่เลือกเลย = ไม่เห็นคนไข้) และใบ Audiogram จะลงชื่อผู้ตรวจเป็น "ชื่อ–สกุล" ของบัญชีนั้นโดยไม่มีตำแหน่ง</p>
     <div class="am-form">
       <div class="am-fld"><label>ชื่อผู้ใช้</label><input type="text" id="amUsername" autocomplete="off"></div>
       <div class="am-fld"><label>รหัสผ่าน</label><input type="text" id="amPassword" autocomplete="off" placeholder="เว้นว่าง = ไม่เปลี่ยนรหัสเดิม"></div>
       <div class="am-fld"><label>ชื่อ–สกุล <span style="font-weight:400;color:#9aa5ba">(ใช้ลงชื่อผู้ตรวจใน Audiogram)</span></label><input type="text" id="amDisplayName" autocomplete="off" placeholder="เช่น สมชาย ใจดี"></div>
       <div class="am-fld" style="max-width:130px"><label>สิทธิ์</label>
-        <select id="amRole"><option value="user">ผู้ใช้งาน</option><option value="sale">Sale (เห็นเฉพาะรพ.ที่เลือก)</option><option value="hospital">โรงพยาบาล (เห็นเฉพาะคนไข้ชื่อรพ.ตาม User)</option><option value="admin">ผู้ดูแลระบบ</option></select>
+        <select id="amRole"><option value="user">ผู้ใช้งาน</option><option value="sale">Sale (เห็นเฉพาะรพ.ที่เลือก)</option><option value="hospital">โรงพยาบาล (เห็นเฉพาะรพ.ที่ระบุ)</option><option value="admin">ผู้ดูแลระบบ</option></select>
       </div>
-      <div class="am-fld" style="flex:1 1 100%">
+      <div class="am-fld" id="amHospNameWrap" style="flex:1 1 100%;display:none">
+        <label>ชื่อโรงพยาบาลของบัญชีนี้ <span style="font-weight:400;color:#9aa5ba">(ชื่อที่ขึ้นบนฟอร์ม และใช้กรองคนไข้ — ตั้งต่างจากชื่อผู้ใช้ได้)</span></label>
+        <input type="text" id="amHospName" list="amHospDl" autocomplete="off" placeholder="เช่น โพธาราม (เว้นว่าง = ใช้ชื่อผู้ใช้)">
+        <datalist id="amHospDl"></datalist>
+      </div>
+      <div class="am-fld" id="amHospListWrap" style="flex:1 1 100%">
         <label>เข้าถึงรายชื่อคนไข้จากรพ. (ไม่เลือกเลย = เห็นทุกรพ.)</label>
         <div id="amHospList" style="display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 9px;border:1px solid #dde4ef;border-radius:7px;max-height:100px;overflow-y:auto;font-size:12.5px;color:#6b7690">กำลังโหลดรายชื่อรพ....</div>
       </div>
@@ -3941,7 +3946,9 @@ function applyUserHospital(){
     if(S.hospital) return; // มีชื่อรพ.อยู่แล้ว ไม่ทับ — แก้ไขเองได้เสมอ
     /* 0) สิทธิ์ "โรงพยาบาล": ใช้ชื่อ User เป็นชื่อรพ.เสมอ */
     if(localStorage.getItem('hcs_role')==='hospital'){
-      const hu = String(localStorage.getItem('hcs_username')||'').trim();
+      let hosp = '';
+      try{ const a=JSON.parse(localStorage.getItem('hcs_allowed_hospitals')||'[]'); if(Array.isArray(a)&&a.length) hosp=String(a[0]||'').trim(); }catch(e){}
+      const hu = hosp || String(localStorage.getItem('hcs_username')||'').trim();
       if(hu){ S.hospital = hu; return; }
     }
     /* 1) ถ้าตั้ง "เข้าถึงรพ." ไว้ → ใช้รพ.แรกของ user นั้น */
@@ -5845,10 +5852,13 @@ function init(){
       const role = localStorage.getItem('hcs_role');
       if(role==='admin') return [];
       const uname = String(localStorage.getItem('hcs_username')||'').trim();
-      /* สิทธิ์ "โรงพยาบาล": ล็อกเห็นเฉพาะคนไข้ของรพ.ชื่อเดียวกับ User เสมอ */
-      if(role==='hospital') return uname ? [uname] : [];
       let allowed = [];
       try{ allowed = JSON.parse(localStorage.getItem('hcs_allowed_hospitals')||'[]'); }catch(e){}
+      /* สิทธิ์ "โรงพยาบาล": เห็นเฉพาะคนไข้ของรพ.ที่ Admin ระบุไว้ (ไม่ได้ระบุ = ใช้ชื่อผู้ใช้เป็นชื่อรพ.แบบเดิม) */
+      if(role==='hospital'){
+        if(Array.isArray(allowed) && allowed.length && allowed[0]) return allowed.map(h=>String(h).trim()).filter(Boolean);
+        return uname ? [uname] : [];
+      }
       if(Array.isArray(allowed) && allowed.length) return allowed.map(h=>String(h).trim()).filter(Boolean);
       /* สิทธิ์ "Sale": Admin ยังไม่ได้ติ๊กรพ.ให้ → ไม่เห็นคนไข้เลย (ปลอดภัยไว้ก่อน) */
       if(role==='sale') return [HOSP_DENY_ALL];
@@ -7275,6 +7285,15 @@ document.addEventListener('DOMContentLoaded', init);
       var v = escH(h);
       return '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap"><input type="checkbox" class="am-hosp-cb" value="'+v+'"> '+v+'</label>';
     }).join('');
+    var dl = document.getElementById('amHospDl');
+    if(dl) dl.innerHTML = list.map(function(h){ return '<option value="'+escH(h)+'"></option>'; }).join('');
+  }
+  /* สิทธิ์ "โรงพยาบาล" ใช้ช่องพิมพ์ชื่อรพ.ช่องเดียว (ชื่อรพ. ≠ ชื่อผู้ใช้ได้) — สิทธิ์อื่นใช้ช่องติ๊กรายชื่อรพ.เหมือนเดิม */
+  function amSyncRoleFields(){
+    var isHosp = document.getElementById('amRole').value === 'hospital';
+    var a = document.getElementById('amHospNameWrap'), b = document.getElementById('amHospListWrap');
+    if(a) a.style.display = isHosp ? '' : 'none';
+    if(b) b.style.display = isHosp ? 'none' : '';
   }
   async function refreshUserList(){
     var listEl = document.getElementById('amUserList');
@@ -7300,8 +7319,10 @@ document.addEventListener('DOMContentLoaded', init);
     document.getElementById('adminModal').classList.add('open');
     document.getElementById('amMsg').textContent = '';
     await loadHospitalOptions();
+    amSyncRoleFields();
     refreshUserList();
   });
+  document.getElementById('amRole').addEventListener('change', amSyncRoleFields);
   document.getElementById('amCloseBtn').addEventListener('click', function(){
     document.getElementById('adminModal').classList.remove('open');
   });
@@ -7311,8 +7332,12 @@ document.addEventListener('DOMContentLoaded', init);
     var newUsername = (uEl.value||'').trim(), newPassword = pEl.value||'', newRole = rEl.value;
     var newDisplayName = (dEl.value||'').trim();
     var newAllowedHospitals = Array.from(document.querySelectorAll('.am-hosp-cb:checked')).map(function(cb){ return cb.value; });
-    /* สิทธิ์ "โรงพยาบาล": ล็อกเข้าถึงรพ.เป็นชื่อ user นั้นเสมอ — เห็นเฉพาะคนไข้ของรพ.ตัวเอง */
-    if(newRole === 'hospital'){ newAllowedHospitals = [newUsername]; }
+    /* สิทธิ์ "โรงพยาบาล": ใช้ "ชื่อโรงพยาบาล" ที่พิมพ์ไว้ (เว้นว่าง = ใช้ชื่อผู้ใช้) — ชื่อผู้ใช้กับชื่อรพ.ต่างกันได้ */
+    if(newRole === 'hospital'){
+      var hnEl = document.getElementById('amHospName');
+      var hospName = ((hnEl && hnEl.value) || '').trim() || newUsername;
+      newAllowedHospitals = [hospName];
+    }
     /* สิทธิ์ "Sale": ต้องติ๊กรพ.ที่ดูแลอย่างน้อย 1 แห่ง ไม่งั้นล็อกอินไปก็ไม่เห็นคนไข้เลย */
     if(newRole === 'sale' && !newAllowedHospitals.length){
       if(!confirm('บัญชี Sale นี้ยังไม่ได้เลือกรพ.ที่ดูแล — เมื่อล็อกอินจะไม่เห็นรายชื่อคนไข้เลย\n\nต้องการบันทึกต่อหรือไม่?')) return;
@@ -7325,6 +7350,8 @@ document.addEventListener('DOMContentLoaded', init);
     if(res.status === 'ok'){
       msgEl.style.color = '#1a8a4c'; msgEl.textContent = 'บันทึกแล้ว ✓';
       uEl.value=''; pEl.value=''; rEl.value='user'; dEl.value='';
+      var _hn=document.getElementById('amHospName'); if(_hn) _hn.value='';
+      amSyncRoleFields();
       document.querySelectorAll('.am-hosp-cb').forEach(function(cb){ cb.checked = false; });
       refreshUserList();
     } else {
@@ -7340,6 +7367,9 @@ document.addEventListener('DOMContentLoaded', init);
       document.getElementById('amDisplayName').value = editBtn.getAttribute('data-dname')||'';
       var hospSet = (editBtn.getAttribute('data-hosp')||'').split(',').filter(Boolean);
       document.querySelectorAll('.am-hosp-cb').forEach(function(cb){ cb.checked = hospSet.indexOf(cb.value) !== -1; });
+      var _hnEl = document.getElementById('amHospName');
+      if(_hnEl) _hnEl.value = (editBtn.getAttribute('data-role')==='hospital') ? (hospSet[0] || editBtn.getAttribute('data-user') || '') : '';
+      amSyncRoleFields();
       var msgEl = document.getElementById('amMsg');
       msgEl.style.color = '#8a93a8';
       msgEl.textContent = 'กำลังแก้ไข "'+editBtn.getAttribute('data-user')+'" — เว้นช่องรหัสผ่านว่างไว้ถ้าไม่ต้องการเปลี่ยนรหัส';
