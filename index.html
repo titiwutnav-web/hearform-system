@@ -1606,6 +1606,7 @@ body::before{
       <div class="qs-row">
         <label>ห้องตรวจ/จุดบริการ: <input type="text" id="queueRoom" placeholder="เช่น ห้องตรวจการได้ยิน"></label>
         <label><input type="checkbox" id="queueChime" checked> เสียงกริ่งก่อนเรียก</label>
+        <label title="เปิดสัญญาณเงียบ (หูไม่ได้ยิน) ค้างไว้ ให้ลำโพงบลูทูธไม่หลับ — กันเลขคิว/ชื่อหายตอนเรียก"><input type="checkbox" id="queueBtKeep" checked> 🎧 กันเสียงหาย (ลำโพงบลูทูธ)</label>
         <label>เสียงพูด:
           <select id="queueVoice">
             <option value="">อัตโนมัติ (แนะนำ)</option>
@@ -4703,7 +4704,7 @@ function init(){
       else renderList(); // แสดงจาก cache ทันที (รวมรายการที่เพิ่งบันทึกแบบ optimistic) ไม่ต้องรอเครือข่าย
       refreshRecordsCache().then(renderList); // แล้วซิงก์กับเซิร์ฟเวอร์เบื้องหลัง เผื่อเครื่อง/ห้องอื่นบันทึกเพิ่มมา
     }
-    if(mode==='queue') refreshRecordsCache().then(renderQueueView);
+    if(mode==='queue'){ try{ unlockAudioInGesture(); startAudioKeepAlive(); }catch(e){} refreshRecordsCache().then(renderQueueView); }
     if(mode==='call'){ renderCallView(); refreshRecordsCache().then(renderCallView); }
   }
 
@@ -4762,11 +4763,128 @@ function init(){
     const v = (el && el.value || '').trim();
     return v || 'ห้องตรวจการได้ยิน';
   }
+  /* ══ เสียงออกลำโพงบลูทูธ (แก้ 1 ต.ค. 69) ══
+     ปัญหา: ต่อลำโพง/หูฟังบลูทูธแล้วเสียงเรียกคิวหาย ไม่ออกลำโพง
+     สาเหตุ: 1) บลูทูธ "หลับ" เมื่อไม่มีเสียงส่งไป พอเริ่มเล่นใหม่ต้องใช้เวลาตื่น ~0.5–2 วิ → ต้นเสียงถูกตัดทิ้ง
+                ท่อนประกาศของเราสั้น (เลขคิว/ชื่อ) และเว้นจังหวะเป็นช่วงๆ จึงโดนตัดหายเกือบทั้งท่อน
+             2) ตอนเพิ่งต่อ/ถอดบลูทูธ เสียงพูดของเบราว์เซอร์ (speechSynthesis) มักค้างกับลำโพงเดิม → เงียบทั้งที่ระบบคิดว่าพูดอยู่
+             3) เดิมสร้าง AudioContext ใหม่ทุกครั้งที่เล่นกริ่งแต่ไม่เคยปิด → สะสมจนเสียงรวน
+     วิธีแก้: ใช้ AudioContext ตัวเดียว + เปิดสัญญาณ "ประคอง" ความถี่ต่ำมาก (หูไม่ได้ยิน) ค้างไว้ ให้ลิงก์บลูทูธตื่นตลอด
+             รีเซ็ตระบบเสียงเมื่อมีการต่อ/ถอดอุปกรณ์ และถ้าเสียงพูดในเครื่องค้าง → สลับไปเสียง Google อัตโนมัติ */
+  const BT_KEEP_KEY = 'hcs_bt_keepalive';
+  function btKeepAliveEnabled(){ try{ return localStorage.getItem(BT_KEEP_KEY) !== '0'; }catch(e){ return true; } }
+  let _qAudioCtx = null, _qKeep = null, _synthBroken = false;
+  function getQueueAudioCtx(){
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if(!Ctx) return null;
+    try{
+      if(!_qAudioCtx || _qAudioCtx.state==='closed'){
+        const c = new Ctx(); _qAudioCtx = c; _qKeep = null;
+        c.onstatechange = ()=>{ if(c.state==='running' && _qKeep && _qAudioCtx===c) _qKeep.t = Date.now(); };
+      }
+      if(_qAudioCtx.state!=='running'){ const pr = _qAudioCtx.resume(); if(pr && pr.catch) pr.catch(()=>{}); }
+    }catch(e){ return null; }
+    return _qAudioCtx;
+  }
+  function startAudioKeepAlive(){
+    if(!btKeepAliveEnabled()) return false;
+    const ctx = getQueueAudioCtx();
+    if(!ctx || _qKeep) return false;
+    try{
+      const osc = ctx.createOscillator(), g = ctx.createGain();
+      osc.type = 'sine'; osc.frequency.value = 22; // 22 Hz ที่ระดับนี้ต่ำกว่าเกณฑ์การได้ยินมาก และลำโพงเล็กเล่นไม่ออก
+      g.gain.value = 0.004;                        // ~ -48 dBFS
+      osc.connect(g); g.connect(ctx.destination); osc.start();
+      _qKeep = { osc:osc, g:g, t:Date.now() };
+      return true;
+    }catch(e){ return false; }
+  }
+  function stopAudioKeepAlive(){
+    if(!_qKeep) return;
+    try{ _qKeep.osc.stop(); _qKeep.osc.disconnect(); _qKeep.g.disconnect(); }catch(e){}
+    _qKeep = null;
+  }
+  /* ให้ลำโพงตื่นก่อนพูด: ถ้าสัญญาณประคองเพิ่งเริ่ม ให้รอจนครบ ~1.5 วิ */
+  async function waitAudioReady(){
+    startAudioKeepAlive();
+    const ctx = _qAudioCtx;
+    if(ctx && ctx.state!=='running'){ try{ await Promise.race([ctx.resume(), segGap(800)]); }catch(e){} }
+    if(_qKeep){ const age = Date.now()-_qKeep.t; if(age < 1500) await segGap(1500-age); }
+  }
+  /* ── iPhone/iPad ──
+     - iOS ยอมให้เล่นเสียงเฉพาะที่เริ่มจาก "การแตะ" ของผู้ใช้ แต่เราต้องรอปลุกลำโพง/กริ่งก่อนพูด
+       → ปลดล็อกเสียงทุกช่องทาง (AudioContext, ตัวเล่นเสียง, เสียงพูด) ทันทีตอนแตะ แล้วค่อยพูดทีหลังได้
+     - ตั้ง audioSession เป็น "playback" (iOS 16.4+) ให้เสียงออกลำโพงบลูทูธแบบเดียวกับเพลง และไม่โดนปุ่มปิดเสียง (โหมดเงียบ) ตัด
+     - เสียงพูดในเครื่องของ iOS (speechSynthesis) มักไม่ออกบลูทูธ/เงียบหลังสลับลำโพง → โหมดอัตโนมัติบน iOS ใช้เสียง Google
+       (เล่นแบบไฟล์เสียง ออกบลูทูธเหมือนเพลง) ก่อน ถ้าไม่มีเน็ตค่อยใช้เสียงในเครื่อง */
+  const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent||'') || (navigator.platform==='MacIntel' && (navigator.maxTouchPoints||0) > 1);
+  const SILENT_WAV = (function(){
+    try{
+      const n = 800, b = new Uint8Array(44+n), dv = new DataView(b.buffer);
+      const w = (o,str)=>{ for(let i=0;i<str.length;i++) b[o+i]=str.charCodeAt(i); };
+      w(0,'RIFF'); dv.setUint32(4,36+n,true); w(8,'WAVE'); w(12,'fmt ');
+      dv.setUint32(16,16,true); dv.setUint16(20,1,true); dv.setUint16(22,1,true);
+      dv.setUint32(24,8000,true); dv.setUint32(28,8000,true); dv.setUint16(32,1,true); dv.setUint16(34,8,true);
+      w(36,'data'); dv.setUint32(40,n,true); b.fill(128,44);
+      let bin=''; for(let i=0;i<b.length;i++) bin += String.fromCharCode(b[i]);
+      return 'data:audio/wav;base64,' + btoa(bin);
+    }catch(e){ return ''; }
+  })();
+  let _gttsUnlocked = false, _synthUnlocked = false;
+  function unlockAudioInGesture(){
+    try{ if(navigator.audioSession && navigator.audioSession.type !== 'playback') navigator.audioSession.type = 'playback'; }catch(e){}
+    try{ getQueueAudioCtx(); }catch(e){}
+    if(!_gttsUnlocked && SILENT_WAV){
+      try{
+        const a = getGttsAudio();
+        if(a.paused){
+          a.src = SILENT_WAV; _gttsUnlocked = true;
+          const pr = a.play(); if(pr && pr.catch) pr.catch(()=>{ _gttsUnlocked = false; });
+        }
+      }catch(e){}
+    }
+    if(IS_IOS && !_synthUnlocked && ('speechSynthesis' in window)){
+      try{
+        if(!window.speechSynthesis.speaking){
+          const u = new SpeechSynthesisUtterance(' '); u.volume = 0; u.lang = 'th-TH';
+          window.speechSynthesis.speak(u); _synthUnlocked = true;
+        }
+      }catch(e){}
+    }
+  }
+  /* ต่อ/ถอดบลูทูธ → รีเซ็ตเสียงทั้งหมดให้ไปผูกกับลำโพงใหม่ */
+  let _devChangeTimer = null;
+  function onAudioDeviceChange(){
+    clearTimeout(_devChangeTimer);
+    _devChangeTimer = setTimeout(()=>{
+      try{ if('speechSynthesis' in window) window.speechSynthesis.cancel(); }catch(e){}
+      try{ _voicesCache = null; }catch(e){}
+      _synthBroken = false;
+      const wasOn = !!_qKeep;
+      stopAudioKeepAlive();
+      try{ if(_qAudioCtx) _qAudioCtx.close(); }catch(e){}
+      _qAudioCtx = null;
+      if(wasOn) startAudioKeepAlive();
+    }, 700);
+  }
+  try{ if(navigator.mediaDevices && navigator.mediaDevices.addEventListener) navigator.mediaDevices.addEventListener('devicechange', onAudioDeviceChange); }catch(e){}
+  function showAudioStuckWarning(){
+    if(document.getElementById('audioStuckWarn')) return;
+    const d = document.createElement('div');
+    d.id = 'audioStuckWarn';
+    d.style.cssText = 'position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:99999;background:#7f1d1d;color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;line-height:1.7;max-width:600px;box-shadow:0 8px 24px rgba(0,0,0,.35)';
+    d.innerHTML = '⚠️ <b>เสียงพูดค้าง ไม่ออกลำโพง</b> (มักเกิดหลังต่อ/ถอดบลูทูธ)<br>'
+      + '1. เช็กว่าเครื่องเลือก <b>ลำโพงบลูทูธเป็นอุปกรณ์เสียงออก</b> แล้ว (ไอคอนลำโพงมุมจอ)<br>'
+      + '2. กด <b>F5</b> (Mac: ⌘R) รีเฟรชหน้านี้ — ถ้ายังเงียบ ให้ปิดเบราว์เซอร์ทั้งหมดแล้วเปิดใหม่<br>'
+      + '3. หรือเลือกเสียงพูดเป็น "เสียงออนไลน์ Google" (ต้องต่อเน็ต)'
+      + '<button onclick="this.parentNode.remove()" style="margin-left:8px;background:#fff;color:#7f1d1d;border:0;border-radius:8px;padding:2px 10px;cursor:pointer;font-weight:700">ปิด</button>';
+    document.body.appendChild(d);
+  }
   function playChime(){
     try{
-      const Ctx = window.AudioContext || window.webkitAudioContext;
-      if(!Ctx) return;
-      const ctx = new Ctx();
+      const ctx = getQueueAudioCtx();
+      if(!ctx) return;
+      startAudioKeepAlive();
       [880,660].forEach((freq,i)=>{
         const t0 = ctx.currentTime + i*0.32;
         const osc = ctx.createOscillator(), gain = ctx.createGain();
@@ -4900,19 +5018,31 @@ function init(){
   ];
   let _gttsAudio = null;
   let _gttsHostOK = null; // จำโฮสต์ที่ใช้ได้ไว้ ครั้งต่อไปจะไม่ต้องลองใหม่
+  let _gttsPendingFail = null;
+  /* ใช้ตัวเล่นเสียงตัวเดียวตลอด — บน iPhone ตัวที่ถูกปลดล็อกตอนแตะแล้วจะเล่นต่อได้เรื่อยๆ (สร้างใหม่ทุกครั้งจะโดนบล็อก) */
+  function getGttsAudio(){
+    if(!_gttsAudio){
+      _gttsAudio = new Audio();
+      try{ _gttsAudio.setAttribute('playsinline',''); _gttsAudio.preload = 'auto'; }catch(e){}
+    }
+    return _gttsAudio;
+  }
   function playAudioUrl(url, vol){
     return new Promise((resolve, reject)=>{
       try{
-        if(_gttsAudio){ try{ _gttsAudio.pause(); }catch(e){} }
-        const a = new Audio(); _gttsAudio = a;
-        try{ a.volume = (vol==null?1:Math.max(0, Math.min(1, vol))); }catch(e){}
+        const a = getGttsAudio();
+        if(_gttsPendingFail){ const pf = _gttsPendingFail; _gttsPendingFail = null; pf(new Error('superseded')); }
+        try{ a.pause(); }catch(e){}
+        try{ a.volume = (vol==null?1:Math.max(0, Math.min(1, vol))); }catch(e){} // iOS ไม่รองรับปรับความดังรายไฟล์ (ไม่เป็นไร)
         let started=false, done=false;
-        const fail = (e)=>{ if(done) return; done=true; reject(e||new Error('audio-failed')); };
+        const cleanup = ()=>{ a.onplaying = a.onended = a.onerror = null; if(_gttsPendingFail===fail) _gttsPendingFail = null; };
+        const fail = (e)=>{ if(done) return; done=true; cleanup(); reject(e||new Error('audio-failed')); };
+        _gttsPendingFail = fail;
         a.onplaying = ()=>{ started = true; };
-        a.onended   = ()=>{ if(done) return; done=true; resolve(true); };
+        a.onended   = ()=>{ if(done) return; done=true; cleanup(); resolve(true); };
         a.onerror   = ()=>fail(new Error('audio-load-error'));
         a.src = url;
-        a.play().catch(err=>fail(err));
+        const pr = a.play(); if(pr && pr.catch) pr.catch(err=>fail(err));
         setTimeout(()=>{ if(!started) fail(new Error('audio-timeout')); }, 6000); // เน็ตช้า/โดนบล็อก → ไปใช้ทางอื่น
       }catch(e){ reject(e); }
     });
@@ -4936,7 +5066,10 @@ function init(){
         }
         _gttsHostOK = host;
         return true;
-      }catch(e){ lastErr = e; }
+      }catch(e){
+        if(e && e.message==='superseded') return true; // มีการเรียกคิวใหม่แทรก → หยุดอันเก่าเฉยๆ ไม่ต้องลองโฮสต์อื่น
+        lastErr = e;
+      }
     }
     throw lastErr || new Error('gtts-failed');
   }
@@ -4949,10 +5082,13 @@ function init(){
         u.lang = 'th-TH';
         u.rate = opt.rate; u.volume = opt.vol; u.pitch = 1;
         if(opt.voice) u.voice = opt.voice;
-        let done = false;
-        const fin = ()=>{ if(done) return; done = true; resolve(true); };
-        u.onend = fin; u.onerror = fin;
-        setTimeout(fin, 15000); // กันค้างถ้าเบราว์เซอร์ไม่ยิง event
+        let done = false, started = false;
+        const fin = (r)=>{ if(done) return; done = true; resolve(r); };
+        u.onstart = ()=>{ started = true; };
+        u.onend = ()=>fin('ok'); u.onerror = ()=>fin('ok');
+        /* ไม่เริ่มพูดภายใน 4.5 วิ = เสียงในเครื่องค้าง (มักเกิดหลังสลับไปลำโพงบลูทูธ) */
+        setTimeout(()=>{ if(!started) fin('stuck'); }, 4500);
+        setTimeout(()=>fin('ok'), 15000); // กันค้างถ้าเบราว์เซอร์ไม่ยิง event
         window.speechSynthesis.speak(u);
       }catch(e){ resolve(false); }
     });
@@ -4962,14 +5098,15 @@ function init(){
     const synth = window.speechSynthesis;
     try{ synth.cancel(); synth.resume(); }catch(e){} // แก้ Chrome ค้างสถานะ paused แล้วพูดไม่ออกทั้งที่มีเสียง
     clearInterval(_keepAlive);
-    _keepAlive = setInterval(()=>{ try{ if(synth.speaking && !synth.paused){ synth.pause(); synth.resume(); } }catch(e){} }, 9000);
+    if(!IS_IOS) _keepAlive = setInterval(()=>{ try{ if(synth.speaking && !synth.paused){ synth.pause(); synth.resume(); } }catch(e){} }, 9000); // เฉพาะ Chrome — บน iOS การ pause ทำให้เงียบไปเลย
     try{
       const n = times || 1;
       for(let i=0;i<n;i++){
         for(const sg of segs){
           const parts = chunkText(sg.t, 160); // Chrome เงียบกลางคันถ้าข้อความยาวเกินไป
           for(const pt of parts){
-            await speakOne(pt, { rate: sg.slow?RATE_NUMBER:RATE_NORMAL, vol: (sg.vol==null?1:sg.vol), voice: voice });
+            const r = await speakOne(pt, { rate: sg.slow?RATE_NUMBER:RATE_NORMAL, vol: (sg.vol==null?1:sg.vol), voice: voice });
+            if(r === 'stuck'){ try{ synth.cancel(); }catch(e){} const er = new Error('synth-stuck'); er.stuck = true; throw er; }
           }
           if(sg.gap) await segGap(sg.gap);
         }
@@ -4990,15 +5127,18 @@ function init(){
   /* ── ฟังก์ชันหลัก: พูดตามท่อนที่กำหนด ── */
   async function speakSegments(segs, times){
     try{
+      unlockAudioInGesture(); // ต้องอยู่ก่อน await แรก (ยังนับว่าอยู่ในจังหวะที่ผู้ใช้แตะ)
       segs = (segs||[]).filter(sg=>sg && String(sg.t||'').trim());
       if(!segs.length) return;
+      await waitAudioReady(); // ปลุกลำโพงบลูทูธก่อน กันต้นเสียงหาย
       const pref = voicePref();
       const hasSynth = ('speechSynthesis' in window);
       const voices = hasSynth ? await getVoicesAsync() : [];
       const v = hasSynth ? resolveVoice(voices) : null;
       const thaiOK = isThaiVoice(v);
-      /* ใช้เสียงออนไลน์เมื่อ: ผู้ใช้บังคับเลือก หรือ ในเครื่องไม่มีเสียงไทย (ซึ่งจะทำให้ชื่อไม่ถูกอ่าน) */
-      if(pref === '__google__' || !thaiOK){
+      /* ใช้เสียงออนไลน์เมื่อ: ผู้ใช้บังคับเลือก, ในเครื่องไม่มีเสียงไทย, หรือเสียงในเครื่องเพิ่งค้าง (หลังสลับลำโพง) */
+      const googleFirst = (pref === '__google__' || !thaiOK || _synthBroken || (IS_IOS && !pref));
+      if(googleFirst){
         updateVoiceInfo(v, true);
         try{
           if(hasSynth) window.speechSynthesis.cancel();
@@ -5006,11 +5146,22 @@ function init(){
           return;
         }catch(e){
           if(!hasSynth){ showNoThaiVoiceWarning(); return; }
-          showNoThaiVoiceWarning(); // ต่อเน็ตไม่ได้ + ไม่มีเสียงไทย → อ่านได้แค่ตัวเลข
+          if(!thaiOK) showNoThaiVoiceWarning(); // ต่อเน็ตไม่ได้ + ไม่มีเสียงไทย → อ่านได้แค่ตัวเลข
         }
       }
       updateVoiceInfo(v, false);
-      await speakSegmentsLocal(segs, times, v);
+      try{
+        await speakSegmentsLocal(segs, times, v);
+        _synthBroken = false;
+      }catch(e){
+        if(!(e && e.stuck)) return;
+        _synthBroken = true; // จำไว้ ครั้งต่อไปใช้เสียงออนไลน์เลย จนกว่าจะต่อ/ถอดอุปกรณ์เสียงอีกครั้ง
+        if(!googleFirst){
+          updateVoiceInfo(v, true);
+          try{ await speakSegmentsGoogle(segs, times); return; }catch(e2){}
+        }
+        showAudioStuckWarning();
+      }
     }catch(e){}
   }
   /* พูดข้อความธรรมดา (ใช้ที่อื่นในโปรแกรม) */
@@ -5025,21 +5176,26 @@ function init(){
     const cur = voicePref();
     const thai = voices.filter(isThaiVoice);
     const other = voices.filter(v=>!isThaiVoice(v));
-    let html = '<option value="">อัตโนมัติ (แนะนำ)</option>'
+    let html = '<option value="">' + (IS_IOS ? 'อัตโนมัติ (iPhone: ใช้ Google ก่อน ออกบลูทูธได้ดี)' : 'อัตโนมัติ (แนะนำ)') + '</option>'
              + '<option value="__google__">เสียงออนไลน์ Google (ไทยชัด ต้องต่อเน็ต)</option>';
     if(thai.length) html += '<optgroup label="เสียงไทยในเครื่อง">' + thai.map(v=>`<option value="${esc(v.name)}">${esc(v.name)}</option>`).join('') + '</optgroup>';
     if(other.length) html += '<optgroup label="เสียงอื่นๆ (อ่านไทยไม่ได้)">' + other.map(v=>`<option value="${esc(v.name)}">${esc(v.name)} (${esc(v.lang)})</option>`).join('') + '</optgroup>';
     sel.innerHTML = html;
     sel.value = cur;
     if(sel.value !== cur) sel.value = '';
-    updateVoiceInfo(resolveVoice(voices), cur==='__google__' || !isThaiVoice(resolveVoice(voices)));
+    updateVoiceInfo(resolveVoice(voices), cur==='__google__' || !isThaiVoice(resolveVoice(voices)) || (IS_IOS && !cur));
   }
   function announceQueue(rec, opts){
     opts = opts || {};
     const room = queueRoomName();
     const segs = buildQueueSegments(rec.queueNo, rec.name, room);
     const chimeOn = document.getElementById('queueChime') ? document.getElementById('queueChime').checked : true;
-    if(opts.chime!==false && chimeOn){ playChime(); setTimeout(()=>speakSegments(segs, 2), 800); } else { speakSegments(segs, 2); }
+    unlockAudioInGesture(); // iPhone: ปลดล็อกเสียงตอนแตะ ก่อนจะรอปลุกลำโพง
+    (async ()=>{
+      await waitAudioReady(); // ปลุกลำโพงบลูทูธก่อน ไม่ให้กริ่ง/ต้นประโยคหาย
+      if(opts.chime!==false && chimeOn){ playChime(); await segGap(800); }
+      speakSegments(segs, 2);
+    })();
     _currentCall = { id: rec._id, queueNo: rec.queueNo, name: rec.name||'' };
     document.getElementById('qnNumber').textContent = rec.queueNo;
     document.getElementById('qnName').textContent = rec.name || '-';
@@ -7094,6 +7250,14 @@ function init(){
         speakSegments(buildQueueSegments(12, 'สมชาย ใจดี', queueRoomName()), 1);
       });
       fillVoiceSelect();
+    }
+    const bt = document.getElementById('queueBtKeep');
+    if(bt){
+      bt.checked = btKeepAliveEnabled();
+      bt.addEventListener('change', ()=>{
+        try{ localStorage.setItem(BT_KEEP_KEY, bt.checked ? '1' : '0'); }catch(e){}
+        if(bt.checked) startAudioKeepAlive(); else stopAudioKeepAlive();
+      });
     }
     const btn = document.getElementById('btnTestVoice');
     if(btn) btn.addEventListener('click', ()=>{
