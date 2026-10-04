@@ -5043,7 +5043,10 @@ function init(){
       }catch(e){}
     }
     const _pv = voicePref();
-    if(IS_IOS && _pv && _pv !== '__google__' && !_synthUnlocked && ('speechSynthesis' in window)){
+    /* แก้ 4 ต.ค. 69 (รอบ 2): ผลทดสอบบน iPhone จริง — เสียง Google เล่นไม่ได้ (The operation is not supported)
+       ส่วนเสียงพูดในเครื่อง/ไฟล์เสียง/Web Audio ออกบลูทูธได้ทั้งหมดเมื่อตั้ง audioSession = playback
+       → iPhone ใช้เสียงพูดในเครื่อง (Kanya) เป็นหลัก ต้องปลดล็อกเสียงพูดตอนแตะเสมอ */
+    if(IS_IOS && _pv !== '__google__' && !_synthUnlocked && ('speechSynthesis' in window)){
       try{
         if(!window.speechSynthesis.speaking){
           const u = new SpeechSynthesisUtterance(' '); u.volume = 0; u.lang = 'th-TH';
@@ -5404,7 +5407,7 @@ function init(){
       const v = hasSynth ? resolveVoice(voices) : null;
       const thaiOK = isThaiVoice(v);
       /* ใช้เสียงออนไลน์เมื่อ: ผู้ใช้บังคับเลือก, ในเครื่องไม่มีเสียงไทย, หรือเสียงในเครื่องเพิ่งค้าง (หลังสลับลำโพง) */
-      const googleFirst = (pref === '__google__' || !thaiOK || _synthBroken || (IS_IOS && !pref));
+      const googleFirst = (pref === '__google__' || !thaiOK || _synthBroken);
       if(googleFirst){
         updateVoiceInfo(v, true);
         try{
@@ -5443,14 +5446,14 @@ function init(){
     const cur = voicePref();
     const thai = voices.filter(isThaiVoice);
     const other = voices.filter(v=>!isThaiVoice(v));
-    let html = '<option value="">' + (IS_IOS ? 'อัตโนมัติ (iPhone: ใช้ Google ก่อน ออกบลูทูธได้ดี)' : 'อัตโนมัติ (แนะนำ)') + '</option>'
+    let html = '<option value="">' + 'อัตโนมัติ (แนะนำ)' + '</option>'
              + '<option value="__google__">เสียงออนไลน์ Google (ไทยชัด ต้องต่อเน็ต)</option>';
     if(thai.length) html += '<optgroup label="เสียงไทยในเครื่อง">' + thai.map(v=>`<option value="${esc(v.name)}">${esc(v.name)}</option>`).join('') + '</optgroup>';
     if(other.length) html += '<optgroup label="เสียงอื่นๆ (อ่านไทยไม่ได้)">' + other.map(v=>`<option value="${esc(v.name)}">${esc(v.name)} (${esc(v.lang)})</option>`).join('') + '</optgroup>';
     sel.innerHTML = html;
     sel.value = cur;
     if(sel.value !== cur) sel.value = '';
-    updateVoiceInfo(resolveVoice(voices), cur==='__google__' || !isThaiVoice(resolveVoice(voices)) || (IS_IOS && !cur));
+    updateVoiceInfo(resolveVoice(voices), cur==='__google__' || !isThaiVoice(resolveVoice(voices)));
   }
   function announceQueue(rec, opts){
     opts = opts || {};
