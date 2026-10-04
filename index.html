@@ -1600,11 +1600,13 @@ body::before{
       <div class="qn-actions">
         <button type="button" class="btn btn-primary" id="btnRecall">🔊 เรียกซ้ำ</button>
         <button type="button" class="btn btn-ghost" id="btnCallNext">⏭️ เรียกคิวถัดไป</button>
+        <button type="button" class="btn btn-ghost" id="btnCallRelative" title="ประกาศเรียกญาติของผู้ป่วยคิวที่กำลังเรียกอยู่">👪 เรียกญาติ</button>
       </div>
     </div>
     <div class="queue-settings">
       <div class="qs-row">
         <label>ห้องตรวจ/จุดบริการ: <input type="text" id="queueRoom" placeholder="เช่น ห้องตรวจการได้ยิน"></label>
+        <label title="ถ้าเว้นว่าง จะใช้ห้องเดียวกับช่องห้องตรวจ">จุดพบญาติ: <input type="text" id="queueRelRoom" placeholder="เว้นว่าง = ห้องเดียวกัน"></label>
         <label><input type="checkbox" id="queueChime" checked> เสียงกริ่งก่อนเรียก</label>
         <label title="เปิดสัญญาณเงียบ (หูไม่ได้ยิน) ค้างไว้ ให้ลำโพงบลูทูธไม่หลับ — กันเลขคิว/ชื่อหายตอนเรียก"><input type="checkbox" id="queueBtKeep" checked> 🎧 กันเสียงหาย (ลำโพงบลูทูธ)</label>
         <label>เสียงพูด:
@@ -1614,6 +1616,7 @@ body::before{
           </select>
         </label>
         <button type="button" class="btn btn-ghost" id="btnTestVoice">🔈 ทดสอบเสียง</button>
+        <button type="button" class="btn btn-ghost" id="btnAudioDiag">🔧 ตรวจเส้นทางเสียง</button>
         <span class="qs-voiceinfo" id="queueVoiceInfo"></span>
       </div>
     </div>
@@ -3964,7 +3967,152 @@ function applyUserHospital(){
     if(uname && role!=='admin' && !centralAccounts.includes(uname.toLowerCase())) S.hospital = uname;
   }catch(e){}
 }
-function autosave(){ try{ localStorage.setItem(KEY+'_auto', JSON.stringify(S)); }catch(e){ if(!window._autosaveWarned){ window._autosaveWarned=true; alert('บันทึกอัตโนมัติไม่สำเร็จ (ข้อมูลอาจใหญ่เกินไป เช่น รูปภาพ) — กรุณากด "บันทึก" หรือ "ส่งออก" เพื่อสำรองข้อมูลด้วยตนเอง'); } } }
+function autosave(){ try{ scheduleDraft(); }catch(e){} try{ localStorage.setItem(KEY+'_auto', JSON.stringify(S)); }catch(e){ if(!window._autosaveWarned){ window._autosaveWarned=true; alert('บันทึกอัตโนมัติไม่สำเร็จ (ข้อมูลอาจใหญ่เกินไป เช่น รูปภาพ) — กรุณากด "บันทึก" หรือ "ส่งออก" เพื่อสำรองข้อมูลด้วยตนเอง'); } } }
+/* ══════════════ ร่างข้อมูลที่ยังไม่ได้บันทึก (แก้ 4 ต.ค. 69) ══════════════
+   ปัญหา: กรอกแล้วลืมกด 💾 บันทึก / กด ✕ ปิด / แอปบน iPhone โดนปิดหรือรีโหลดเอง → เปิดเคสใหม่แล้วข้อมูลที่กรอกหาย (เช่น Audiogram)
+   วิธีแก้: ระหว่างเปิดหน้ากรอก เก็บ "ร่าง" ลงเครื่องอัตโนมัติทุกครั้งที่แก้ (แยกตามผู้ป่วย เก็บได้ DRAFT_MAX ราย)
+     - กด ✕/ยกเลิก ทั้งที่ยังไม่บันทึก → ถามก่อน (บันทึก / ปิดไว้ก่อน-เก็บร่าง / ทิ้ง)
+     - เปิดผู้ป่วยที่มีร่างค้าง → ถามว่าจะกู้คืนไหม (ใช้ baseline เดิมของร่าง ให้ 3-way merge ไม่ทับงานห้องอื่น)
+     - หน้ารายชื่อมีแถบ "📝 ข้อมูลที่ยังไม่ได้บันทึก" กู้คืนได้ทุกเมื่อ (รวมผู้ป่วยใหม่ที่ยังไม่เคยบันทึก)
+     - บันทึกสำเร็จ → ลบร่างของรายนั้นทิ้งอัตโนมัติ */
+const DRAFT_IDX_KEY = 'hcs_drafts_idx', DRAFT_PREFIX = 'hcs_draft_', DRAFT_MAX = 12;
+let _curDraftKey = '', _entrySnap = '', _draftTimer = null, _forceDirty = false, _draftWritten = false;
+function draftStr(o){ try{ const c = Object.assign({}, o); delete c._savedAt; return JSON.stringify(c); }catch(e){ return ''; } }
+function draftIndex(){ try{ const a = JSON.parse(localStorage.getItem(DRAFT_IDX_KEY)||'[]'); return Array.isArray(a) ? a : []; }catch(e){ return []; } }
+function saveDraftIndex(a){ try{ localStorage.setItem(DRAFT_IDX_KEY, JSON.stringify(a)); }catch(e){} }
+function readDraft(key){ try{ return key ? JSON.parse(localStorage.getItem(DRAFT_PREFIX+key)||'null') : null; }catch(e){ return null; } }
+function draftKeyForId(id){ return id ? 'id_'+id : ''; }
+function entryIsDirty(){ return !!_curDraftKey && (_forceDirty || (_entrySnap !== '' && draftStr(S) !== _entrySnap)); }
+function removeDraft(key){
+  if(!key) return;
+  const idx = draftIndex();
+  let has = false; try{ has = localStorage.getItem(DRAFT_PREFIX+key)!=null; }catch(e){}
+  if(!has && !idx.some(m=>m.key===key)) return;
+  try{ localStorage.removeItem(DRAFT_PREFIX+key); }catch(e){}
+  saveDraftIndex(idx.filter(m=>m.key!==key));
+  try{ updateDraftBanner(); }catch(e){}
+}
+function writeDraftNow(){
+  clearTimeout(_draftTimer); _draftTimer = null;
+  if(!_curDraftKey || !_entryOpen) return;
+  if(!entryIsDirty()){ if(_draftWritten){ removeDraft(_curDraftKey); _draftWritten = false; } return; }   // แก้กลับเป็นเหมือนเดิม = ลบร่างที่เพิ่งเก็บ (ไม่แตะร่างเก่าที่ยังไม่ได้ตัดสินใจ)
+  const meta = { key:_curDraftKey, id:S._id||'', name:(fullNameOfS()||S.name||''), hn:S.hn||'', hospital:S.hospital||'',
+                 view:_sidebarMode||'patient', at:new Date().toISOString() };
+  try{
+    localStorage.setItem(DRAFT_PREFIX+_curDraftKey, JSON.stringify({ meta:meta, S:S, base:(S._id ? (baseFor(S._id)||null) : null) }));
+  }catch(e){ console.warn('เก็บร่างไม่สำเร็จ (พื้นที่ในเครื่องเต็ม?)', e); return; }
+  const idx = draftIndex().filter(m=>m.key!==_curDraftKey); idx.unshift(meta);
+  while(idx.length > DRAFT_MAX){ const old = idx.pop(); try{ localStorage.removeItem(DRAFT_PREFIX+old.key); }catch(e){} }
+  saveDraftIndex(idx);
+  _draftWritten = true;
+  try{ updateDraftBanner(); }catch(e){}
+}
+function scheduleDraft(){ if(!_curDraftKey || !_entryOpen) return; clearTimeout(_draftTimer); _draftTimer = setTimeout(writeDraftNow, 400); }
+/* เรียกตอนเปิดหน้ากรอกเสร็จ: จำสภาพตั้งต้นไว้เทียบว่ามีการแก้หรือยัง */
+function beginEntryDraft(){
+  if(S._id) _curDraftKey = draftKeyForId(S._id);
+  else if(!(_curDraftKey && _curDraftKey.indexOf('new_')===0)) _curDraftKey = 'new_'+Date.now().toString(36);
+  _entrySnap = draftStr(S);
+  _forceDirty = false;
+  _draftWritten = false;
+}
+/* บันทึกสำเร็จ → ลบร่าง แล้วเริ่มนับใหม่จากค่าที่เพิ่งบันทึก */
+function draftAfterSave(){
+  removeDraft(_curDraftKey);
+  if(S._id) removeDraft(draftKeyForId(S._id));
+  if(_entryOpen){ _curDraftKey = draftKeyForId(S._id); _entrySnap = draftStr(S); _forceDirty = false; }
+  else { _curDraftKey = ''; _entrySnap = ''; _forceDirty = false; }
+}
+/* เอาร่างมาใส่ฟอร์ม */
+function applyDraftToS(d){
+  if(d.base && d.base._id){ try{ _baseSnap[d.base._id] = JSON.parse(JSON.stringify(d.base)); }catch(e){} }
+  S = Object.assign({}, DEFAULTS, d.S);
+  S.audTh = mergeAudTh(d.S.audTh);
+  try{ backfillHACard(); }catch(e){}
+  try{ resetAudHistory(); }catch(e){}
+  reflectInputs(); buildAudTable(); paintAudTools(); updateDerived(); render(); syncComputedFields();
+  try{ updateQueueBadge(); }catch(e){}
+  _forceDirty = true;   // ข้อมูลในร่างยังไม่ขึ้นเซิร์ฟเวอร์ — ถือว่ายังไม่บันทึกจนกว่าจะกด 💾
+  autosave();
+}
+function draftTimeTH(iso){ try{ const d = new Date(iso); return d.toLocaleDateString('th-TH',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } }
+function draftEsc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+/* กล่องถามแบบหลายปุ่ม — คืนค่า value ของปุ่มที่กด ('' = ปิดกล่อง/กด Esc) */
+function hcsChoice(title, bodyHtml, buttons){
+  return new Promise(resolve=>{
+    const ov = document.createElement('div');
+    ov.className = 'hcs-choice';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:100001;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px';
+    ov.innerHTML = '<div role="dialog" aria-modal="true" style="background:#fff;color:#0f172a;border-radius:18px;max-width:440px;width:100%;max-height:90vh;overflow:auto;padding:20px;box-shadow:0 24px 60px rgba(0,0,0,.3);font-size:14.5px;line-height:1.6">'
+      + '<div style="font-weight:800;font-size:17px;margin-bottom:8px">'+title+'</div>'
+      + '<div style="color:#334155;margin-bottom:14px">'+bodyHtml+'</div>'
+      + buttons.map(b=>'<button type="button" data-v="'+b.v+'" style="display:block;width:100%;margin:7px 0 0;padding:12px 14px;border-radius:12px;font-size:15px;font-weight:700;text-align:left;cursor:pointer;font-family:inherit;border:'
+          + (b.kind==='primary' ? '0;background:#4f46e5;color:#fff' : b.kind==='danger' ? '1px solid #fecaca;background:#fff1f2;color:#b91c1c' : '1px solid #cbd5e1;background:#f8fafc;color:#0f172a')
+          + '">'+b.label+'</button>').join('')
+      + '</div>';
+    const done = v=>{ document.removeEventListener('keydown', onKey); ov.remove(); resolve(v); };
+    const onKey = e=>{ if(e.key==='Escape') done(''); };
+    ov.addEventListener('click', e=>{ const b = e.target.closest('button[data-v]'); if(b) done(b.getAttribute('data-v')); else if(e.target===ov) done(''); });
+    document.addEventListener('keydown', onKey);
+    document.body.appendChild(ov);
+  });
+}
+/* เปิดผู้ป่วยที่มีร่างค้างอยู่ → ถามว่าจะกู้คืนไหม */
+async function offerDraftRestore(){
+  const d = readDraft(_curDraftKey);
+  if(!d || !d.S) return;
+  if(draftStr(Object.assign({}, DEFAULTS, d.S)) === draftStr(S)){ removeDraft(_curDraftKey); return; } // เหมือนที่บันทึกไว้แล้ว
+  const m = d.meta || {};
+  const v = await hcsChoice('📝 พบข้อมูลที่ยังไม่ได้บันทึก',
+    'ผู้ป่วย <b>'+draftEsc(m.name||'-')+'</b>'+(m.hn?' (HN '+draftEsc(m.hn)+')':'')+'<br>มีข้อมูลที่กรอกค้างไว้เมื่อ <b>'+draftEsc(draftTimeTH(m.at))+'</b> แต่ยังไม่ได้กด 💾 บันทึก',
+    [{v:'restore', label:'↩️ กู้คืนข้อมูลที่กรอกค้างไว้', kind:'primary'},
+     {v:'discard', label:'🗑 ทิ้ง — ใช้ข้อมูลที่บันทึกไว้ล่าสุด', kind:'danger'}]);
+  if(v==='restore'){ applyDraftToS(d); flash('↩️ กู้คืนข้อมูลที่ยังไม่ได้บันทึกแล้ว — อย่าลืมกด 💾 บันทึก'); }
+  else if(v==='discard'){ removeDraft(_curDraftKey); }
+  /* ปิดกล่องเฉยๆ = เก็บร่างไว้ก่อน ยังกู้คืนได้จากแถบในหน้ารายชื่อ */
+}
+/* แถบเตือนในหน้ารายชื่อ */
+function updateDraftBanner(){
+  const sub = document.querySelector('#listView .list-subhead') || document.querySelector('.list-subhead');
+  if(!sub) return;
+  let bn = document.getElementById('draftBanner');
+  const idx = draftIndex().filter(m=>m.key!==(_entryOpen ? _curDraftKey : ''));
+  if(!idx.length){ if(bn) bn.remove(); return; }
+  if(!bn){
+    bn = document.createElement('div'); bn.id = 'draftBanner';
+    bn.style.cssText = 'display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0;padding:10px 14px;border-radius:14px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:14px';
+    sub.parentNode.insertBefore(bn, sub);
+    bn.addEventListener('click', e=>{ if(e.target.closest('button')) openDraftList(); });
+  }
+  bn.innerHTML = '<span>📝 มีข้อมูลที่กรอกค้างไว้แต่<b>ยังไม่ได้บันทึก</b> '+idx.length+' ราย ('+idx.slice(0,3).map(m=>draftEsc(m.name||'ผู้ป่วยใหม่')).join(', ')+(idx.length>3?' …':'')+')</span>'
+    + '<button type="button" class="btn btn-primary" style="margin-left:auto">ดู / กู้คืน</button>';
+}
+async function openDraftList(){
+  const idx = draftIndex();
+  if(!idx.length){ updateDraftBanner(); return; }
+  const VIEW_TH = {patient:'👤 ข้อมูลผู้ป่วย', hearingaid:'🦻 เครื่องช่วยฟัง', audiogram:'📈 Audiogram'};
+  const btns = idx.map((m,i)=>({v:'r'+i, label:'↩️ '+draftEsc(m.name||'ผู้ป่วยใหม่ (ยังไม่มีชื่อ)')+(m.hn?' · HN '+draftEsc(m.hn):'')+'<br><span style="font-weight:400;font-size:12.5px">'+(VIEW_TH[m.view]||'')+' · กรอกค้างไว้ '+draftEsc(draftTimeTH(m.at))+'</span>'}));
+  btns.push({v:'clear', label:'🗑 ลบร่างทั้งหมด', kind:'danger'});
+  const v = await hcsChoice('📝 ข้อมูลที่ยังไม่ได้บันทึก', 'กดชื่อเพื่อเปิดกลับไปกรอกต่อ แล้วกด <b>💾 บันทึก</b>', btns);
+  if(v==='clear'){
+    const ok = await hcsChoice('ลบร่างทั้งหมด?', 'ข้อมูลที่ยังไม่ได้บันทึก '+idx.length+' รายจะหายถาวร', [{v:'yes', label:'🗑 ลบทั้งหมด', kind:'danger'},{v:'', label:'ยกเลิก'}]);
+    if(ok==='yes'){ idx.forEach(m=>{ try{ localStorage.removeItem(DRAFT_PREFIX+m.key); }catch(e){} }); saveDraftIndex([]); updateDraftBanner(); }
+    return;
+  }
+  if(!v || v[0]!=='r') return;
+  const m = idx[Number(v.slice(1))]; if(!m) return;
+  const d = readDraft(m.key);
+  if(!d || !d.S){ removeDraft(m.key); alert('ร่างนี้เสียหาย/หายไปแล้ว'); return; }
+  if(typeof window.hcsOpenDraft === 'function') window.hcsOpenDraft(d, m);
+}
+window.addEventListener('beforeunload', function(ev){
+  try{
+    if(_entryOpen && entryIsDirty()){ writeDraftNow(); ev.preventDefault(); ev.returnValue = 'ยังไม่ได้กดบันทึก — ข้อมูลถูกเก็บเป็นร่างไว้ในเครื่องแล้ว'; }
+  }catch(e){}
+});
+/* iPhone/iPad: สลับแอป/ล็อกจอ แล้วระบบอาจปิดหน้าเว็บทิ้ง → เก็บร่างทันทีไม่ต้องรอ */
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden'){ try{ writeDraftNow(); }catch(e){} } });
+window.addEventListener('pagehide', ()=>{ try{ writeDraftNow(); }catch(e){} });
 function flash(msg){ const d=document.createElement('div'); d.textContent=msg; d.style.cssText='position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:10px 22px;border-radius:10px;z-index:9999;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.2);font-family:Sarabun,sans-serif;font-size:15px'; document.body.appendChild(d); setTimeout(()=>d.remove(),1800); }
 let _queueToastTimer = null;
 function flashQueue(no, name){
@@ -4245,6 +4393,7 @@ async function doSave(scope){
     flash(S.queueNo ? '💾 บันทึกแล้ว — กำลังส่งขึ้นเซิร์ฟเวอร์เบื้องหลัง'
                     : '💾 บันทึกแล้ว (ยังไม่รันคิว — จะได้คิวเมื่อบันทึกในวันที่ใส่เครื่อง)');
   }catch(e){ alert('บันทึกไม่สำเร็จ: '+e); return false; }
+  try{ draftAfterSave(); }catch(e){}
   return true;
 }
 function jump(id){ const el=document.getElementById(id); if(!el) return; el.scrollIntoView({behavior:'smooth', block:'start'}); }
@@ -4670,6 +4819,7 @@ function init(){
     if(await doSave('all') === false){ showAllSheets(); hidePreviewBar(); openEntryModal('patient'); return; }
     S = Object.assign({}, DEFAULTS);
     S.audTh = freshAudTh();
+    _curDraftKey = ''; _entrySnap = ''; _forceDirty = false;
     backfillHACard();
     applyUserHospital();
     resetAudHistory();
@@ -4787,6 +4937,7 @@ function init(){
     return _qAudioCtx;
   }
   function startAudioKeepAlive(){
+    if(IS_IOS) return false; // iPhone: ไม่ใช้ Web Audio เลย (ดูหมายเหตุที่ unlockAudioInGesture)
     if(!btKeepAliveEnabled()) return false;
     const ctx = getQueueAudioCtx();
     if(!ctx || _qKeep) return false;
@@ -4831,9 +4982,57 @@ function init(){
     }catch(e){ return ''; }
   })();
   let _gttsUnlocked = false, _synthUnlocked = false;
+  /* สร้างไฟล์ WAV จากตัวอย่างเสียง (ค่า -1..1) */
+  function makeWavDataUri(samples, sr){
+    const n = samples.length, b = new Uint8Array(44 + n*2), dv = new DataView(b.buffer);
+    const w = (o,str)=>{ for(let i=0;i<str.length;i++) b[o+i]=str.charCodeAt(i); };
+    w(0,'RIFF'); dv.setUint32(4,36+n*2,true); w(8,'WAVE'); w(12,'fmt ');
+    dv.setUint32(16,16,true); dv.setUint16(20,1,true); dv.setUint16(22,1,true);
+    dv.setUint32(24,sr,true); dv.setUint32(28,sr*2,true); dv.setUint16(32,2,true); dv.setUint16(34,16,true);
+    w(36,'data'); dv.setUint32(40,n*2,true);
+    for(let i=0;i<n;i++){ const v = Math.max(-1, Math.min(1, samples[i])); dv.setInt16(44+i*2, Math.round(v*32767), true); }
+    let bin=''; const CH=0x8000;
+    for(let i=0;i<b.length;i+=CH) bin += String.fromCharCode.apply(null, b.subarray(i, i+CH));
+    return 'data:audio/wav;base64,' + btoa(bin);
+  }
+  let _chimeWav = null;
+  function chimeWav(){
+    if(_chimeWav) return _chimeWav;
+    try{
+      const sr = 22050, lead = Math.round(sr*0.25), toneLen = Math.round(sr*0.34), step = Math.round(sr*0.32);
+      const out = new Float32Array(lead + step + toneLen + Math.round(sr*0.1));
+      [880,660].forEach((f,k)=>{
+        const st = lead + k*step;
+        for(let i=0;i<toneLen;i++){
+          const t = i/sr, env = t<0.03 ? (t/0.03) : Math.exp(-(t-0.03)*14);
+          out[st+i] += 0.5*env*Math.sin(2*Math.PI*f*t);
+        }
+      });
+      _chimeWav = makeWavDataUri(out, sr);
+    }catch(e){ _chimeWav = ''; }
+    return _chimeWav;
+  }
+  function makeToneWav(freq, sec){
+    const sr = 22050, n = Math.round(sr*sec), out = new Float32Array(n);
+    for(let i=0;i<n;i++){ const t=i/sr, env = Math.min(1, t/0.02, (sec-t)/0.05); out[i] = 0.5*env*Math.sin(2*Math.PI*freq*t); }
+    return makeWavDataUri(out, sr);
+  }
+  /* แก้ 4 ต.ค. 69: บน iPhone (เปิดจากไอคอนหน้าจอโฮม) เสียงในโปรแกรมออกลำโพงโทรศัพท์ ไม่ออกบลูทูธ ทั้งที่แอปอื่นออกบลูทูธปกติ
+     → บน iOS ใช้ตัวเล่นไฟล์เสียง <audio> ทางเดียว (เส้นทางเดียวกับเพลง) ไม่แตะ Web Audio / speechSynthesis
+       กริ่งก็สร้างเป็นไฟล์ WAV เล่นผ่าน <audio> แทน
+     มีหน้า "🔧 ตรวจเส้นทางเสียง" ไว้ทดสอบทีละช่องทาง + เลือกโหมด audioSession ได้ (เก็บใน hcs_ios_audiosession) */
+  const IOS_SESSION_KEY = 'hcs_ios_audiosession';
+  function iosSessionPref(){ try{ return localStorage.getItem(IOS_SESSION_KEY) || 'playback'; }catch(e){ return 'playback'; } }
+  function applyAudioSession(){
+    try{
+      if(!navigator.audioSession) return;
+      const want = iosSessionPref();
+      if(navigator.audioSession.type !== want) navigator.audioSession.type = want;
+    }catch(e){}
+  }
   function unlockAudioInGesture(){
-    try{ if(navigator.audioSession && navigator.audioSession.type !== 'playback') navigator.audioSession.type = 'playback'; }catch(e){}
-    try{ getQueueAudioCtx(); }catch(e){}
+    applyAudioSession();
+    if(!IS_IOS){ try{ getQueueAudioCtx(); }catch(e){} }
     if(!_gttsUnlocked && SILENT_WAV){
       try{
         const a = getGttsAudio();
@@ -4843,7 +5042,8 @@ function init(){
         }
       }catch(e){}
     }
-    if(IS_IOS && !_synthUnlocked && ('speechSynthesis' in window)){
+    const _pv = voicePref();
+    if(IS_IOS && _pv && _pv !== '__google__' && !_synthUnlocked && ('speechSynthesis' in window)){
       try{
         if(!window.speechSynthesis.speaking){
           const u = new SpeechSynthesisUtterance(' '); u.volume = 0; u.lang = 'th-TH';
@@ -4852,6 +5052,65 @@ function init(){
       }catch(e){}
     }
   }
+  /* ── หน้าตรวจเส้นทางเสียง: กดทีละช่องทาง ดูว่าอันไหนออกลำโพงบลูทูธ ── */
+  function openAudioDiag(){
+    const old = document.getElementById('audioDiag'); if(old) old.remove();
+    const standalone = (window.navigator.standalone === true) || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    const sess = navigator.audioSession ? navigator.audioSession.type : '(ไม่รองรับ)';
+    const ua = navigator.userAgent || '';
+    const iosVer = (ua.match(/OS (\d+)_(\d+)/)||[]).slice(1).join('.');
+    const d = document.createElement('div');
+    d.id = 'audioDiag';
+    d.style.cssText = 'position:fixed;inset:0;z-index:100000;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px';
+    const btn = 'display:block;width:100%;margin:6px 0;padding:12px;border-radius:12px;border:1px solid #cbd5e1;background:#f8fafc;font-size:15px;text-align:left;cursor:pointer';
+    d.innerHTML = '<div style="background:#fff;color:#0f172a;border-radius:16px;max-width:460px;width:100%;max-height:90vh;overflow:auto;padding:18px;font-size:14px;line-height:1.6;box-shadow:0 20px 50px rgba(0,0,0,.3)">'
+      + '<div style="font-weight:800;font-size:17px;margin-bottom:6px">🔧 ตรวจเส้นทางเสียง</div>'
+      + '<div style="color:#475569;margin-bottom:8px">ต่อลำโพงบลูทูธไว้ แล้วกดทีละปุ่ม <b>จด "ข้อ" ที่เสียงออกบลูทูธ</b> — ถ้าข้อไหนออกลำโพงโทรศัพท์ ให้กด "โหลดใหม่" ก่อนลองข้อถัดไป</div>'
+      + '<div style="font-size:12px;background:#f1f5f9;border-radius:10px;padding:8px;margin-bottom:8px">อุปกรณ์: ' + (IS_IOS ? 'iPhone/iPad iOS ' + (iosVer||'?') : 'คอมพิวเตอร์/Android') + ' · เปิดแบบ: ' + (standalone ? 'ไอคอนหน้าจอโฮม' : 'เบราว์เซอร์') + ' · audioSession: <b id="adSess">' + sess + '</b></div>'
+      + '<label style="display:block;margin-bottom:6px">โหมดเสียง (iOS): <select id="adSessSel" style="font-size:14px;padding:4px">'
+      + ['playback','auto','ambient','transient'].map(v=>'<option value="'+v+'"'+(iosSessionPref()===v?' selected':'')+'>'+v+'</option>').join('') + '</select></label>'
+      + '<button type="button" data-t="1" style="'+btn+'">① เสียงตี๊ด — ไฟล์เสียง (&lt;audio&gt;)</button>'
+      + '<button type="button" data-t="2" style="'+btn+'">② เสียงพูด Google — ไฟล์เสียง (ต้องมีเน็ต)</button>'
+      + '<button type="button" data-t="3" style="'+btn+'">③ เสียงตี๊ด — Web Audio</button>'
+      + '<button type="button" data-t="4" style="'+btn+'">④ เสียงพูดในเครื่อง (speechSynthesis)</button>'
+      + '<div id="adMsg" style="min-height:22px;color:#0369a1;margin:6px 0"></div>'
+      + '<div style="display:flex;gap:8px"><button type="button" id="adReload" style="flex:1;padding:10px;border-radius:12px;border:0;background:#e2e8f0;font-weight:700">🔄 โหลดใหม่</button>'
+      + '<button type="button" id="adClose" style="flex:1;padding:10px;border-radius:12px;border:0;background:#4f46e5;color:#fff;font-weight:700">ปิด</button></div>'
+      + '</div>';
+    document.body.appendChild(d);
+    const msg = t=>{ const m = document.getElementById('adMsg'); if(m) m.textContent = t; };
+    d.querySelector('#adClose').onclick = ()=>d.remove();
+    d.querySelector('#adReload').onclick = ()=>{ try{ sessionStorage.setItem('hcs_open_audiodiag','1'); }catch(e){} location.reload(); };
+    d.querySelector('#adSessSel').onchange = (e)=>{
+      try{ localStorage.setItem(IOS_SESSION_KEY, e.target.value); }catch(er){}
+      applyAudioSession();
+      const s2 = document.getElementById('adSess'); if(s2) s2.textContent = navigator.audioSession ? navigator.audioSession.type : '(ไม่รองรับ)';
+      msg('ตั้งโหมดเป็น ' + e.target.value + ' แล้ว — ลองกดทดสอบใหม่');
+    };
+    d.querySelectorAll('button[data-t]').forEach(b=>b.onclick = ()=>{
+      const t = b.getAttribute('data-t');
+      applyAudioSession();
+      if(t==='1'){ msg('① กำลังเล่นเสียงตี๊ด...'); playAudioUrl(makeToneWav(1000, 1.2), 1).then(()=>msg('① เล่นจบ — ออกที่ไหน?')).catch(e=>msg('① เล่นไม่ได้: '+(e&&e.message||e))); }
+      if(t==='2'){ msg('② กำลังพูด...'); playAudioUrl(GTTS_HOSTS[0] + encodeURIComponent('ทดสอบเสียง หนึ่ง สอง สาม'), 1).then(()=>msg('② เล่นจบ — ออกที่ไหน?')).catch(()=>playAudioUrl(GTTS_HOSTS[1] + encodeURIComponent('ทดสอบเสียง หนึ่ง สอง สาม'), 1).then(()=>msg('② เล่นจบ — ออกที่ไหน?')).catch(e=>msg('② เล่นไม่ได้ (เน็ต?): '+(e&&e.message||e)))); }
+      if(t==='3'){
+        try{
+          const Ctx = window.AudioContext || window.webkitAudioContext; const c = new Ctx();
+          const o = c.createOscillator(), g = c.createGain(); o.frequency.value = 660; g.gain.value = 0.3;
+          o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime + 1.2);
+          setTimeout(()=>{ try{ c.close(); }catch(e){} }, 1600);
+          msg('③ เล่นเสียงตี๊ด Web Audio — ออกที่ไหน?');
+        }catch(e){ msg('③ เล่นไม่ได้: ' + e.message); }
+      }
+      if(t==='4'){
+        try{
+          const u = new SpeechSynthesisUtterance('ทดสอบเสียง หนึ่ง สอง สาม'); u.lang = 'th-TH';
+          u.onend = ()=>msg('④ พูดจบ — ออกที่ไหน?');
+          window.speechSynthesis.speak(u); msg('④ กำลังพูด...');
+        }catch(e){ msg('④ เล่นไม่ได้: ' + e.message); }
+      }
+    });
+  }
+  try{ if(sessionStorage.getItem('hcs_open_audiodiag')==='1'){ sessionStorage.removeItem('hcs_open_audiodiag'); setTimeout(()=>{ try{ setMode('queue'); }catch(e){} openAudioDiag(); }, 1200); } }catch(e){}
   /* ต่อ/ถอดบลูทูธ → รีเซ็ตเสียงทั้งหมดให้ไปผูกกับลำโพงใหม่ */
   let _devChangeTimer = null;
   function onAudioDeviceChange(){
@@ -4988,7 +5247,13 @@ function init(){
   const RATE_NUMBER = 0.62; // เลขคิวอ่านช้ากว่าปกติ
   function segGap(ms){ return new Promise(r=>setTimeout(r, ms||0)); }
   /* ประกอบบทประกาศ: เชิญคิวหมายเลข …(เว้น)… <เลข> …(เว้น)… <เลข> …(เว้น)… คุณ <ชื่อ> …(เว้น)… เชิญที่ <ห้อง> */
-  function buildQueueSegments(queueNo, name, room){
+  function relativeRoomName(){
+    const el = document.getElementById('queueRelRoom');
+    const v = (el && el.value || '').trim();
+    return v || queueRoomName();
+  }
+  function buildQueueSegments(queueNo, name, room, opts){
+    opts = opts || {};
     const no = String(queueNo==null?'':queueNo).trim();
     /* คำนำหน้าแบบย่อ: จุดทำให้เสียงพูดหยุดกลางประโยคแล้วข้ามชื่อ → ขยายเป็นคำเต็มก่อน */
     let spokenName = String(name||'')
@@ -4999,7 +5264,8 @@ function init(){
       .replace(/^\s*ร\s*\.\s*ต\s*\.?/,'ร้อยตรี')
       .replace(/^\s*(นาง|นาย|นางสาว)\s*\./,'$1')
       .replace(/[.•\-_]/g,' ').replace(/\s+/g,' ').trim();
-    const segs = [{ t:'เชิญคิวหมายเลข', vol:VOL_NORMAL, gap:550 }];
+    const rel = !!opts.relative; // เรียกญาติของผู้ป่วย
+    const segs = [{ t: rel ? 'ขอเชิญญาติ ของคิวหมายเลข' : 'เชิญคิวหมายเลข', vol:VOL_NORMAL, gap:550 }];
     if(no){
       segs.push({ t:no, vol:VOL_NUMBER, slow:true, gap:520 });
       segs.push({ t:no, vol:VOL_NUMBER, slow:true, gap:650 }); // พูดเลขซ้ำ 2 ครั้ง
@@ -5008,7 +5274,8 @@ function init(){
       segs.push({ t:spokenName, vol:VOL_NUMBER, slow:true, gap:420 });
       segs.push({ t:spokenName, vol:VOL_NUMBER, slow:true, gap:480 }); // พูดชื่อซ้ำ 2 ครั้ง + ช้าลงให้ฟังชัด
     }
-    segs.push({ t:'เชิญที่ ' + (room||queueRoomName()), vol:VOL_NORMAL, gap:0 });
+    if(rel) segs.push({ t:'ติดต่อที่ ' + (room||relativeRoomName()), vol:VOL_NORMAL, gap:0 });
+    else segs.push({ t:'เชิญที่ ' + (room||queueRoomName()), vol:VOL_NORMAL, gap:0 });
     return segs;
   }
   /* ── เสียงออนไลน์: Google Translate TTS (ไม่ต้องติดตั้งอะไรในเครื่อง) ── */
@@ -5141,7 +5408,7 @@ function init(){
       if(googleFirst){
         updateVoiceInfo(v, true);
         try{
-          if(hasSynth) window.speechSynthesis.cancel();
+          if(hasSynth && (!IS_IOS || window.speechSynthesis.speaking)) window.speechSynthesis.cancel();
           await speakSegmentsGoogle(segs, times);
           return;
         }catch(e){
@@ -5187,19 +5454,24 @@ function init(){
   }
   function announceQueue(rec, opts){
     opts = opts || {};
-    const room = queueRoomName();
-    const segs = buildQueueSegments(rec.queueNo, rec.name, room);
+    const room = opts.relative ? relativeRoomName() : queueRoomName();
+    const segs = buildQueueSegments(rec.queueNo, rec.name, room, {relative: !!opts.relative});
     const chimeOn = document.getElementById('queueChime') ? document.getElementById('queueChime').checked : true;
     unlockAudioInGesture(); // iPhone: ปลดล็อกเสียงตอนแตะ ก่อนจะรอปลุกลำโพง
     (async ()=>{
       await waitAudioReady(); // ปลุกลำโพงบลูทูธก่อน ไม่ให้กริ่ง/ต้นประโยคหาย
-      if(opts.chime!==false && chimeOn){ playChime(); await segGap(800); }
+      if(opts.chime!==false && chimeOn){
+        if(IS_IOS){ const cw = chimeWav(); if(cw){ try{ await playAudioUrl(cw, 1); }catch(e){} await segGap(150); } }
+        else { playChime(); await segGap(800); }
+      }
       speakSegments(segs, 2);
     })();
+    if(opts.relative){ flash('👪 เรียกญาติของคิว ' + rec.queueNo + (rec.name ? ' — ' + rec.name : '')); return; } // เรียกญาติไม่เปลี่ยนสถานะคิว
     _currentCall = { id: rec._id, queueNo: rec.queueNo, name: rec.name||'' };
     document.getElementById('qnNumber').textContent = rec.queueNo;
     document.getElementById('qnName').textContent = rec.name || '-';
   }
+  function callRelative(rec){ if(rec) announceQueue(rec, {relative:true, chime:true}); }
   async function callQueueRecord(rec){
     const now = new Date().toISOString();
     const idx = _recordsCache.findIndex(r=>r._id===rec._id);
@@ -5229,7 +5501,7 @@ function init(){
           <td>${esc(r.name)||'-'}</td>
           <td>${esc(r.hn)||'-'}</td>
           <td><span class="qst-waiting">รอเรียก</span><span class="qst-called">เรียกแล้ว</span></td>
-          <td><button type="button" class="qtbl-btn" data-act="call" data-id="${r._id}">🔊 เรียกคิว</button></td>
+          <td style="white-space:nowrap"><button type="button" class="qtbl-btn" data-act="call" data-id="${r._id}">🔊 เรียกคิว</button> <button type="button" class="qtbl-btn" data-act="relative" data-id="${r._id}" title="เรียกญาติของผู้ป่วยรายนี้">👪 ญาติ</button></td>
         </tr>`;
       }).join('');
     }
@@ -5268,6 +5540,7 @@ function init(){
     syncComputedFields();
     updateQueueBadge();
     setMode('entry');
+    try{ beginEntryDraft(); updateDraftBanner(); }catch(e){}
   }
   function fmtDT(iso){ if(!iso) return '-'; try{ const d=new Date(iso); return d.toLocaleDateString('th-TH')+' '+d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}); }catch(e){ return '-'; } }
   const LST_EAR_TH = {left:'ซ้าย', right:'ขวา', both:'สองข้าง'};
@@ -6414,9 +6687,9 @@ function init(){
       }
     }
     snapBase(rec); // ← จำเวอร์ชันตั้งต้นไว้ เพื่อให้เซิร์ฟเวอร์รวมข้อมูลได้ถูกช่องตอนบันทึก
-    if(act==='edit'){ loadRecordIntoS(rec); openEntryModal('patient'); }
-    else if(act==='audio'){ loadRecordIntoS(rec); openEntryModal('audiogram'); }
-    else if(act==='ha'){ loadRecordIntoS(rec); openEntryModal('hearingaid'); }
+    if(act==='edit'){ loadRecordIntoS(rec); openEntryModal('patient'); offerDraftRestore(); }
+    else if(act==='audio'){ loadRecordIntoS(rec); openEntryModal('audiogram'); offerDraftRestore(); }
+    else if(act==='ha'){ loadRecordIntoS(rec); openEntryModal('hearingaid'); offerDraftRestore(); }
     else if(act==='print'){ loadRecordIntoS(rec); openPrintModal(); }
     else if(act==='noah'){ exportRecordToNoah(rec); }
     else if(act==='fu'){
@@ -7214,11 +7487,51 @@ function init(){
     applyUserHospital();
     resetAudHistory();
     randomizeTrialResults(S);
+    _curDraftKey = '';   // ผู้ป่วยใหม่ = ร่างใหม่ ไม่ทับร่างของคนก่อนหน้า
     autosave();
     openEntryModal('patient');
   });
-  document.getElementById('btnEntryClose').addEventListener('click', ()=>setMode('list'));
-  document.getElementById('btnEntryCancel').addEventListener('click', ()=>setMode('list'));
+  /* ── ปิดหน้ากรอกทั้งที่ยังไม่บันทึก → ถามก่อน (กันข้อมูลหาย) ── */
+  async function requestCloseEntry(){
+    if(entryIsDirty()){
+      writeDraftNow();
+      const nm = fullNameOfS() || S.name || '';
+      const v = await hcsChoice('⚠️ ยังไม่ได้บันทึก',
+        'ข้อมูลที่เพิ่งกรอก/แก้ไข'+(nm ? 'ของ <b>'+draftEsc(nm)+'</b>' : '')+' ยังไม่ได้กด 💾 บันทึก',
+        [{v:'save', label:'💾 บันทึกแล้วปิด', kind:'primary'},
+         {v:'keep', label:'📝 ปิดไว้ก่อน — เก็บเป็นร่าง กลับมากรอกต่อได้'},
+         {v:'discard', label:'🗑 ทิ้งข้อมูลที่แก้ไข', kind:'danger'},
+         {v:'', label:'↩ กลับไปกรอกต่อ'}]);
+      if(!v) return;
+      if(v==='save'){ if(await doSave() === false) return; }
+      if(v==='discard'){
+        const sure = await hcsChoice('ทิ้งข้อมูลที่แก้ไข?', 'ข้อมูลที่ยังไม่ได้บันทึกจะหายถาวร', [{v:'yes', label:'🗑 ทิ้งเลย', kind:'danger'},{v:'', label:'ยกเลิก'}]);
+        if(sure!=='yes') return;
+        removeDraft(_curDraftKey);
+      }
+    }
+    setMode('list');
+    try{ updateDraftBanner(); }catch(e){}
+  }
+  document.getElementById('btnEntryClose').addEventListener('click', requestCloseEntry);
+  document.getElementById('btnEntryCancel').addEventListener('click', requestCloseEntry);
+  /* เปิดร่างจากแถบ "ยังไม่ได้บันทึก" ในหน้ารายชื่อ */
+  window.hcsOpenDraft = function(d, m){
+    if(_entryOpen && entryIsDirty()){ alert('ปิดหน้ากรอกที่เปิดอยู่ก่อน'); return; }
+    if(d.S && d.S._id){
+      const base = (d.base && d.base._id) ? d.base : (_fullCache[d.S._id] || null);
+      if(base) loadRecordIntoS(base); else { S = Object.assign({}, DEFAULTS, d.S); }
+    } else {
+      S = Object.assign({}, DEFAULTS);
+      S.audTh = freshAudTh();
+    }
+    _curDraftKey = m.key;
+    openEntryModal(m.view || 'patient');
+    _curDraftKey = m.key;
+    applyDraftToS(d);
+    flash('↩️ เปิดข้อมูลที่ยังไม่ได้บันทึกแล้ว — อย่าลืมกด 💾 บันทึก');
+  };
+  setTimeout(()=>{ try{ updateDraftBanner(); }catch(e){} }, 800);
   document.getElementById('btnEntrySave').addEventListener('click', async ()=>{ if(await doSave() === false) return; setMode('list'); });
   document.getElementById('btnGoListPrint').addEventListener('click', ()=>setMode('list'));
   document.getElementById('btnBackEdit').addEventListener('click', ()=>setMode('entry'));
@@ -7226,6 +7539,8 @@ function init(){
   document.getElementById('btnQueueBack').addEventListener('click', ()=>setMode('list'));
   document.getElementById('btnQueueRefresh').addEventListener('click', ()=>refreshRecordsCache().then(renderQueueView));
   document.getElementById('queueBody').addEventListener('click', e=>{
+    const rb = e.target.closest('button[data-act="relative"]');
+    if(rb){ callRelative(getRecords().find(r=>r._id===rb.getAttribute('data-id'))); return; }
     const btn = e.target.closest('button[data-act="call"]'); if(!btn) return;
     const id = btn.getAttribute('data-id');
     const rec = getRecords().find(r=>r._id===id);
@@ -7235,6 +7550,11 @@ function init(){
     if(!_currentCall){ alert('ยังไม่มีการเรียกคิว'); return; }
     const rec = getRecords().find(r=>r._id===_currentCall.id);
     if(rec) announceQueue(rec, {chime:true}); else alert('ไม่พบข้อมูลผู้ป่วยรายนี้แล้ว');
+  });
+  document.getElementById('btnCallRelative').addEventListener('click', ()=>{
+    if(!_currentCall){ alert('ยังไม่มีคิวที่กำลังเรียก — กด "👪 ญาติ" ในแถวของผู้ป่วยที่ต้องการแทน'); return; }
+    const rec = getRecords().find(r=>r._id===_currentCall.id);
+    if(rec) callRelative(rec); else alert('ไม่พบข้อมูลผู้ป่วยรายนี้แล้ว');
   });
   document.getElementById('btnCallNext').addEventListener('click', ()=>{
     const next = getTodayQueueRecords().find(r=>!r.calledAt);
@@ -7252,6 +7572,9 @@ function init(){
       fillVoiceSelect();
     }
     const bt = document.getElementById('queueBtKeep');
+    if(bt && IS_IOS){ try{ bt.closest('label').style.display = 'none'; }catch(e){} }
+    const dg = document.getElementById('btnAudioDiag');
+    if(dg) dg.addEventListener('click', openAudioDiag);
     if(bt){
       bt.checked = btKeepAliveEnabled();
       bt.addEventListener('change', ()=>{
@@ -7270,6 +7593,11 @@ function init(){
     if(!el) return;
     try{ const saved = localStorage.getItem('hcs_queue_room'); if(saved) el.value = saved; }catch(e){}
     el.addEventListener('input', ()=>{ try{ localStorage.setItem('hcs_queue_room', el.value); }catch(e){} });
+    const rl = document.getElementById('queueRelRoom');
+    if(rl){
+      try{ const sv = localStorage.getItem('hcs_queue_relroom'); if(sv) rl.value = sv; }catch(e){}
+      rl.addEventListener('input', ()=>{ try{ localStorage.setItem('hcs_queue_relroom', rl.value); }catch(e){} });
+    }
   })();
   setMode('list');
 
