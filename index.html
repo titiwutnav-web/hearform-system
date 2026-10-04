@@ -1600,6 +1600,7 @@ body::before{
       <div class="qn-actions">
         <button type="button" class="btn btn-primary" id="btnRecall">🔊 เรียกซ้ำ</button>
         <button type="button" class="btn btn-ghost" id="btnCallNext">⏭️ เรียกคิวถัดไป</button>
+        <button type="button" class="btn btn-ghost" id="btnStopVoice" title="หยุดเสียงที่กำลังประกาศ และยกเลิกที่รออยู่ทั้งหมด">⏹ หยุดเสียง</button>
         <button type="button" class="btn btn-ghost" id="btnCallRelative" title="ประกาศเรียกญาติของผู้ป่วยคิวที่กำลังเรียกอยู่">👪 เรียกญาติ</button>
       </div>
     </div>
@@ -5319,6 +5320,7 @@ function init(){
   }
   async function speakSegmentsGoogle(segs, times){
     if(!segs || !segs.length) return true;
+    const gen = _annGen;
     const hosts = _gttsHostOK ? [_gttsHostOK].concat(GTTS_HOSTS.filter(h=>h!==_gttsHostOK)) : GTTS_HOSTS.slice();
     let lastErr = null;
     for(const host of hosts){
@@ -5329,8 +5331,10 @@ function init(){
             const parts = chunkText(sg.t, 180); // Google TTS รับได้ ~200 ตัวอักษรต่อครั้ง
             for(const pt of parts){
               await playAudioUrl(host + encodeURIComponent(pt) + (sg.slow ? '&ttsspeed=0.5' : ''), sg.vol);
+              if(gen !== _annGen) return true;
             }
             if(sg.gap) await segGap(sg.gap);
+            if(gen !== _annGen) return true;
           }
           if(i < n-1) await segGap(750);
         }
@@ -5365,6 +5369,7 @@ function init(){
   }
   async function speakSegmentsLocal(segs, times, voice){
     if(!segs || !segs.length) return true;
+    const gen = _annGen;
     const synth = window.speechSynthesis;
     try{ synth.cancel(); synth.resume(); }catch(e){} // แก้ Chrome ค้างสถานะ paused แล้วพูดไม่ออกทั้งที่มีเสียง
     clearInterval(_keepAlive);
@@ -5376,9 +5381,11 @@ function init(){
           const parts = chunkText(sg.t, 160); // Chrome เงียบกลางคันถ้าข้อความยาวเกินไป
           for(const pt of parts){
             const r = await speakOne(pt, { rate: sg.slow?RATE_NUMBER:RATE_NORMAL, vol: (sg.vol==null?1:sg.vol), voice: voice });
+            if(gen !== _annGen) return true; // กด ⏹ หยุด
             if(r === 'stuck'){ try{ synth.cancel(); }catch(e){} const er = new Error('synth-stuck'); er.stuck = true; throw er; }
           }
           if(sg.gap) await segGap(sg.gap);
+          if(gen !== _annGen) return true;
         }
         if(i < n-1) await segGap(750);
       }
@@ -5395,7 +5402,40 @@ function init(){
     el.textContent = '⚠️ ไม่มีเสียงไทย — จะอ่านได้แต่ตัวเลข ไม่อ่านชื่อ';
   }
   /* ── ฟังก์ชันหลัก: พูดตามท่อนที่กำหนด ── */
-  async function speakSegments(segs, times){
+  /* ══ คิวประกาศ (แก้ 5 ต.ค. 69) ══
+     ปัญหา: กดเรียกซ้ำ 2 รอบ หรือเรียก 2 คนติดกัน → เสียงพูดซ้อนกัน
+     วิธีแก้: ทุกการประกาศเข้าคิว เล่นทีละรายการตามลำดับที่กด
+       - กดรายการเดิมที่ยังรอ/กำลังพูดอยู่ = ไม่เพิ่มซ้ำ (key เช่น call:<id>, rel:<id>, test)
+       - ปุ่ม ⏹ หยุดเสียง = ตัดเสียงที่พูดอยู่ + ล้างคิวที่รอทั้งหมด (_annGen เปลี่ยน → ลูปพูดหยุดเอง) */
+  let _annChain = Promise.resolve(), _annGen = 0, _annCount = 0;
+  const _annKeys = new Set();
+  function updateAnnBadge(){
+    const b = document.getElementById('btnStopVoice');
+    if(b) b.textContent = _annCount > 1 ? ('⏹ หยุดเสียง (รอ ' + (_annCount-1) + ')') : '⏹ หยุดเสียง';
+  }
+  function enqueueAnnouncement(key, job){
+    if(key && _annKeys.has(key)) return false;
+    if(key) _annKeys.add(key);
+    const gen = _annGen;
+    _annCount++;
+    _annChain = _annChain.then(async ()=>{
+      if(gen !== _annGen) return;
+      try{ await job(gen); }catch(e){}
+    }).finally(()=>{ if(key) _annKeys.delete(key); _annCount = Math.max(0, _annCount-1); updateAnnBadge(); });
+    updateAnnBadge();
+    return true;
+  }
+  function stopAnnouncements(){
+    _annGen++; _annKeys.clear();
+    try{ if(window.speechSynthesis) window.speechSynthesis.cancel(); }catch(e){}
+    try{ if(_gttsPendingFail){ const pf = _gttsPendingFail; _gttsPendingFail = null; pf(new Error('superseded')); } if(_gttsAudio) _gttsAudio.pause(); }catch(e){}
+    updateAnnBadge();
+  }
+  function speakSegments(segs, times, key){
+    unlockAudioInGesture();
+    return enqueueAnnouncement(key || null, ()=>speakSegmentsNow(segs, times));
+  }
+  async function speakSegmentsNow(segs, times){
     try{
       unlockAudioInGesture(); // ต้องอยู่ก่อน await แรก (ยังนับว่าอยู่ในจังหวะที่ผู้ใช้แตะ)
       segs = (segs||[]).filter(sg=>sg && String(sg.t||'').trim());
@@ -5461,14 +5501,19 @@ function init(){
     const segs = buildQueueSegments(rec.queueNo, rec.name, room, {relative: !!opts.relative});
     const chimeOn = document.getElementById('queueChime') ? document.getElementById('queueChime').checked : true;
     unlockAudioInGesture(); // iPhone: ปลดล็อกเสียงตอนแตะ ก่อนจะรอปลุกลำโพง
-    (async ()=>{
+    const busyBefore = _annCount > 0;
+    const added = enqueueAnnouncement((opts.relative ? 'rel:' : 'call:') + rec._id, async (gen)=>{
       await waitAudioReady(); // ปลุกลำโพงบลูทูธก่อน ไม่ให้กริ่ง/ต้นประโยคหาย
+      if(gen !== _annGen) return;
       if(opts.chime!==false && chimeOn){
         if(IS_IOS){ const cw = chimeWav(); if(cw){ try{ await playAudioUrl(cw, 1); }catch(e){} await segGap(150); } }
         else { playChime(); await segGap(800); }
       }
-      speakSegments(segs, 2);
-    })();
+      if(gen !== _annGen) return;
+      await speakSegmentsNow(segs, 2);
+    });
+    if(!added){ flash('🔊 กำลังประกาศ' + (opts.relative ? 'เรียกญาติของ' : '') + 'คิว ' + rec.queueNo + ' อยู่แล้ว'); return; }
+    if(busyBefore) flash('⏳ ต่อคิวประกาศ — จะ' + (opts.relative ? 'เรียกญาติของ' : 'เรียก') + 'คิว ' + rec.queueNo + ' ต่อจากที่กำลังพูดอยู่');
     if(opts.relative){ flash('👪 เรียกญาติของคิว ' + rec.queueNo + (rec.name ? ' — ' + rec.name : '')); return; } // เรียกญาติไม่เปลี่ยนสถานะคิว
     _currentCall = { id: rec._id, queueNo: rec.queueNo, name: rec.name||'' };
     document.getElementById('qnNumber').textContent = rec.queueNo;
@@ -7554,6 +7599,7 @@ function init(){
     const rec = getRecords().find(r=>r._id===_currentCall.id);
     if(rec) announceQueue(rec, {chime:true}); else alert('ไม่พบข้อมูลผู้ป่วยรายนี้แล้ว');
   });
+  document.getElementById('btnStopVoice').addEventListener('click', ()=>{ stopAnnouncements(); flash('⏹ หยุดเสียงประกาศแล้ว'); });
   document.getElementById('btnCallRelative').addEventListener('click', ()=>{
     if(!_currentCall){ alert('ยังไม่มีคิวที่กำลังเรียก — กด "👪 ญาติ" ในแถวของผู้ป่วยที่ต้องการแทน'); return; }
     const rec = getRecords().find(r=>r._id===_currentCall.id);
@@ -7570,7 +7616,7 @@ function init(){
     if(sel){
       sel.addEventListener('change', ()=>{
         try{ localStorage.setItem(VOICE_KEY, sel.value||''); }catch(e){}
-        speakSegments(buildQueueSegments(12, 'สมชาย ใจดี', queueRoomName()), 1);
+        speakSegments(buildQueueSegments(12, 'สมชาย ใจดี', queueRoomName()), 1, 'test');
       });
       fillVoiceSelect();
     }
@@ -7588,7 +7634,7 @@ function init(){
     const btn = document.getElementById('btnTestVoice');
     if(btn) btn.addEventListener('click', ()=>{
       const rec = getTodayQueueRecords()[0];
-      speakSegments(buildQueueSegments(rec?rec.queueNo:12, rec?rec.name:'สมชาย ใจดี', queueRoomName()), 1);
+      speakSegments(buildQueueSegments(rec?rec.queueNo:12, rec?rec.name:'สมชาย ใจดี', queueRoomName()), 1, 'test');
     });
   })();
   (function(){
