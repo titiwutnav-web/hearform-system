@@ -672,12 +672,13 @@ body.aud-fs{ overflow:hidden; }
 .qn-label { font-size:15px; color:#8B88A3; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
 .qn-number { font-size:150px; font-weight:800; color:#6D5DF6; line-height:1; margin:10px 0; }
 .qn-name { font-size:28px; font-weight:700; color:#241F47; }
-.qn-actions { margin-top:24px; display:flex; justify-content:center; gap:14px; }
-.qn-actions .btn { height:44px; padding:0 24px; font-size:15px; }
+/* ปุ่มใต้เลขคิว: ใช้ grid ที่ตัดแถวเองตามความกว้างจริง (ไม่พึ่งขนาดจอ) — ชื่อปุ่มไม่ถูกตัด/ไม่เลื่อน (แก้ 5 ต.ค. 69) */
+.qn-actions { margin:24px auto 0; max-width:780px; display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap:12px; }
+.qn-actions .btn { height:44px; width:100%; min-width:0; padding:0 10px; font-size:15px; white-space:nowrap; display:inline-flex; align-items:center; justify-content:center; gap:6px; text-align:center; }
 /* มือถือ: ปุ่ม 4 ปุ่มล้นจอจนตัวหนังสือขาด → ตัดเป็น 2 แถว แถวละ 2 ปุ่ม (แก้ 5 ต.ค. 69) */
 @media (max-width:640px){
-  .qn-actions { flex-wrap:wrap; gap:10px; }
-  .qn-actions .btn { flex:1 1 calc(50% - 10px); min-width:0; padding:0 10px; font-size:14px; white-space:nowrap; }
+  .qn-actions { gap:10px; }
+  .qn-actions .btn { font-size:14px; padding:0 8px; }
   /* หัวเรื่อง: ไม่ให้คำอธิบายตัดคำกลางวันที่ */
   .queue-head h1 { font-size:20px; }
   #queueDateLabel { font-size:12px; line-height:1.5; }
