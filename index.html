@@ -112,6 +112,10 @@ body { font-family: 'Sarabun','TH Sarabun New',Tahoma,sans-serif; color: #1a1e2e
 .btn-ghost:hover { background: #f1f5fb; border-color: #c4d0e4; }
 .btn-warn { background: #fff5f5; color: #b91c1c; border: 1.5px solid #fecaca; }
 .btn-warn:hover { background: #fee2e2; }
+/* ปุ่มอ่านบัตรประชาชน (ThaiIDAgent) */
+.idcard-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 10px}
+.idcard-status{font-size:12.5px;color:#64748b;line-height:1.45;flex:1;min-width:180px}
+.idcard-status.ok{color:#15803D}.idcard-status.err{color:#B91C1C}.idcard-status.warn{color:#B45309}
 /* ══════════════════════════════════════════════════════════════
    Purple Wizard design system — เฉพาะส่วนกรอกข้อมูล (#sidebar)
    Light-first · indigo/violet gradient · card wizard · rounded-rect controls
@@ -2901,9 +2905,76 @@ function hearingAidBody(){
       <div class="chk-row">${ck('sHalf','Half Shell','shellType')}${ck('sFull','Full Shell','shellType')}${ck('sSkel','Skeleton','shellType')}${ck('sCanal','Canal','shellType')}</div>
       <div class="chk-row">${ck('aRemoval','Removal Cord')}${ck('aCanalLock','Canal Lock')}${ck('aVent','Vent')}</div>
       <div class="fld" id="ventSizeWrap"><label>ขนาด Vent</label><input type="text" data-bind="ventSize"></div>
+      <div class="vent-rec" id="ventRec"></div>
       <div class="ha-clear-row"><button type="button" class="chk-clear ha-clear" id="btnClearHA">🧹 ล้างข้อมูลเครื่องช่วยฟังทั้งหมด</button></div>
   `;
 }
+/* ══════════════ ขนาด Vent อัตโนมัติ (solid mold) จาก AC 500 Hz ของข้างที่ใส่ ══════════════
+   ตาราง:  <20 dB → open · 20–29 → 3–4 mm · 30–39 → 2–3 mm · 40–49 → 1–2 mm · 50–60 → 0.5–1 mm
+   >60 dB หรือ 500 Hz เป็น NR → เกินตาราง ไม่กรอกให้
+   ข้าง: S.ear left→L, right→R, both/ยังไม่เลือก→ทั้งสองข้าง (ค่าต่างกันใส่ "R 2-3 / L 1-2 mm")
+   กรอก + ติ๊ก Vent ให้เองทุกครั้งที่ Audiogram/ข้างที่ใส่เปลี่ยน — แต่ยังแก้เองได้:
+   - ผู้ใช้พิมพ์ช่องขนาด Vent หรือกดติ๊ก/เอาติ๊ก Vent ออก → S._ventManual = true แล้วหยุดกรอกให้
+   - เคสเก่าที่มีค่าอยู่แล้วและไม่ใช่ค่าที่ระบบเคยใส่ (S._ventAuto) → ไม่ทับ
+   - กด ↺ เพื่อกลับไปใช้ค่าอัตโนมัติ */
+const VENT_TABLE=[
+  {test:v=>v<20,   sz:'open'},
+  {test:v=>v<30,   sz:'3-4 mm'},
+  {test:v=>v<40,   sz:'2-3 mm'},
+  {test:v=>v<50,   sz:'1-2 mm'},
+  {test:v=>v<=60,  sz:'0.5-1 mm'}
+];
+function ventRecFor(ear){
+  const d=((S.audTh||{})[500]||{})[ear+'AC']; if(!d) return null;
+  const v=num(d.v); if(v===null) return null;
+  if(d.nr || v>60) return {ear, db:v, nr:!!d.nr, sz:'', over:true};
+  return {ear, db:v, nr:false, sz:VENT_TABLE.find(t=>t.test(v)).sz};
+}
+function ventRecEars(){ return S.ear==='left' ? ['L'] : S.ear==='right' ? ['R'] : ['R','L']; }
+function ventRecFill(){
+  const ears=ventRecEars();
+  const recs=ears.map(ventRecFor).filter(r=>r && !r.over);
+  if(!recs.length) return '';
+  if(ears.length===1 || (recs.length===2 && recs[0].sz===recs[1].sz)) return recs[0].sz;
+  if(recs.length===1) return recs[0].ear+' '+recs[0].sz;   /* ใส่สองข้างแต่อีกข้างเกินตาราง/ยังไม่มีค่า → ระบุข้างให้ชัด */
+  return recs.map(r=>r.ear+' '+r.sz.replace(' mm','')).join(' / ')+' mm';
+}
+/* เรียกใน render() ก่อนวาดช่อง — ปรับ S.ventSize/S.aVent ตามผลการได้ยิน (ถ้ายังไม่ได้แก้เอง) */
+function autoVentSize(){
+  if(S._ventManual) return;
+  const cur=String(S.ventSize||'').trim();
+  if(cur && cur!==S._ventAuto) return;             /* ค่าเดิมของเคสเก่า/พิมพ์เอง → ไม่ทับ */
+  const f=ventRecFill();
+  if(f){ S.ventSize=f; S.aVent=true; S._ventAuto=f; }
+  else if(S._ventAuto){ S.ventSize=''; S.aVent=false; S._ventAuto=''; }   /* เคยใส่ให้ แต่ตอนนี้ไม่มีค่า/เกินตาราง → เอาออก */
+  const inp=document.querySelector('#sidebar [data-bind="ventSize"]');
+  if(inp && document.activeElement!==inp && inp.value!==(S.ventSize||'')) inp.value=S.ventSize||'';
+  const ck=document.querySelector('#sidebar [data-bind="aVent"]'); if(ck) ck.checked=!!S.aVent;
+}
+function resetVentAuto(){ S._ventManual=false; S.ventSize=''; S._ventAuto=''; onAnyChange(); }
+/* ผู้ใช้แตะช่อง Vent เอง → ถือว่าแก้เอง (capture: ให้ตั้งธงก่อน handler ของ bindInputs เรียก render) */
+['input','change'].forEach(ev=>document.addEventListener(ev, e=>{
+  const k=e.target && e.target.getAttribute && e.target.getAttribute('data-bind');
+  if(k==='ventSize' || k==='aVent') S._ventManual=true;
+}, true));
+function renderVentRec(){
+  const box=document.getElementById('ventRec'); if(!box) return;
+  const name={R:'ขวา',L:'ซ้าย'};
+  const parts=ventRecEars().map(e=>{ const r=ventRecFor(e); return r ? `${name[e]} ${r.db}${r.nr?' NR':''} dB${r.over?' (เกินตาราง)':''}` : ''; }).filter(Boolean);
+  if(!parts.length){ box.innerHTML=''; box.style.display='none'; return; }
+  box.style.display='';
+  const f=ventRecFill(), cur=String(S.ventSize||'').trim();
+  const back = (S._ventManual || (cur && cur!==S._ventAuto)) && f && cur!==f
+    ? ` · <button type="button" class="vr-reset" title="กลับไปใช้ค่าอัตโนมัติ">↺ ${f}</button>` : '';
+  box.innerHTML = `AC 500 Hz: ${parts.join(' · ')}${back}`;
+  const rb=box.querySelector('.vr-reset'); if(rb) rb.addEventListener('click', resetVentAuto);
+}
+(function(){ const st=document.createElement('style'); st.textContent=`
+.vent-rec{margin:-4px 0 6px 2px;font-size:11.5px;color:#8B88A3;line-height:1.5}
+.vent-rec .vr-reset{border:0;background:none;padding:0;font:inherit;color:#6366f1;cursor:pointer;text-decoration:underline}
+@media print{.vent-rec{display:none!important}}
+`; document.head.appendChild(st); })();
+
 /* ══════════════ ล้างข้อมูลเครื่องช่วยฟังของผู้ป่วยรายนี้ทั้งชุด ══════════════
    ล้างเฉพาะช่องในแถบ 🦻 (รวมคู่เทียบ + รายละเอียดพิมพ์หู) — ไม่แตะข้อมูลผู้ป่วยและ Audiogram
    brand/model เป็นค่า derived จะถูกคำนวณใหม่เป็นค่าว่างเองใน updateDerived() */
@@ -2912,7 +2983,7 @@ const HA_CLEAR_KEYS = [
   's7_resound','s7_resound_level','s7_resound_level_L','s7_resound_level_R',
   's7_resound_model','s7_resound_model_L','s7_resound_model_R','s7_resound_result',
   'sn','sn_L','sn_R',
-  'mSoft','mHard','sHalf','sFull','sSkel','sCanal','aRemoval','aCanalLock','aVent','ventSize',
+  'mSoft','mHard','sHalf','sFull','sSkel','sCanal','aRemoval','aCanalLock','aVent','ventSize','_ventManual','_ventAuto',
   's7_am','s7_am_model','s7_am_model_L','s7_am_model_R','s7_am_result','price',
   'brand','model','modelL','modelR','brandL','brandR','snL','snR','cmp_reason','_reason_manual'
 ];
@@ -2991,6 +3062,7 @@ function buildSidebar(){
       👤 กรอกเฉพาะข้อมูลผู้ป่วย — ข้อมูลเครื่องช่วยฟังกรอกจากปุ่ม 🦻 · Audiogram จากปุ่ม 📈 ในหน้ารายการ
     </div>
     ${sec('👤 ข้อมูลผู้ป่วย (ใช้ร่วมทุกฟอร์ม)',true,`
+      <div class="idcard-bar"><button type="button" class="btn btn-primary" id="btnReadIdCard">🪪 อ่านบัตรประชาชน</button><span id="idCardStatus" class="idcard-status">เสียบบัตรแล้วกดปุ่ม — เติมชื่อ เลขบัตร วันเกิด ที่อยู่ให้อัตโนมัติ (HN ต้องพิมพ์เอง)</span></div>
       <div class="row"><div class="fld" style="max-width:130px"><label>HN</label><input type="text" data-bind="hn"></div><div class="fld" style="max-width:90px"><label>คำนำหน้า</label><select data-bind="namePrefix"><option value="นาย">นาย</option><option value="นาง">นาง</option><option value="นางสาว">นางสาว</option><option value="เด็กชาย">เด็กชาย</option><option value="เด็กหญิง">เด็กหญิง</option><option value="พระ">พระ</option><option value="แม่ชี">แม่ชี</option></select></div><div class="fld"><label>ชื่อ</label><input type="text" data-bind="nameFirst"></div><div class="fld"><label>นามสกุล</label><input type="text" data-bind="nameLast"></div></div>
       <div id="dupHint" class="dup-hint" style="display:none"></div>
       <div class="row"><div class="fld"><label>เลขบัตรประชาชน <span style="color:#94a3b8;font-weight:400">(ไม่บังคับ)</span></label><input type="text" id="inpCitizenId" data-bind="citizenId" inputmode="numeric" maxlength="17" placeholder="x-xxxx-xxxxx-xx-x"><div class="hint" id="cidHint" style="margin-top:3px"></div></div></div>
@@ -3533,7 +3605,9 @@ function render(){
   updateAudioPrintPage();
   renderAudAll();
   renderSfImage();
+  try{ autoVentSize(); }catch(e){ console.warn('autoVent', e); }
   const ventWrap=document.getElementById('ventSizeWrap'); if(ventWrap) ventWrap.style.display = S.aVent ? '' : 'none';
+  try{ renderVentRec(); }catch(e){ console.warn('ventRec', e); }
 }
 
 function updateAudioPrintPage(){
@@ -3709,6 +3783,85 @@ function commitHistDraft(){
   renderHistList();
   return true;
 }
+/* ══ อ่านบัตรประชาชน — ผ่านโปรแกรม ThaiIDAgent ที่เปิดค้างบนเครื่อง (http://127.0.0.1:8765) ══
+   เบราว์เซอร์คุยกับเครื่องอ่านบัตรเองไม่ได้ จึงให้ ThaiIDAgent อ่านแล้วส่ง JSON กลับมา
+   agent ตอบเฉพาะเว็บที่อยู่ใน allowlist (ค่าเริ่มต้น https://hearform-system.vercel.app) */
+const IDCARD_AGENT = 'http://127.0.0.1:8765';
+const IDCARD_PREFIX_MAP = {'นาย':'นาย','นาง':'นาง','น.ส.':'นางสาว','นางสาว':'นางสาว','ด.ช.':'เด็กชาย','เด็กชาย':'เด็กชาย','ด.ญ.':'เด็กหญิง','เด็กหญิง':'เด็กหญิง'};
+/* วันเกิดบนบัตร "25000312" (พ.ศ.) → "12 มี.ค. 2500" · บางใบไม่มีวัน/เดือน (00) → "มี.ค. 2500" / "2500" */
+function idCardBirthToThai(s){
+  const m = /^(\d{4})(\d{2})(\d{2})$/.exec(String(s||'').trim());
+  if(!m) return '';
+  const y=+m[1], mo=+m[2], d=+m[3];
+  if(!y) return '';
+  if(!mo || mo>12) return String(y);
+  return (d ? d+' ' : '') + _thM[mo-1] + ' ' + y;
+}
+function idCardExpired(s){
+  const m = /^(\d{4})(\d{2})(\d{2})$/.exec(String(s||'').trim());
+  if(!m || m[1]==='9999') return false;           // 99999999 = ตลอดชีพ
+  const exp = new Date(+m[1]-543, Math.max(0,+m[2]-1), +m[3]||1);
+  return exp < new Date(new Date().toDateString());
+}
+function idCardStatus(msg, cls){
+  const el=document.getElementById('idCardStatus');
+  if(el){ el.textContent=msg; el.className='idcard-status'+(cls?' '+cls:''); }
+}
+async function readIdCard(){
+  const btn=document.getElementById('btnReadIdCard');
+  if(btn){ if(btn.disabled) return; btn.disabled=true; }
+  idCardStatus('⏳ กำลังอ่านบัตร… อย่าเพิ่งดึงบัตรออก');
+  let d=null;
+  try{
+    const ctl=new AbortController(); const t=setTimeout(()=>ctl.abort(), 15000);
+    const res=await fetch(IDCARD_AGENT+'/read', {cache:'no-store', signal:ctl.signal});
+    clearTimeout(t);
+    d=await res.json();
+  }catch(e){
+    if(btn) btn.disabled=false;
+    idCardStatus('❌ ติดต่อโปรแกรม ThaiIDAgent ไม่ได้ — เปิดโปรแกรมก่อน (ไอคอน ID มุมขวาล่างของจอ) · ถ้าเบราว์เซอร์ถามขออนุญาตเข้าถึงอุปกรณ์ในเครือข่าย ให้กด "อนุญาต"','err');
+    return;
+  }
+  if(btn) btn.disabled=false;
+  if(!d || !d.ok){ idCardStatus('❌ '+((d&&d.message)||'อ่านบัตรไม่สำเร็จ ลองถอดบัตรแล้วเสียบใหม่'),'err'); return; }
+  const first=(d.firstName||'')+(d.middleName?' '+d.middleName:'');
+  if((S.nameFirst||S.nameLast) && (S.nameFirst!==first || S.nameLast!==(d.lastName||''))){
+    if(!confirm('เคสนี้มีชื่อ "'+(S.nameFirst||'')+' '+(S.nameLast||'')+'" อยู่แล้ว\nจะแทนที่ด้วยข้อมูลจากบัตร "'+first+' '+(d.lastName||'')+'" หรือไม่?')){
+      idCardStatus('ยกเลิกแล้ว — ไม่ได้เปลี่ยนข้อมูล'); return;
+    }
+  }
+  applyIdCard(d);
+}
+function applyIdCard(d){
+  const pf=(d.prefix||'').trim();
+  const prefix=IDCARD_PREFIX_MAP[pf] || pf;
+  const sel=document.querySelector('#sidebar select[data-bind="namePrefix"]');
+  if(sel && prefix && ![...sel.options].some(o=>o.value===prefix)) sel.add(new Option(prefix,prefix));   // ยศ/คำนำหน้าพิเศษ เช่น ร.ต.อ.
+  if(prefix) S.namePrefix=prefix;
+  S.nameFirst=(d.firstName||'')+(d.middleName?' '+d.middleName:'');
+  S.nameLast=d.lastName||'';
+  const birth=idCardBirthToThai(d.birth); if(birth) S.birth=birth;
+  const a=d.address||{};
+  if(a.province || a.houseNo){
+    let dist=a.district||'';
+    if(/กรุงเทพ/.test(a.province||'') && /^เขต/.test(a.districtRaw||'')) dist=a.districtRaw;   // รายชื่อเขตของกรุงเทพฯ ในระบบมีคำว่า "เขต" นำหน้า
+    if((a.province||'')!==(S.addr_province||'')) S.addr_zip='';                                // รหัสไปรษณีย์ไม่อยู่ในบัตร — ล้างของเดิมถ้าจังหวัดเปลี่ยน
+    S.addr_no=[a.houseNo,a.extra].filter(Boolean).join(' ');
+    S.addr_moo=a.moo||''; S.addr_soi=a.soi||''; S.addr_road=a.road||'';
+    S.addr_subdistrict=a.subdistrict||''; S.addr_district=dist; S.addr_province=a.province||'';
+  }
+  reflectInputs();
+  const cidEl=document.getElementById('inpCitizenId');
+  if(cidEl && d.cid){ cidEl.value=d.cid; cidEl.dispatchEvent(new Event('input',{bubbles:true})); }   // ใส่ขีด + ตรวจ checksum + onAnyChange
+  else onAnyChange();
+  const ageEl=document.getElementById('inpAge'); if(ageEl) ageEl.value=S.age||'';
+  const notes=[];
+  if(d.demo) notes.push('โหมดทดสอบ — ข้อมูลจำลอง');
+  if(idCardExpired(d.expireDate)) notes.push('บัตรหมดอายุแล้ว (ข้อมูลยังใช้ได้)');
+  idCardStatus('✅ อ่านบัตรแล้ว: '+S.namePrefix+S.nameFirst+' '+S.nameLast+' — กรอก HN ต่อได้เลย'+(notes.length?' · ⚠️ '+notes.join(' · '):''), notes.length?'warn':'ok');
+  const hnEl=document.querySelector('#sidebar [data-bind="hn"]');
+  if(hnEl && !hnEl.value) hnEl.focus();
+}
 function bindDataBindScope(root){
   if(!root) return;
   root.querySelectorAll('[data-bind]').forEach(el=>{
@@ -3784,6 +3937,8 @@ function bindInputs(){
   });
   bindCascades();
   bindAddrCascade();
+  const _btnIdCard = document.getElementById('btnReadIdCard');
+  if(_btnIdCard) _btnIdCard.addEventListener('click', readIdCard);
 
   /* ช่องเลขบัตรประชาชน (ไม่บังคับ): ใส่ขีดคั่นให้อัตโนมัติ + ตรวจหลักตรวจสอบ (checksum) */
   const cidEl = document.getElementById('inpCitizenId');
