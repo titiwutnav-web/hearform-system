@@ -674,6 +674,25 @@ body.aud-fs{ overflow:hidden; }
 .qn-name { font-size:28px; font-weight:700; color:#241F47; }
 .qn-actions { margin-top:24px; display:flex; justify-content:center; gap:14px; }
 .qn-actions .btn { height:44px; padding:0 24px; font-size:15px; }
+/* มือถือ: ปุ่ม 4 ปุ่มล้นจอจนตัวหนังสือขาด → ตัดเป็น 2 แถว แถวละ 2 ปุ่ม (แก้ 5 ต.ค. 69) */
+@media (max-width:640px){
+  .qn-actions { flex-wrap:wrap; gap:10px; }
+  .qn-actions .btn { flex:1 1 calc(50% - 10px); min-width:0; padding:0 10px; font-size:14px; white-space:nowrap; }
+  /* หัวเรื่อง: ไม่ให้คำอธิบายตัดคำกลางวันที่ */
+  .queue-head h1 { font-size:20px; }
+  #queueDateLabel { font-size:12px; line-height:1.5; }
+  /* ช่องตั้งค่า: ป้ายอยู่บน ช่องกรอกเต็มความกว้าง — ตัวหนังสือไม่เลื่อน/ไม่ตกบรรทัดแปลกๆ */
+  .queue-settings .qs-row { gap:12px; }
+  .queue-settings label:has(input[type=text]), .queue-settings label:has(select) { flex-direction:column; align-items:stretch; width:100%; gap:4px; }
+  .queue-settings input[type=text], .queue-settings select { min-width:0; width:100%; box-sizing:border-box; height:38px; font-size:16px; }
+  .queue-settings .qs-voiceinfo { white-space:normal; width:100%; }
+  /* ตารางคิว: ซ่อน HN, ปุ่มเรียกคิว/ญาติเรียงลงล่าง, ป้ายสถานะไม่ตัดคำ */
+  .queue-table th:nth-child(3), .queue-table td:nth-child(3) { display:none; }
+  .queue-table th, .queue-table td { padding:10px 6px; }
+  .queue-table .queue-pill, .qst-waiting, .qst-called { white-space:nowrap; }
+  .queue-table td.qtbl-actions { white-space:normal !important; width:1%; }
+  .queue-table td.qtbl-actions .qtbl-btn { display:block; width:100%; margin:3px 0; white-space:nowrap; }
+}
 .queue-settings { display:flex; flex-direction:column; gap:12px; padding:18px 32px; font-size:13px; color:#5B5675; border-bottom:1px solid #F3F1FC; margin-bottom:4px; }
 .queue-settings .qs-row { display:flex; gap:18px; align-items:center; flex-wrap:wrap; }
 .queue-settings label { display:flex; align-items:center; gap:8px; }
@@ -5549,7 +5568,7 @@ function init(){
           <td>${esc(r.name)||'-'}</td>
           <td>${esc(r.hn)||'-'}</td>
           <td><span class="qst-waiting">รอเรียก</span><span class="qst-called">เรียกแล้ว</span></td>
-          <td style="white-space:nowrap"><button type="button" class="qtbl-btn" data-act="call" data-id="${r._id}">🔊 เรียกคิว</button> <button type="button" class="qtbl-btn" data-act="relative" data-id="${r._id}" title="เรียกญาติของผู้ป่วยรายนี้">👪 ญาติ</button></td>
+          <td class="qtbl-actions" style="white-space:nowrap"><button type="button" class="qtbl-btn" data-act="call" data-id="${r._id}">🔊 เรียกคิว</button> <button type="button" class="qtbl-btn" data-act="relative" data-id="${r._id}" title="เรียกญาติของผู้ป่วยรายนี้">👪 ญาติ</button></td>
         </tr>`;
       }).join('');
     }
@@ -5562,8 +5581,9 @@ function init(){
       document.getElementById('qnName').textContent = _currentCall.name || '-';
     } else {
       document.getElementById('qnNumber').textContent = '–';
-      document.getElementById('qnName').textContent = 'ยังไม่มีการเรียกคิว';
+      document.getElementById('qnName').textContent = list.length ? 'ยังไม่ได้เรียก — กด 🔊 เรียกคิว เพื่อเริ่มคิวแรก' : 'ยังไม่มีการเรียกคิว';
     }
+    { const rb = document.getElementById('btnRecall'); if(rb) rb.textContent = _currentCall ? '🔊 เรียกซ้ำ' : '🔊 เรียกคิว'; }
   }
   /* ── เปิดหน้าต่างลอย (modal) สำหรับกรอกข้อมูล — 'patient' = ข้อมูลผู้ป่วยทั้งหมด (ยกเว้น Audiogram) / 'audiogram' = เฉพาะ Audiogram ── */
   function openEntryModal(view){
@@ -7595,19 +7615,29 @@ function init(){
     if(rec) callQueueRecord(rec);
   });
   document.getElementById('btnRecall').addEventListener('click', ()=>{
-    if(!_currentCall){ alert('ยังไม่มีการเรียกคิว'); return; }
+    /* ยังไม่เคยเรียกใครวันนี้ → ปุ่มนี้เรียกคิวแรกที่รออยู่ให้เลย (เดิมขึ้นกล่อง "ยังไม่มีการเรียกคิว" ทั้งที่มีคิวรอ) */
+    if(!_currentCall){
+      const list = getTodayQueueRecords();
+      const next = list.find(r=>!r.calledAt) || list[0];
+      if(!next){ flash('ยังไม่มีผู้ป่วยในคิววันนี้'); return; }
+      callQueueRecord(next); return;
+    }
     const rec = getRecords().find(r=>r._id===_currentCall.id);
-    if(rec) announceQueue(rec, {chime:true}); else alert('ไม่พบข้อมูลผู้ป่วยรายนี้แล้ว');
+    if(rec) announceQueue(rec, {chime:true}); else flash('ไม่พบข้อมูลผู้ป่วยรายนี้แล้ว');
   });
   document.getElementById('btnStopVoice').addEventListener('click', ()=>{ stopAnnouncements(); flash('⏹ หยุดเสียงประกาศแล้ว'); });
   document.getElementById('btnCallRelative').addEventListener('click', ()=>{
-    if(!_currentCall){ alert('ยังไม่มีคิวที่กำลังเรียก — กด "👪 ญาติ" ในแถวของผู้ป่วยที่ต้องการแทน'); return; }
+    if(!_currentCall){
+      const list = getTodayQueueRecords();
+      if(list.length===1){ callRelative(list[0]); return; }   // มีคนเดียว = เรียกญาติของคนนั้นเลย
+      flash(list.length ? 'เลือกกด "👪 ญาติ" ในแถวของผู้ป่วยที่ต้องการ' : 'ยังไม่มีผู้ป่วยในคิววันนี้'); return;
+    }
     const rec = getRecords().find(r=>r._id===_currentCall.id);
     if(rec) callRelative(rec); else alert('ไม่พบข้อมูลผู้ป่วยรายนี้แล้ว');
   });
   document.getElementById('btnCallNext').addEventListener('click', ()=>{
     const next = getTodayQueueRecords().find(r=>!r.calledAt);
-    if(!next){ alert('ไม่มีคิวที่รอเรียกแล้ว'); return; }
+    if(!next){ flash('ไม่มีคิวที่รอเรียกแล้ว'); return; }
     callQueueRecord(next);
   });
   /* ── ตั้งค่าเสียงพูด ── */
