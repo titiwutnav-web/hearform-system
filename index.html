@@ -100,6 +100,14 @@ html.locked #lockScreen{display:flex;}
 #adminModal .am-reset{border:none;background:#fff4e0;color:#a06000;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-weight:600;}
 #adminModal .am-edit{border:none;background:#eef1ff;color:#3958ff;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-weight:600;}
 #adminModal td .am-btns{display:flex;gap:4px;flex-wrap:wrap;}
+/* โหมดเพิ่ม/แก้ไขผู้ใช้ — เห็นชัดว่ากำลังแก้ใคร */
+#adminModal .am-form-title{flex:1 1 100%;font-size:13.5px;font-weight:700;color:#1a1e2e;}
+#adminModal .am-form-title small{font-weight:400;color:#8a93a8;font-size:11.5px;}
+#adminModal .am-form.am-editing{background:#fff8e8;box-shadow:inset 0 0 0 2px #ffcf70;}
+#adminModal .am-form.am-editing .am-form-title{color:#a06000;}
+#adminModal .am-form button.am-cancel{background:#eef1f6;color:#3a4356;}
+#adminModal tr.am-row-editing td{background:#fff8e8;}
+#adminModal .am-hosp-all{flex:1 1 100%;display:flex;align-items:center;gap:6px;font-weight:700;color:#3958ff;cursor:pointer;padding-bottom:6px;margin-bottom:2px;border-bottom:1px dashed #dde4ef;}
 /* ── หน้าต่างบัญชี: แนะนำตั้งรหัสใหม่ / เลือกรพ.ที่จะเข้าดู ── */
 #hcsAcct{display:none;position:fixed;inset:0;z-index:100000;align-items:center;justify-content:center;background:rgba(15,23,42,.55);font-family:'Sarabun','TH Sarabun New',Tahoma,sans-serif;padding:16px;box-sizing:border-box;}
 #hcsAcct.open{display:flex;}
@@ -1465,9 +1473,10 @@ body::before{
       <div class="am-hm-list" id="amHospMaster">กำลังโหลด...</div>
     </div>
     <div class="am-sec-t">👥 ผู้ใช้งาน</div>
-    <div class="am-form">
+    <div class="am-form" id="amForm">
+      <div class="am-form-title" id="amFormTitle">➕ เพิ่มผู้ใช้ใหม่</div>
       <div class="am-fld"><label>ชื่อผู้ใช้</label><input type="text" id="amUsername" autocomplete="off"></div>
-      <div class="am-fld"><label>รหัสผ่าน</label><input type="text" id="amPassword" autocomplete="off" placeholder="ผู้ใช้ใหม่: เว้นว่าง = 1234"></div>
+      <div class="am-fld"><label id="amPwLabel">รหัสผ่าน</label><input type="text" id="amPassword" autocomplete="off" placeholder="เว้นว่าง = 1234"></div>
       <div class="am-fld"><label>ชื่อ–สกุล <span style="font-weight:400;color:#9aa5ba">(ลงชื่อในฟอร์มอัตโนมัติ)</span></label><input type="text" id="amDisplayName" autocomplete="off" placeholder="เช่น นายสมชาย ใจดี"></div>
       <div class="am-fld" id="amLicenseWrap" style="max-width:150px"><label>เลขที่ใบอนุญาต <span style="font-weight:400;color:#9aa5ba">(ผ.ส.)</span></label><input type="text" id="amLicense" autocomplete="off" placeholder="เช่น 513"></div>
       <div class="am-fld" style="max-width:130px"><label>สิทธิ์</label>
@@ -1478,7 +1487,8 @@ body::before{
         <div id="amHospList" style="display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 9px;border:1px solid #dde4ef;border-radius:7px;max-height:130px;overflow-y:auto;font-size:12.5px;color:#6b7690;background:#fff">กำลังโหลดรายชื่อรพ....</div>
       </div>
       <div class="am-fld" id="amAdminAllNote" style="flex:1 1 100%;display:none"><label style="color:#3958ff">ผู้ดูแลระบบเข้าดูได้ทุกรพ. (เลือก "ทุกโรงพยาบาล" ได้) — ไม่ต้องติ๊กรพ.</label></div>
-      <button type="button" id="amSaveBtn">เพิ่ม / บันทึก</button>
+      <button type="button" id="amSaveBtn">➕ เพิ่มผู้ใช้</button>
+      <button type="button" id="amCancelEdit" class="am-cancel" style="display:none">ยกเลิกการแก้ไข</button>
     </div>
     <div class="am-msg" id="amMsg"></div>
     <table>
@@ -8327,11 +8337,55 @@ document.addEventListener('DOMContentLoaded', init);
       wrap.innerHTML = '<span style="color:#9aa5ba">ยังไม่มีรายชื่อรพ. — เพิ่มชื่อรพ.ในกล่องสีเขียวด้านบนก่อน</span>';
       return;
     }
-    wrap.innerHTML = list.map(function(h){
+    wrap.innerHTML = '<label class="am-hosp-all"><input type="checkbox" id="amHospAll"> ทุกรพ. (เลือกทั้งหมด)</label>' + list.map(function(h){
       var v = escH(h);
       return '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap"><input type="checkbox" class="am-hosp-cb" value="'+v+'"'+(checked[h]?' checked':'')+'> '+v+'</label>';
     }).join('');
+    syncHospAll();
   }
+  /* ช่อง "ทุกรพ." ติ๊กอยู่เมื่อทุกรพ.ถูกติ๊กครบ */
+  function syncHospAll(){
+    var all = document.getElementById('amHospAll'); if(!all) return;
+    var cbs = document.querySelectorAll('.am-hosp-cb'), n = 0;
+    cbs.forEach(function(cb){ if(cb.checked) n++; });
+    all.checked = cbs.length > 0 && n === cbs.length;
+    all.indeterminate = n > 0 && n < cbs.length;
+  }
+  document.getElementById('amHospList').addEventListener('change', function(e){
+    if(e.target && e.target.id === 'amHospAll'){
+      var on = e.target.checked;
+      document.querySelectorAll('.am-hosp-cb').forEach(function(cb){ cb.checked = on; });
+    }
+    syncHospAll();
+  });
+  /* ── โหมดฟอร์ม: เพิ่มใหม่ / แก้ไขผู้ใช้เดิม ── */
+  var _amEditing = null;   // ชื่อผู้ใช้เดิมที่กำลังแก้ (null = กำลังเพิ่มผู้ใช้ใหม่)
+  function amSetMode(editUser){
+    _amEditing = editUser || null;
+    document.getElementById('amForm').classList.toggle('am-editing', !!_amEditing);
+    document.getElementById('amFormTitle').innerHTML = _amEditing
+      ? '✏️ กำลังแก้ไขผู้ใช้ "'+escH(_amEditing)+'" <small>— แก้ชื่อผู้ใช้ได้ (ผู้ใช้ต้องล็อกอินใหม่ด้วยชื่อใหม่)</small>'
+      : '➕ เพิ่มผู้ใช้ใหม่';
+    document.getElementById('amPwLabel').textContent = _amEditing ? 'ตั้งรหัสผ่านใหม่' : 'รหัสผ่าน';
+    document.getElementById('amPassword').placeholder = _amEditing ? 'เว้นว่าง = ใช้รหัสเดิม' : 'เว้นว่าง = 1234';
+    document.getElementById('amSaveBtn').textContent = _amEditing ? '💾 บันทึกการแก้ไข' : '➕ เพิ่มผู้ใช้';
+    document.getElementById('amCancelEdit').style.display = _amEditing ? '' : 'none';
+    document.querySelectorAll('#amUserList tr').forEach(function(tr){
+      var b = tr.querySelector('button.am-edit');
+      tr.classList.toggle('am-row-editing', !!(_amEditing && b && b.getAttribute('data-user') === _amEditing));
+    });
+  }
+  function amResetForm(){
+    ['amUsername','amPassword','amDisplayName','amLicense'].forEach(function(id){ document.getElementById(id).value = ''; });
+    document.getElementById('amRole').value = 'audiologist';
+    document.querySelectorAll('.am-hosp-cb').forEach(function(cb){ cb.checked = false; });
+    syncHospAll();
+    amSetMode(null);
+    amSyncRoleFields();
+  }
+  document.getElementById('amCancelEdit').addEventListener('click', function(){
+    amResetForm(); document.getElementById('amMsg').textContent = '';
+  });
   function amCheckedHosps(){ return Array.from(document.querySelectorAll('.am-hosp-cb:checked')).map(function(cb){ return cb.value; }); }
   function renderHospMaster(list){
     _amHospMaster = list.slice();
@@ -8411,7 +8465,7 @@ document.addEventListener('DOMContentLoaded', init);
       var delBtn = (u.username===me) ? '' : '<button type="button" class="am-del" data-user="'+escH(u.username)+'">ลบ</button>';
       var resetBtn = (u.username===me) ? '' : '<button type="button" class="am-reset" data-user="'+escH(u.username)+'" title="ตั้งรหัสผ่านกลับเป็น 1234">รีเซ็ตรหัส</button>';
       var roleTxt = roleLabel(u.role);
-      return '<tr><td>'+escH(u.username)+'</td><td>'+(dname ? escH(dname) : '<span style="color:#9aa5ba">–</span>')+(lic ? '<br><span style="color:#8a93a8;font-size:11.5px">ผ.ส. '+escH(lic)+'</span>' : '')+'</td><td>'+roleTxt+'</td><td>'+hospTxt+'</td><td>'+fmtDate(u.created_at)+'</td><td><div class="am-btns">'+editBtn+resetBtn+delBtn+'</div></td></tr>';
+      return '<tr'+(_amEditing===u.username?' class="am-row-editing"':'')+'><td>'+escH(u.username)+'</td><td>'+(dname ? escH(dname) : '<span style="color:#9aa5ba">–</span>')+(lic ? '<br><span style="color:#8a93a8;font-size:11.5px">ผ.ส. '+escH(lic)+'</span>' : '')+'</td><td>'+roleTxt+'</td><td>'+hospTxt+'</td><td>'+fmtDate(u.created_at)+'</td><td><div class="am-btns">'+editBtn+resetBtn+delBtn+'</div></td></tr>';
     }).join('');
   }
   var adminBtn = document.getElementById('ubAdminBtn');
@@ -8419,7 +8473,7 @@ document.addEventListener('DOMContentLoaded', init);
     document.getElementById('adminModal').classList.add('open');
     document.getElementById('amMsg').textContent = '';
     await loadHospitalOptions();
-    amSyncRoleFields();
+    amResetForm();
     refreshUserList();
   });
   document.getElementById('amRole').addEventListener('change', amSyncRoleFields);
@@ -8437,21 +8491,28 @@ document.addEventListener('DOMContentLoaded', init);
     var msgEl = document.getElementById('amMsg');
     var bad = function(t){ msgEl.style.color = '#c8283e'; msgEl.textContent = t; };
     if(!newUsername) return bad('กรอกชื่อผู้ใช้');
+    if(_amEditing && _amEditing === localStorage.getItem('hcs_username') && newRole !== 'admin') return bad('เปลี่ยนสิทธิ์บัญชีตัวเองออกจากผู้ดูแลระบบไม่ได้');
     if((newRole === 'sale' || newRole === 'audiologist') && !newDisplayName) return bad('กรอกชื่อ–สกุล (ใช้ลงชื่อในฟอร์มอัตโนมัติ)');
     if(newRole === 'audiologist' && !newLicense) return bad('กรอกเลขที่ใบอนุญาตของ Audiologist');
     /* Admin ดูได้ทุกรพ. (ไม่เก็บรายชื่อ) · สิทธิ์อื่นต้องได้รับสิทธิ์อย่างน้อย 1 รพ. */
     if(newRole === 'admin') newAllowedHospitals = [];
     else if(!newAllowedHospitals.length) return bad('ติ๊กโรงพยาบาลที่ให้สิทธิ์เข้าดูอย่างน้อย 1 แห่ง');
-    var _isExisting = Array.from(document.querySelectorAll('#amUserList button.am-edit')).some(function(b){ return b.getAttribute('data-user') === newUsername; });
+    var editing = _amEditing, me = localStorage.getItem('hcs_username');
+    var exists = Array.from(document.querySelectorAll('#amUserList button.am-edit')).some(function(b){ return b.getAttribute('data-user') === newUsername; });
+    if(!editing && exists) return bad('มีชื่อผู้ใช้ "'+newUsername+'" อยู่แล้ว — กด "แก้ไข" ที่รายชื่อด้านล่างแทน');
+    if(editing && newUsername !== editing && exists) return bad('ชื่อผู้ใช้ "'+newUsername+'" มีอยู่แล้ว เลือกชื่ออื่น');
+    if(editing && editing === me && newUsername !== editing) return bad('เปลี่ยนชื่อผู้ใช้ของบัญชีที่กำลังใช้อยู่ไม่ได้');
+    if(editing && editing === me && newRole !== 'admin') return bad('เปลี่ยนสิทธิ์บัญชีตัวเองออกจากผู้ดูแลระบบไม่ได้');
+    if(editing && newUsername !== editing && !confirm('เปลี่ยนชื่อผู้ใช้จาก "'+editing+'" เป็น "'+newUsername+'" ?\n\nผู้ใช้คนนี้จะต้องล็อกอินใหม่ด้วยชื่อใหม่')) return;
     var t = localStorage.getItem('hcs_token');
     msgEl.style.color = '#8a93a8'; msgEl.textContent = 'กำลังบันทึก...';
-    var res = await postAction('addUser', {token:t, newUsername:newUsername, newPassword:newPassword, newRole:newRole, allowedHospitals:newAllowedHospitals, displayName:newDisplayName, licenseNo:newLicense});
+    var res = await postAction('addUser', {token:t, newUsername:newUsername, newPassword:newPassword, newRole:newRole, allowedHospitals:newAllowedHospitals, displayName:newDisplayName, licenseNo:newLicense, originalUsername: editing || '', isNew: !editing});
     if(res.status === 'ok'){
       msgEl.style.color = '#1a8a4c';
-      msgEl.textContent = (!_isExisting && !newPassword) ? 'สร้างผู้ใช้ "'+newUsername+'" แล้ว ✓ — รหัสเริ่มต้นคือ 1234 (ล็อกอินครั้งแรกจะขึ้นแนะนำให้ตั้งรหัสใหม่)' : 'บันทึกแล้ว ✓';
-      uEl.value=''; pEl.value=''; rEl.value='audiologist'; dEl.value=''; lEl.value='';
-      amSyncRoleFields();
-      document.querySelectorAll('.am-hosp-cb').forEach(function(cb){ cb.checked = false; });
+      msgEl.textContent = !editing
+        ? ('สร้างผู้ใช้ "'+newUsername+'" แล้ว ✓' + (newPassword ? '' : ' — รหัสเริ่มต้นคือ 1234 (ล็อกอินครั้งแรกจะขึ้นแนะนำให้ตั้งรหัสใหม่)'))
+        : ('บันทึกการแก้ไข "'+newUsername+'" แล้ว ✓' + (newUsername !== editing ? ' (เปลี่ยนชื่อจาก "'+editing+'")' : '') + (newPassword ? ' · ตั้งรหัสใหม่แล้ว' : ''));
+      amResetForm();
       refreshUserList();
     } else {
       msgEl.style.color = '#c8283e'; msgEl.textContent = res.message || 'บันทึกไม่สำเร็จ';
@@ -8460,20 +8521,28 @@ document.addEventListener('DOMContentLoaded', init);
   document.getElementById('amUserList').addEventListener('click', async function(e){
     var editBtn = e.target.closest('button.am-edit');
     if(editBtn){
-      document.getElementById('amUsername').value = editBtn.getAttribute('data-user')||'';
+      var _eu = editBtn.getAttribute('data-user')||'';
+      document.getElementById('amUsername').value = _eu;
       document.getElementById('amPassword').value = '';
       document.getElementById('amRole').value = editBtn.getAttribute('data-role')||'user';
       document.getElementById('amDisplayName').value = editBtn.getAttribute('data-dname')||'';
       document.getElementById('amLicense').value = editBtn.getAttribute('data-lic')||'';
       var hospSet = (editBtn.getAttribute('data-hosp')||'').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+      /* บัญชีรุ่นเก่าที่ยังไม่ได้ติ๊กรพ. แต่ชื่อผู้ใช้ตรงกับชื่อรพ.ในรายชื่อ → ติ๊กรพ.นั้นให้ก่อน (ตรงกับสิทธิ์ที่ใช้อยู่จริง) */
+      if(!hospSet.length && editBtn.getAttribute('data-role') !== 'admin' && editBtn.getAttribute('data-role') !== 'sale' && _amHospMaster.indexOf(_eu) !== -1) hospSet = [_eu];
       /* รพ.ที่ผู้ใช้มีสิทธิ์อยู่แล้วแต่ไม่อยู่ในรายชื่อกลาง → ยังโชว์ให้ติ๊ก กันสิทธิ์หายตอนกดบันทึก */
       var extra = hospSet.filter(function(h){ return _amHospMaster.indexOf(h) === -1; });
       renderHospCheckboxes(_amHospMaster.concat(extra), hospSet);
+      amSetMode(_eu);
       amSyncRoleFields();
       var msgEl = document.getElementById('amMsg');
-      msgEl.style.color = '#8a93a8';
+      msgEl.style.color = '#a06000';
       var _r = editBtn.getAttribute('data-role')||'';
-      msgEl.textContent = 'กำลังแก้ไข "'+editBtn.getAttribute('data-user')+'" — เว้นช่องรหัสผ่านว่างไว้ถ้าไม่ต้องการเปลี่ยนรหัส' + ((_r==='user'||_r==='hospital') ? ' · บัญชีรุ่นเก่า: เลือกสิทธิ์ใหม่เป็น Audiologist หรือ Sale' : '');
+      msgEl.textContent = (_r==='user'||_r==='hospital') ? 'บัญชีรุ่นเก่า — แนะนำให้เปลี่ยนสิทธิ์เป็น Audiologist หรือ Sale' : '';
+      /* ฟอร์มอยู่ด้านบน — เลื่อนขึ้นไปให้เห็นทันที */
+      var _f = document.getElementById('amForm');
+      _f.scrollIntoView({behavior:'smooth', block:'start'});
+      try{ document.getElementById('amUsername').focus({preventScroll:true}); }catch(err){}
       return;
     }
     var resetBtn = e.target.closest('button.am-reset');
@@ -8490,7 +8559,7 @@ document.addEventListener('DOMContentLoaded', init);
     if(!confirm('ลบผู้ใช้ "'+btn.getAttribute('data-user')+'" ?')) return;
     var t = localStorage.getItem('hcs_token');
     var res = await postAction('deleteUser', {token:t, targetUsername:btn.getAttribute('data-user')});
-    if(res.status==='ok'){ refreshUserList(); } else { alert(res.message||'ลบไม่สำเร็จ'); }
+    if(res.status==='ok'){ if(_amEditing === btn.getAttribute('data-user')) amResetForm(); refreshUserList(); } else { alert(res.message||'ลบไม่สำเร็จ'); }
   });
 })();
 </script>
