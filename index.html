@@ -462,6 +462,13 @@ body.aud-fs{ overflow:hidden; }
 .summary-tbl, .key-tbl { width:100%; border-collapse:collapse; font-size:10px; }
 .summary-tbl td, .key-tbl td { border:1px solid #1a1a1a; padding:2px 3px; text-align:center; }
 .key-tbl svg { width:18px; height:13px; vertical-align:middle; }
+/* PTA 4 ความถี่ — แยกเป็นกรอบของตัวเอง ขอบหนา หัวทึบ ตัวเลขใหญ่ ให้เด่นกว่าตารางสรุป */
+.pta4-tbl { width:100%; border-collapse:collapse; margin-top:2mm; border:2.2px solid #0c3d5e; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+.pta4-tbl td { border:1px solid #0c3d5e; padding:2px 3px; text-align:center; }
+.pta4-tbl .pta4-hd { background:#0c3d5e; color:#fff; font-weight:700; font-size:9.5px; }
+.pta4-tbl .pta4-lbl { font-weight:700; font-size:10px; background:#eef3f8; width:22%; }
+.pta4-tbl .pta4-v { font-size:10px; background:#fffbea; }
+.pta4-tbl .pta4-v small { font-size:inherit; font-weight:inherit; }
 /* ── ย่อหน้า Audiogram ลงให้เหลือพื้นที่ว่างล่างอย่างน้อย 2 ซม. ตอนปริ้น (กันเนื้อหาล้นไปหน้า 2) ── */
 #p-audio.sheet { zoom: 0.9; }
 /* ══════════════════════════════════════════════════════════════
@@ -862,6 +869,8 @@ body.aud-fs{ overflow:hidden; }
   .sheet { box-shadow: none; margin: 0; width: auto; page-break-after: always; }
   .sheet:last-child { page-break-after: auto; }
   .fill { background: transparent !important; color: #000 !important; }
+  /* หัวฟอร์ม Audiogram (ชื่อ รพ. + ข้อมูลผู้ป่วย) พิมพ์เป็นตัวหนังสือสีดำทั้งหมด */
+  .audio-hdr, .audio-hdr * { color: #000 !important; }
   .freqinp, .freq-grid input { border:none !important; }
   @page { size: A4; margin: 0; }
 }
@@ -2465,11 +2474,13 @@ function audSumTable(){
     <tr><td style="color:#1452c4;font-weight:700">Lt</td><td style="color:#1452c4">${avgSupPre(pl)}${pl?pl.val:''}${avgSup(pl)}${pl?' dB':''}</td></tr>
     <tr><td rowspan="2" style="font-weight:700;background:#f8f9fa">BONE</td><td style="color:#c8102e;font-weight:700">Rt</td><td style="color:#c8102e">${avgSupPre(br)}${br?br.val:''}${avgSup(br)}${br?' dB':''}</td></tr>
     <tr><td style="color:#1452c4;font-weight:700">Lt</td><td style="color:#1452c4">${avgSupPre(bl)}${bl?bl.val:''}${avgSup(bl)}${bl?' dB':''}</td></tr>
-    <tr><td colspan="3" style="background:#e4edf5;font-weight:700;font-size:9px">PTA 4 ความถี่ (500–4000 Hz)</td></tr>
-    <tr><td style="font-weight:700;background:#f8f9fa">AIR</td><td style="color:#c8102e;font-weight:600">Rt&nbsp;${avgSupPre(p4r)}${p4r?p4r.val:'–'}${avgSup(p4r)}</td><td style="color:#1452c4;font-weight:600">Lt&nbsp;${avgSupPre(p4l)}${p4l?p4l.val:'–'}${avgSup(p4l)}</td></tr>
     <tr><td style="font-weight:700;background:#e4edf5">EAR</td><td style="font-weight:700;background:#e4edf5">SRT</td><td style="font-weight:700;background:#e4edf5">SL / PB%</td></tr>
     <tr><td style="font-weight:700;color:#c8102e">Rt</td><td style="color:#c8102e">${srt('R')}</td><td style="color:#c8102e">${S.sl_R?'+':''}${esc(S.sl_R)} / ${pb('R')}</td></tr>
     <tr><td style="font-weight:700;color:#1452c4">Lt</td><td style="color:#1452c4">${srt('L')}</td><td style="color:#1452c4">${S.sl_L?'+':''}${esc(S.sl_L)} / ${pb('L')}</td></tr>
+  </table>
+  <table class="pta4-tbl">
+    <tr><td colspan="3" class="pta4-hd">PTA 4 ความถี่ (500–4000 Hz)</td></tr>
+    <tr><td class="pta4-lbl">AIR</td><td class="pta4-v" style="color:#c8102e">Rt&nbsp;${avgSupPre(p4r)}${p4r?p4r.val:'–'}${avgSup(p4r)}${p4r?'<small> dB</small>':''}</td><td class="pta4-v" style="color:#1452c4">Lt&nbsp;${avgSupPre(p4l)}${p4l?p4l.val:'–'}${avgSup(p4l)}${p4l?'<small> dB</small>':''}</td></tr>
   </table>`;
 }
 function audKeyTable(){
