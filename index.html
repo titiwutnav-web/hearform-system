@@ -87,6 +87,42 @@ html.locked #lockScreen{display:flex;}
 #adminModal .am-del{border:none;background:#fde8ea;color:#c8283e;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-weight:600;}
 #adminModal .am-close{margin-top:14px;border:none;background:#f3f5fa;color:#3a4356;border-radius:7px;padding:8px 16px;font-size:13px;cursor:pointer;font-weight:600;}
 #adminModal .am-msg{font-size:12px;min-height:16px;margin:0 0 10px;}
+/* ── รายชื่อรพ.กลาง (Admin เพิ่ม/ลบ) + ปุ่มรีเซ็ตรหัส ── */
+#adminModal .am-sec-t{font-size:13.5px;font-weight:700;color:#1a1e2e;margin:4px 0 8px;}
+#adminModal .am-sec-t span{font-weight:400;font-size:11.5px;color:#8a93a8;}
+#adminModal .am-hm{padding:12px 14px;background:#f2fbf6;border:1px solid #d5efe0;border-radius:10px;margin-bottom:16px;}
+#adminModal .am-hm-row{display:flex;gap:8px;margin-bottom:10px;}
+#adminModal .am-hm-row input{flex:1;min-width:0;padding:8px 10px;border:1px solid #cfe6d9;border-radius:7px;font-size:13px;font-family:inherit;}
+#adminModal .am-hm-row button{padding:8px 14px;border:none;border-radius:7px;background:#1a8a4c;color:#fff;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;font-family:inherit;}
+#adminModal .am-hm-list{display:flex;flex-wrap:wrap;gap:6px;max-height:120px;overflow-y:auto;font-size:12.5px;color:#6b7690;}
+#adminModal .am-hm-chip{display:inline-flex;align-items:center;gap:4px;background:#fff;border:1px solid #cfe6d9;border-radius:999px;padding:3px 4px 3px 11px;color:#1f4d33;}
+#adminModal .am-hm-chip button{border:none;background:#fde8ea;color:#c8283e;border-radius:999px;width:20px;height:20px;line-height:20px;padding:0;font-size:11px;cursor:pointer;}
+#adminModal .am-reset{border:none;background:#fff4e0;color:#a06000;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-weight:600;}
+#adminModal .am-edit{border:none;background:#eef1ff;color:#3958ff;border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;font-weight:600;}
+#adminModal td .am-btns{display:flex;gap:4px;flex-wrap:wrap;}
+/* ── หน้าต่างบัญชี: แนะนำตั้งรหัสใหม่ / เลือกรพ.ที่จะเข้าดู ── */
+#hcsAcct{display:none;position:fixed;inset:0;z-index:100000;align-items:center;justify-content:center;background:rgba(15,23,42,.55);font-family:'Sarabun','TH Sarabun New',Tahoma,sans-serif;padding:16px;box-sizing:border-box;}
+#hcsAcct.open{display:flex;}
+#hcsAcct .ha-card{background:#fff;border-radius:16px;padding:26px 24px 20px;width:380px;max-width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;box-sizing:border-box;}
+#hcsAcct h3{margin:0 0 6px;font-size:18px;color:#1a1e2e;}
+#hcsAcct .ha-sub{font-size:13px;color:#6b7690;margin:0 0 14px;line-height:1.6;}
+#hcsAcct .ha-sub b{color:#a06000;}
+#hcsAcct input{width:100%;padding:10px 12px;border:1px solid #dde4ef;border-radius:9px;font-size:16px;font-family:inherit;text-align:center;box-sizing:border-box;margin-bottom:8px;}
+#hcsAcct input:focus{outline:none;border-color:#5b7fff;box-shadow:0 0 0 3px rgba(61,109,246,.18);}
+#hcsAcct .ha-err{color:#e0374a;font-size:12.5px;min-height:18px;margin:2px 0 6px;}
+#hcsAcct .ha-err.ha-ok{color:#1a8a4c;}
+#hcsAcct .ha-primary{width:100%;padding:11px 12px;border:none;border-radius:9px;background:#3958ff;color:#fff;font-weight:700;font-size:14.5px;cursor:pointer;font-family:inherit;}
+#hcsAcct .ha-primary:disabled{opacity:.6;cursor:default;}
+#hcsAcct .ha-ghost{width:100%;margin-top:8px;padding:9px 12px;border:none;border-radius:9px;background:#f3f5fa;color:#3a4356;font-weight:600;font-size:13.5px;cursor:pointer;font-family:inherit;}
+#hcsAcct .ha-hosp-list{display:flex;flex-direction:column;gap:7px;text-align:left;margin-bottom:6px;}
+#hcsAcct .ha-hosp{display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;border:1.5px solid #dde4ef;border-radius:11px;background:#fff;font-size:15px;font-family:inherit;color:#1a1e2e;cursor:pointer;text-align:left;}
+#hcsAcct .ha-hosp:hover{border-color:#5b7fff;background:#f5f8ff;}
+#hcsAcct .ha-hosp.on{border-color:#3958ff;background:#eef1ff;font-weight:700;}
+#hcsAcct .ha-hosp.all{border-style:dashed;color:#3958ff;font-weight:700;}
+#hcsAcct .ha-hosp .ha-tick{margin-left:auto;color:#3958ff;font-weight:700;font-size:12px;}
+#hcsAcct .ha-loading{color:#9aa5ba;font-size:13px;padding:10px 0;text-align:center;}
+#userBar .ub-hosp{background:#e9f8ef;color:#1f6b3f;font-weight:700;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#userBar .ub-hosp:hover{background:#d8f1e2;}
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 body { font-family: 'Sarabun','TH Sarabun New',Tahoma,sans-serif; color: #1a1e2e; font-size: 15px; background: radial-gradient(1100px 560px at 8% -8%, #e4edff 0%, transparent 60%), radial-gradient(900px 460px at 105% 0%, #eaf3ff 0%, transparent 55%), #e9eef7; }
@@ -553,6 +589,9 @@ body.aud-fs{ overflow:hidden; }
 .call-table th:nth-child(1), .call-table td:nth-child(1) { width:1%; white-space:nowrap; }   /* NO. */
 .call-table .ct-name    { width:1%; white-space:nowrap; }
 .call-table .ct-phone   { width:1%; white-space:nowrap; }
+/* คอลัมน์ "โรงพยาบาล" — แสดงเฉพาะผู้ดูแลระบบ (admin) ที่เห็นคนไข้ทุกรพ.; renderCallView() ใส่คลาส show-hosp ให้ตาราง */
+.call-table:not(.show-hosp) .ct-hosp { display:none; }
+.call-table .ct-hosp    { width:1%; white-space:nowrap; max-width:200px; overflow:hidden; text-overflow:ellipsis; color:#5B5675; }
 .call-table td.ct-quickappt { white-space:nowrap; }
 .call-table .lst-actions{ width:1%; white-space:nowrap; }
 .call-table .call-note-in { min-width:150px; max-width:420px; }
@@ -810,7 +849,7 @@ body.aud-fs{ overflow:hidden; }
   /* ไม่แตะ padding/min-height/font-size ใดๆ ของ .sheet ในโหมดปริ้น เพื่อไม่ให้เนื้อหาจัดเรียงใหม่ (reflow)
      ต่างจากที่เห็นตอนพรีวิว — ใช้ค่าเดียวกับหน้าจอทุกอย่าง แล้วตั้ง @page margin:0 แทน
      เพื่อให้กระดาษจริง 297mm ตรงกับกล่อง .sheet สูง 297mm พอดี (ไม่มีขอบกระดาษมาแย่งพื้นที่) */
-  #sidebar, .print-bar, .preview-bar, #listView, #queueView, #entryBackdrop, #queueToast, #userBar, #adminModal, #lockScreen { display: none !important; }
+  #sidebar, .print-bar, .preview-bar, #listView, #queueView, #entryBackdrop, #queueToast, #userBar, #adminModal, #lockScreen, #hcsAcct { display: none !important; }
   #app { display: block; } #main { display: block !important; padding: 0; } body { background: #fff; }
   .sheet { box-shadow: none; margin: 0; width: auto; page-break-after: always; }
   .sheet:last-child { page-break-after: auto; }
@@ -1386,36 +1425,64 @@ body::before{
   </div>
 </div>
 <div id="userBar" style="display:none">
+  <button type="button" class="ub-hosp" id="ubHospBtn" title="เปลี่ยนโรงพยาบาลที่เข้าดู">🏥 <span id="ubHospName">เลือกรพ.</span> ▾</button>
   <span id="ubName"></span>
   <span class="ub-role" id="ubRole"></span>
   <button type="button" class="ub-admin" id="ubAdminBtn" style="display:none">👤 จัดการผู้ใช้</button>
+  <button type="button" id="ubPwBtn" title="เปลี่ยนรหัสผ่าน">🔑</button>
   <button type="button" id="ubLogoutBtn">ออกจากระบบ</button>
+</div>
+<div id="hcsAcct">
+  <div class="ha-card">
+    <div id="haPw" style="display:none">
+      <h3>🔑 ตั้งรหัสผ่านใหม่</h3>
+      <p class="ha-sub" id="haPwSub"></p>
+      <input type="password" id="haPwOld" placeholder="รหัสผ่านปัจจุบัน" autocomplete="current-password">
+      <input type="password" id="haPwNew" placeholder="รหัสผ่านใหม่ (อย่างน้อย 4 ตัว)" autocomplete="new-password">
+      <input type="password" id="haPwNew2" placeholder="พิมพ์รหัสผ่านใหม่อีกครั้ง" autocomplete="new-password">
+      <div class="ha-err" id="haPwErr"></div>
+      <button type="button" class="ha-primary" id="haPwSave">บันทึกรหัสใหม่</button>
+      <button type="button" class="ha-ghost" id="haPwSkip">ข้ามไปก่อน</button>
+    </div>
+    <div id="haHosp" style="display:none">
+      <h3>🏥 เลือกโรงพยาบาล</h3>
+      <p class="ha-sub" id="haHospSub">ต้องการเข้าดูข้อมูลในนามโรงพยาบาลไหน</p>
+      <input type="text" id="haHospSearch" placeholder="🔍 ค้นหาชื่อรพ." autocomplete="off" style="display:none">
+      <div class="ha-hosp-list" id="haHospList"></div>
+      <div class="ha-err" id="haHospErr"></div>
+      <button type="button" class="ha-ghost" id="haHospCancel">ยกเลิก</button>
+      <button type="button" class="ha-ghost" id="haHospLogout" style="display:none">ออกจากระบบ</button>
+    </div>
+  </div>
 </div>
 <div id="adminModal">
   <div class="am-card">
     <h3>👤 จัดการผู้ใช้</h3>
-    <p class="am-sub">ผู้ดูแลระบบเท่านั้นที่ตั้ง/เปลี่ยนรหัสผ่านและสิทธิ์เข้าถึงรพ.ได้ — ผู้ใช้ทั่วไปเปลี่ยนรหัสผ่านของตัวเองไม่ได้<br><b>สิทธิ์ โรงพยาบาล</b> = ตั้ง "ชื่อโรงพยาบาล" แยกจากชื่อผู้ใช้ได้ (เช่น user: photharam / รพ.: โพธาราม) — บัญชีนั้นจะเห็นเฉพาะคนไข้ของรพ.ที่ระบุ และฟอร์มจะขึ้นชื่อรพ.นั้นให้อัตโนมัติ<br><b>สิทธิ์ Sale</b> = เห็นเฉพาะรพ.ที่ติ๊กเลือกให้เท่านั้น (ไม่เลือกเลย = ไม่เห็นคนไข้) และใบ Audiogram จะลงชื่อผู้ตรวจเป็น "ชื่อ–สกุล" ของบัญชีนั้นโดยไม่มีตำแหน่ง</p>
+    <p class="am-sub">1) เพิ่มชื่อรพ.ในกล่องสีเขียว &nbsp;2) สร้างผู้ใช้ — ไม่ใส่รหัส = ได้รหัสเริ่มต้น <b>1234</b> (ล็อกอินครั้งแรกจะขึ้นแนะนำให้ตั้งรหัสใหม่) &nbsp;3) ติ๊กรพ.ที่ผู้ใช้คนนั้นเข้าดูได้ — ตอนล็อกอินผู้ใช้จะเลือกว่าจะเข้าในนามรพ.ไหน<br><b>Audiologist</b> = ชื่อ–สกุล + เลขที่ใบอนุญาต ลงช่องนักแก้ไขการได้ยินในทุกฟอร์มอัตโนมัติ · <b>Sale</b> = ชื่อ–สกุลลงช่องพนักงานขายอัตโนมัติ · ผู้ตรวจท้ายใบ Audiogram = คนที่ลงข้อมูล Audiogram · <b>ผู้ดูแลระบบ</b>เท่านั้นที่ดู "ทุกโรงพยาบาล" ได้</p>
+    <div class="am-hm">
+      <div class="am-sec-t">🏥 รายชื่อโรงพยาบาล <span>(เพิ่ม/ลบได้ — ใช้เป็นตัวเลือกให้สิทธิ์ผู้ใช้)</span></div>
+      <div class="am-hm-row"><input type="text" id="amNewHosp" placeholder="พิมพ์ชื่อรพ.ใหม่ เช่น โพธาราม" autocomplete="off"><button type="button" id="amAddHospBtn">+ เพิ่มรพ.</button></div>
+      <div class="am-hm-list" id="amHospMaster">กำลังโหลด...</div>
+    </div>
+    <div class="am-sec-t">👥 ผู้ใช้งาน</div>
     <div class="am-form">
       <div class="am-fld"><label>ชื่อผู้ใช้</label><input type="text" id="amUsername" autocomplete="off"></div>
-      <div class="am-fld"><label>รหัสผ่าน</label><input type="text" id="amPassword" autocomplete="off" placeholder="เว้นว่าง = ไม่เปลี่ยนรหัสเดิม"></div>
-      <div class="am-fld"><label>ชื่อ–สกุล <span style="font-weight:400;color:#9aa5ba">(ใช้ลงชื่อผู้ตรวจใน Audiogram)</span></label><input type="text" id="amDisplayName" autocomplete="off" placeholder="เช่น สมชาย ใจดี"></div>
+      <div class="am-fld"><label>รหัสผ่าน</label><input type="text" id="amPassword" autocomplete="off" placeholder="ผู้ใช้ใหม่: เว้นว่าง = 1234"></div>
+      <div class="am-fld"><label>ชื่อ–สกุล <span style="font-weight:400;color:#9aa5ba">(ลงชื่อในฟอร์มอัตโนมัติ)</span></label><input type="text" id="amDisplayName" autocomplete="off" placeholder="เช่น นายสมชาย ใจดี"></div>
+      <div class="am-fld" id="amLicenseWrap" style="max-width:150px"><label>เลขที่ใบอนุญาต <span style="font-weight:400;color:#9aa5ba">(ผ.ส.)</span></label><input type="text" id="amLicense" autocomplete="off" placeholder="เช่น 513"></div>
       <div class="am-fld" style="max-width:130px"><label>สิทธิ์</label>
-        <select id="amRole"><option value="user">ผู้ใช้งาน</option><option value="sale">Sale (เห็นเฉพาะรพ.ที่เลือก)</option><option value="hospital">โรงพยาบาล (เห็นเฉพาะรพ.ที่ระบุ)</option><option value="admin">ผู้ดูแลระบบ</option></select>
-      </div>
-      <div class="am-fld" id="amHospNameWrap" style="flex:1 1 100%;display:none">
-        <label>ชื่อโรงพยาบาลของบัญชีนี้ <span style="font-weight:400;color:#9aa5ba">(ชื่อที่ขึ้นบนฟอร์ม และใช้กรองคนไข้ — ตั้งต่างจากชื่อผู้ใช้ได้)</span></label>
-        <input type="text" id="amHospName" list="amHospDl" autocomplete="off" placeholder="เช่น โพธาราม (เว้นว่าง = ใช้ชื่อผู้ใช้)">
-        <datalist id="amHospDl"></datalist>
+        <select id="amRole"><option value="audiologist">Audiologist</option><option value="sale">Sale</option><option value="admin">ผู้ดูแลระบบ</option><option value="user" hidden>ผู้ใช้งาน (เดิม)</option><option value="hospital" hidden>โรงพยาบาล (เดิม)</option></select>
       </div>
       <div class="am-fld" id="amHospListWrap" style="flex:1 1 100%">
-        <label>เข้าถึงรายชื่อคนไข้จากรพ. (ไม่เลือกเลย = เห็นทุกรพ.)</label>
-        <div id="amHospList" style="display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 9px;border:1px solid #dde4ef;border-radius:7px;max-height:100px;overflow-y:auto;font-size:12.5px;color:#6b7690">กำลังโหลดรายชื่อรพ....</div>
+        <label>โรงพยาบาลที่ให้สิทธิ์เข้าดู <span style="font-weight:400;color:#9aa5ba">(ติ๊กได้หลายรพ. — ต้องเลือกอย่างน้อย 1 แห่ง)</span></label>
+        <div id="amHospList" style="display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 9px;border:1px solid #dde4ef;border-radius:7px;max-height:130px;overflow-y:auto;font-size:12.5px;color:#6b7690;background:#fff">กำลังโหลดรายชื่อรพ....</div>
       </div>
+      <div class="am-fld" id="amAdminAllNote" style="flex:1 1 100%;display:none"><label style="color:#3958ff">ผู้ดูแลระบบเข้าดูได้ทุกรพ. (เลือก "ทุกโรงพยาบาล" ได้) — ไม่ต้องติ๊กรพ.</label></div>
       <button type="button" id="amSaveBtn">เพิ่ม / บันทึก</button>
     </div>
     <div class="am-msg" id="amMsg"></div>
     <table>
-      <thead><tr><th>ชื่อผู้ใช้</th><th>ชื่อ–สกุล</th><th>สิทธิ์</th><th>เข้าถึงรพ.</th><th>สร้างเมื่อ</th><th></th></tr></thead>
+      <thead><tr><th>ชื่อผู้ใช้</th><th>ชื่อ–สกุล / ใบอนุญาต</th><th>สิทธิ์</th><th>เข้าถึงรพ.</th><th>สร้างเมื่อ</th><th></th></tr></thead>
       <tbody id="amUserList"><tr><td colspan="6" style="color:#9aa5ba">กำลังโหลด...</td></tr></tbody>
     </table>
     <button type="button" class="am-close" id="amCloseBtn">ปิด</button>
@@ -1577,7 +1644,7 @@ body::before{
       </div>
       <div class="list-table-wrap">
         <table class="call-table">
-          <thead><tr><th>NO.</th><th>ชื่อ-สกุล</th><th>โทรศัพท์</th><th>วันนัด</th><th>เรื่องที่นัด</th><th>ผลการโทร</th><th>หมายเหตุ</th><th>จัดการ</th></tr></thead>
+          <thead><tr><th>NO.</th><th>ชื่อ-สกุล</th><th class="ct-hosp">โรงพยาบาล</th><th>โทรศัพท์</th><th>วันนัด</th><th>เรื่องที่นัด</th><th>ผลการโทร</th><th>หมายเหตุ</th><th>จัดการ</th></tr></thead>
           <tbody id="callBody"></tbody>
         </table>
       </div>
@@ -2438,6 +2505,7 @@ let audHistoryIdx = -1;
 function audSnapshot(){ return JSON.parse(JSON.stringify(S.audTh)); }
 function resetAudHistory(){ audHistory=[audSnapshot()]; audHistoryIdx=0; paintAudHistoryButtons(); }
 function pushAudHistory(){
+  stampAudEnteredBy();
   audHistory = audHistory.slice(0, audHistoryIdx+1);
   audHistory.push(audSnapshot());
   if(audHistory.length>60) audHistory.shift();
@@ -3446,7 +3514,24 @@ function buildSheets(){
 function updateDerived(){
   S.age = computeAge(S.birth);
   S.name = ((S.namePrefix||'')+(S.nameFirst||'')+(S.nameLast?' '+S.nameLast:'')).trim();
+  const _prof = hcsUserProfile();
+  /* Audiologist ที่ล็อกอิน → ชื่อ + เลขใบอนุญาต ลงช่องนักแก้ไขการได้ยิน (ทุกฟอร์ม) ให้อัตโนมัติ
+     ไม่ทับชื่อนักแก้ไขการได้ยินคนอื่นที่ลงไว้แล้ว และไม่ทับถ้าผู้ใช้พิมพ์แก้เอง (_audiologistManual) */
+  if(_prof.kind==='audio' && _prof.name && !S._audiologistManual){
+    const _curAu = String(S.audiologist||'').trim();
+    if(!_curAu || _curAu===DEFAULTS.audiologist || _curAu===_prof.name){
+      S.audiologist = _prof.name;
+      S.positionNum = _prof.license || '';
+    }
+  }
+  /* Sale ที่ล็อกอิน → ชื่อลงช่อง "ชื่อพนักงานขาย" อัตโนมัติ (ยกเว้นพิมพ์แก้เอง) */
+  if(_prof.kind==='sale' && _prof.name && !S._salespersonManual) S.salesperson = _prof.name;
   S.position = S.positionNum ? ('นักโสตสัมผัสวิทยา  ผ.ส. '+S.positionNum) : '';
+  /* ★ ผู้ตรวจท้ายใบ Audiogram = คนที่ลงข้อมูล Audiogram (Audio = ชื่อ Audio + ตำแหน่ง / Sale = ชื่อ Sale) */
+  if(String(S.audBy_name||'').trim()){
+    if(!S._examinerManual) S.examiner = S.audBy_name;
+    if(!S._examinerPosManual) S.examinerPosition = S.audBy_pos || '';
+  } else {
   /* ผู้ตรวจการได้ยิน (ลงชื่อท้ายใบ Audiogram) — ถ้าไม่ได้กรอกเอง ใช้ชื่อ/ตำแหน่งนักแก้ไขการได้ยินเป็นค่าเริ่มต้น
      ยกเว้นบัญชีสิทธิ์ "Sale": ใช้ชื่อ–สกุลของคนที่ล็อกอินอยู่ และไม่ใส่ตำแหน่ง (แก้เองทับได้เสมอ) */
   const _saleName = saleExaminerName();
@@ -3463,6 +3548,7 @@ function updateDerived(){
     if(!String(S.examiner||'').trim()) S.examiner = S.audiologist||'';
     if(!String(S.examinerPosition||'').trim()) S.examinerPosition = S.position||'';
   }
+  } /* end: ยังไม่รู้ว่าใครลง Audiogram (เคสเก่า) → ใช้หลักเดิม */
   S.officer = S.audiologist||'';
   S.place = 'โรงพยาบาล'+(S.hospital||'');
   const EAR_TH = {left:'ซ้าย', right:'ขวา', both:'สองข้าง'};
@@ -3987,6 +4073,7 @@ function bindInputs(){
   if(_posManualInp) _posManualInp.addEventListener('input', ()=>{ S._examinerPosManual = true; });
   const _salesManualInp = document.querySelector('[data-bind="salesperson"]');
   if(_salesManualInp) _salesManualInp.addEventListener('input', ()=>{ S._salespersonManual = true; });
+  document.querySelectorAll('[data-bind="audiologist"],[data-bind="positionNum"]').forEach(el=>el.addEventListener('input', ()=>{ S._audiologistManual = true; }));
   const fsBtn=document.getElementById('aud-tb-fs');
   if(fsBtn){
     fsBtn.textContent = audFsOn() ? '✕ ออกจากเต็มจอ' : '⛶ เต็มจอ';
@@ -3995,9 +4082,15 @@ function bindInputs(){
   const exDefBtn=document.getElementById('btnExaminerDefault');
   if(exDefBtn) exDefBtn.addEventListener('click', ()=>{
     const sn = saleExaminerName();
+    if(String(S.audBy_name||'').trim()){
+      /* ใช้ชื่อคนที่ลงข้อมูล Audiogram */
+      S.examiner = S.audBy_name; S.examinerPosition = S.audBy_pos || '';
+      S._examinerManual = false; S._examinerPosManual = false;
+    } else {
     S.examiner = sn || (S.audiologist||'');
     S.examinerPosition = sn ? '' : (S.position||'');   // บัญชี Sale ลงแค่ชื่อ ไม่มีตำแหน่ง
     if(sn){ S._examinerManual = false; S._examinerPosManual = false; }
+    }
     const a=document.querySelector('[data-bind="examiner"]'); if(a) a.value = S.examiner;
     const b=document.querySelector('[data-bind="examinerPosition"]'); if(b) b.value = S.examinerPosition;
     onAnyChange();
@@ -4114,6 +4207,56 @@ const KEY='hearingForms_combined_photharam_v1';
       เป็นชื่อ–สกุลของคนที่ล็อกอินอยู่โดยอัตโนมัติ (ไม่ต้องมีตำแหน่ง) ── */
 const HOSP_DENY_ALL = '\u0000__ไม่มีสิทธิ์เข้าถึงรพ.ใด__'; // ค่าที่ไม่มีทางตรงกับชื่อรพ.จริง = กรองออกหมด
 function isSaleUser(){ try{ return localStorage.getItem('hcs_role')==='sale'; }catch(e){ return false; } }
+/* ══ รพ.ที่เข้าดูได้ / รพ.ที่กำลังเข้าดูอยู่ (เพิ่ม 5 ต.ค. 69) ══
+   - Admin กำหนดให้แต่ละคนเข้าถึงรพ.ได้ต่างกัน (ช่อง "โรงพยาบาลที่ให้สิทธิ์เข้าดู")
+   - หลังล็อกอิน ผู้ใช้เลือกว่าจะเข้าดูในนามรพ.ไหน → เก็บใน localStorage 'hcs_active_hospital'
+   - ★ Admin คนเดียวที่เลือก "ทุกโรงพยาบาล" ได้ (ค่า '__ALL__') ★ */
+const HCS_ALL_HOSP = '__ALL__';
+function hcsHospScope(){
+  /* คืน null = ทุกรพ. (Admin) · คืน [] = ไม่มีสิทธิ์รพ.ใดเลย */
+  try{
+    const role = localStorage.getItem('hcs_role');
+    if(role==='admin') return null;
+    let allowed = [];
+    try{ allowed = JSON.parse(localStorage.getItem('hcs_allowed_hospitals')||'[]'); }catch(e){}
+    allowed = Array.isArray(allowed) ? allowed.map(h=>String(h||'').trim()).filter(Boolean) : [];
+    if(allowed.length) return allowed;
+    if(role==='sale') return [];
+    /* บัญชีรุ่นเก่าที่ยังไม่ได้ติ๊กรพ. = รพ.ชื่อเดียวกับชื่อผู้ใช้ */
+    const uname = String(localStorage.getItem('hcs_username')||'').trim();
+    return uname ? [uname] : [];
+  }catch(e){ return []; }
+}
+function hcsActiveHosp(){ try{ return String(localStorage.getItem('hcs_active_hospital')||'').trim(); }catch(e){ return ''; } }
+window.hcsHospScope = hcsHospScope;
+/* ══ โปรไฟล์ผู้ล็อกอิน (เพิ่ม 5 ต.ค. 69) ══
+   kind 'audio' = Audiologist (หรือ Admin ที่ใส่เลขใบอนุญาต) → ชื่อ + ผ.ส. ลงช่องนักแก้ไขการได้ยินทุกฟอร์ม
+   kind 'sale'  = Sale → ชื่อลงช่องพนักงานขาย */
+function hcsUserProfile(){
+  try{
+    const role = localStorage.getItem('hcs_role');
+    const name = String(localStorage.getItem('hcs_display_name')||'').trim() || String(localStorage.getItem('hcs_username')||'').trim();
+    const lic = String(localStorage.getItem('hcs_license_no')||'').trim();
+    if(role==='sale') return {kind:'sale', name, license:''};
+    if(role==='audiologist' || (role==='admin' && lic)) return {kind:'audio', name, license:lic};
+    return {kind:'', name, license:lic};
+  }catch(e){ return {kind:'', name:'', license:''}; }
+}
+function hcsProfilePos(p){ return (p && p.kind==='audio' && p.license) ? ('นักโสตสัมผัสวิทยา  ผ.ส. '+p.license) : ''; }
+/* จำว่า "ใครเป็นคนลงข้อมูล Audiogram" ของเคสนี้ (ครั้งแรกที่แก้กราฟ) → ใช้ลงชื่อผู้ตรวจท้ายใบ Audiogram
+   Audio ลง = ชื่อ + ตำแหน่ง ผ.ส. · Sale ลง = ชื่อ Sale (ไม่มีตำแหน่ง) */
+function stampAudEnteredBy(){
+  try{
+    if(String(S.audBy_name||'').trim()) return;
+    const p = hcsUserProfile();
+    if(!p.kind || !p.name) return;
+    S.audBy_name = p.name; S.audBy_pos = hcsProfilePos(p); S.audBy_kind = p.kind;
+    /* เพิ่งรู้ว่าใครลง → อัปเดตชื่อผู้ตรวจในฟอร์มทันที */
+    updateDerived(); render(); syncComputedFields(); autosave();
+    const a = document.querySelector('[data-bind="examiner"]'); if(a && document.activeElement!==a) a.value = S.examiner||'';
+    const b = document.querySelector('[data-bind="examinerPosition"]'); if(b && document.activeElement!==b) b.value = S.examinerPosition||'';
+  }catch(e){}
+}
 function saleExaminerName(){
   if(!isSaleUser()) return '';
   try{
@@ -4124,6 +4267,9 @@ function saleExaminerName(){
 function applyUserHospital(){
   try{
     if(S.hospital) return; // มีชื่อรพ.อยู่แล้ว ไม่ทับ — แก้ไขเองได้เสมอ
+    /* ★ รพ.ที่เลือกเข้าดูตอนล็อกอิน = ชื่อรพ.ของผู้ป่วยใหม่ (ยกเว้น Admin ที่เลือก "ทุกโรงพยาบาล") */
+    const _act = hcsActiveHosp();
+    if(_act && _act!==HCS_ALL_HOSP){ S.hospital = _act; return; }
     /* 0) สิทธิ์ "โรงพยาบาล": ใช้ชื่อ User เป็นชื่อรพ.เสมอ */
     if(localStorage.getItem('hcs_role')==='hospital'){
       let hosp = '';
@@ -4764,18 +4910,17 @@ function pta4ForRec(rec, ear){
    ใช้เกณฑ์เดียวกับการแปลผล Audiogram (interpretEar) แต่รับ record เข้ามาตรงๆ
    เพื่อคำนวณย้อนหลังจากข้อมูลที่บันทึกไว้ ตอนส่งออก Excel
 
-   หลักการลงรหัส
-   - สองหูชนิดเดียวกัน           → รหัส bilateral    (SNHL H903 | CHL H900 | Mixed H906)
-   - ข้างเดียว อีกข้างได้ยินปกติ   → รหัส unilateral   (SNHL H904 | CHL H901 | Mixed H907)
-   - สองหูคนละชนิด               → ลง 2 รหัส unspecified (SNHL H905 | CHL H902 | Mixed H908)
-     (รหัส unilateral ใช้ไม่ได้ เพราะแปลว่า "อีกข้างได้ยินปกติ" เท่านั้น)
-   - ข้างเดียว อีกข้างไม่ได้ตรวจ   → รหัส unspecified ของข้างที่ตรวจ
+   หลักการลงรหัส (ตามที่ใช้เบิกจริง — 1 ชนิด = 1 รหัส ไม่แยก bilateral/unilateral)
+     SNHL → H903 · Mixed (MHL) → H906 · CHL → H902
+   ★ ลงรหัสเฉพาะ "ข้างที่ใส่เครื่องช่วยฟัง" (S.ear) โดยอ่านชนิดจากการแปลผล (ช่อง diag1) ก่อน
+     ถ้าการแปลผลไม่ได้ระบุชนิด ค่อยคำนวณจากตาราง Audiogram (audTh)
+     - ใส่ขวา/ซ้ายข้างเดียว → รหัสตามชนิดของข้างนั้น (ข้างที่ไม่ได้ใส่ไม่นำมาคิด)
+     - ใส่สองข้าง หรือยังไม่ได้เลือกข้าง → ดูทั้งสองหู ชนิดเดียวกันลง 1 รหัส คนละชนิดลง 2 รหัส (ขวาก่อน)
+     - ข้างที่ใส่ปกติ/ระบุชนิดไม่ได้ → ไม่ลงรหัส (ช่องว่าง ให้ตรวจเคสนั้นเอง)
    - ถ้ามีรหัสวินิจฉัย เติม Z461 (Fitting and adjustment of hearing aid)
      และ ICD-9 หัตถการ 9548, 9549
    ══════════════════════════════════════════════════════════════════ */
-const ICD10_BIL = {SNHL:'H903', CHL:'H900', MIX:'H906'};
-const ICD10_UNI = {SNHL:'H904', CHL:'H901', MIX:'H907'};
-const ICD10_UNS = {SNHL:'H905', CHL:'H902', MIX:'H908'};
+const ICD10_BY_TYPE = {SNHL:'H903', MIX:'H906', CHL:'H902'};
 const ICD10_FIT = 'Z461';
 const ICD9_CODES = ['9548', '9549'];
 
@@ -4821,24 +4966,39 @@ function hlTypeFromDiagText(txt, ear){
   const head = ear==='R' ? /^Rt\./i : /^Lt\./i;
   const line = lines.find(l=>head.test(l)) || lines.find(l=>/^Bilateral/i.test(l));
   if(!line) return null;
-  if(/mixed/i.test(line))         return 'MIX';   /* ตรวจ Mixed ก่อน เพราะข้อความเต็มมีคำว่า sensorineural อยู่ด้วย */
-  if(/sensorineural/i.test(line)) return 'SNHL';
-  if(/conductive/i.test(line))    return 'CHL';
+  if(/mixed|\bMHL\b/i.test(line))          return 'MIX';   /* ตรวจ Mixed ก่อน เพราะข้อความเต็มมีคำว่า sensorineural อยู่ด้วย */
+  if(/sensorineural|\bSNHL\b/i.test(line)) return 'SNHL';
+  if(/conductive|\bCHL\b/i.test(line))     return 'CHL';
   if(/normal/i.test(line))        return 'NORMAL';
   return '';
 }
 
 /* รหัส ICD-10 วินิจฉัยของผู้ป่วย 1 ราย (ยังไม่รวม Z461) — คืนเป็นอาร์เรย์ 0-2 รหัส */
+/* ข้างที่ใส่เครื่องของ record → 'R' | 'L' | 'both' | '' (รับได้ทั้ง left/right/both และคำไทย) */
+function fitEarForRec(rec){
+  const v = String((rec && (rec.ear || rec.ear_label)) || '').trim().toLowerCase();
+  if(v==='right' || v==='ขวา' || v==='r') return 'R';
+  if(v==='left'  || v==='ซ้าย' || v==='l') return 'L';
+  if(v==='both'  || v==='สองข้าง') return 'both';
+  return '';
+}
+/* ชนิดการสูญเสียของหูข้างหนึ่ง — ยึดการแปลผล (diag1) ก่อน, ไม่ระบุชนิดค่อยคำนวณจาก audTh */
+function hlTypeForIcd(rec, ear){
+  const t = hlTypeFromDiagText(rec.diag1, ear);
+  if(t) return t;
+  const a = hlTypeForRec(rec, ear);
+  return a || t || null;
+}
 function icd10DxForRec(rec){
   if(!rec) return [];
-  let R = hlTypeForRec(rec,'R'), L = hlTypeForRec(rec,'L');
-  if(R===null || R==='') R = hlTypeFromDiagText(rec.diag1,'R') || R;
-  if(L===null || L==='') L = hlTypeFromDiagText(rec.diag1,'L') || L;
-  const isHL = t => t==='SNHL' || t==='CHL' || t==='MIX';
-  if(isHL(R) && isHL(L)) return R===L ? [ICD10_BIL[R]] : [ICD10_UNS[R], ICD10_UNS[L]];
-  if(isHL(R)) return [ L==='NORMAL' ? ICD10_UNI[R] : ICD10_UNS[R] ];
-  if(isHL(L)) return [ R==='NORMAL' ? ICD10_UNI[L] : ICD10_UNS[L] ];
-  return [];
+  const fit = fitEarForRec(rec);
+  const ears = fit==='R' ? ['R'] : fit==='L' ? ['L'] : ['R','L'];
+  const out = [];
+  ears.forEach(ear=>{
+    const code = ICD10_BY_TYPE[hlTypeForIcd(rec, ear)];
+    if(code && out.indexOf(code)<0) out.push(code);
+  });
+  return out;
 }
 
 /* ── init ──────────────────────────────────────────────────────── */
@@ -6375,6 +6535,9 @@ function init(){
 
   /* ผู้ใช้กำลังพิมพ์/เลือกอยู่ในตารางโทรติดตามหรือเปล่า — ถ้าใช่ การรีเฟรชอัตโนมัติจะไม่วาดทับ
      (ไม่งั้นช่องที่กำลังกรอกจะโดนล้าง และโฟกัสหลุดกลางคัน) */
+  function isCallAdmin(){
+    try{ return String(localStorage.getItem('hcs_role')||'').trim().toLowerCase()==='admin'; }catch(e){ return false; }
+  }
   function callTableBusy(){
     const body = document.getElementById('callBody'), a = document.activeElement;
     return !!(body && a && body.contains(a));
@@ -6395,11 +6558,14 @@ function init(){
       `<div class="cs-card${c.k==='__noappt__'?' cs-noappt':''}${(c.n===0 && c.k!=='__noappt__')?' cs-zero':''}${_callStFilter===c.k?' on':''}" data-st="${c.k}"><div class="n">${c.n}</div><div class="t">${c.th}</div></div>`).join('');
 
     const list = getCallList();
+    /* ผู้ดูแลระบบเห็นคนไข้ทุกรพ.ปนกัน → โชว์คอลัมน์ชื่อรพ.ให้รู้ว่าโทรหาคนไข้รพ.ไหน */
+    const showHosp = isCallAdmin();
+    const tbl = document.querySelector('.call-table'); if(tbl) tbl.classList.toggle('show-hosp', showHosp);
     const ttl = document.getElementById('callListTitle');
     if(ttl) ttl.textContent = (_callStFilter==='__noappt__') ? 'รายชื่อที่ยังไม่มีนัด — โทรนัดแล้วลงนัดได้เลย' : 'รายชื่อที่มีนัดหมาย';
     document.getElementById('callCountBadge').textContent = list.length + ' รายการ';
     const body = document.getElementById('callBody');
-    if(!list.length){ body.innerHTML = '<tr><td colspan="8" class="list-empty">ไม่มีรายชื่อที่ตรงกับตัวกรอง — ลงนัดหมายได้จากหน้ารายการผู้ป่วย</td></tr>'; return; }
+    if(!list.length){ body.innerHTML = '<tr><td colspan="9" class="list-empty">ไม่มีรายชื่อที่ตรงกับตัวกรอง — ลงนัดหมายได้จากหน้ารายการผู้ป่วย</td></tr>'; return; }
     body.innerHTML = list.map((r,i)=>{
       const a = apptOf(r);
       const when = a.at ? new Date(a.at).toLocaleString('th-TH',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
@@ -6419,6 +6585,7 @@ function init(){
       return `<tr>
         <td>${i+1}</td>
         <td class="ct-name" title="HN ${esc(r.hn)||'-'}">${esc(r.name)||'-'}</td>
+        <td class="ct-hosp" title="${esc(r.hospital).replace(/"/g,'&quot;')}">${esc(r.hospital)||'-'}</td>
         <td class="ct-phone">${a.phone ? `<a href="tel:${esc(a.phone).replace(/[^0-9+]/g,'')}">${esc(a.phone)}</a>` : '<span style="color:#C4BFD8">ไม่มีเบอร์</span>'}</td>
         ${apptCell}
         <td>
@@ -6447,10 +6614,11 @@ function init(){
   function exportCallCsv(){
     const list = getCallList();
     if(!list.length){ alert('ไม่มีรายการให้ส่งออก'); return; }
-    const rows = [['ลำดับ','HN','ชื่อ-สกุล','โทรศัพท์','วันนัด','เรื่องที่นัด','ผลการโทร','หมายเหตุ','เวลาที่บันทึก','ผู้บันทึก']];
+    const showHosp = isCallAdmin();
+    const rows = [['ลำดับ','HN','ชื่อ-สกุล'].concat(showHosp?['โรงพยาบาล']:[],['โทรศัพท์','วันนัด','เรื่องที่นัด','ผลการโทร','หมายเหตุ','เวลาที่บันทึก','ผู้บันทึก'])];
     list.forEach((r,i)=>{ const a=apptOf(r);
-      rows.push([i+1, r.hn||'', r.name||'', a.phone||'', a.date||'', a.type||'',
-                 (a.status&&CALL_ST_TH[a.status])||'ยังไม่ได้โทร', a.cnote||'', a.at||'', a.by||'']); });
+      rows.push([i+1, r.hn||'', r.name||''].concat(showHosp?[r.hospital||'']:[],[a.phone||'', a.date||'', a.type||'',
+                 (a.status&&CALL_ST_TH[a.status])||'ยังไม่ได้โทร', a.cnote||'', a.at||'', a.by||''])); });
     const csv = '﻿' + rows.map(r=>r.map(c=>`"${String(c==null?'':c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
     const url = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
     const a = document.createElement('a');
@@ -6501,24 +6669,17 @@ function init(){
         2) user ที่ผู้ดูแลตั้ง "เข้าถึงรพ." ไว้ → เห็นตามที่ตั้ง
         3) user ชื่อรพ. (ไม่ได้ตั้งค่าอะไร) → ล็อกให้เห็นเฉพาะรพ.ชื่อเดียวกับ user นั้นอัตโนมัติ ── */
   function effectiveAllowedHospitals(){
+    /* คืน [] = ไม่กรอง (ทุกรพ.) — ได้เฉพาะ Admin ที่เลือก "ทุกโรงพยาบาล" เท่านั้น
+       คนอื่น: กรองเหลือรพ.ที่เลือกเข้าดูอยู่ (ต้องอยู่ในรพ.ที่ Admin ให้สิทธิ์) */
     try{
       const role = localStorage.getItem('hcs_role');
-      if(role==='admin') return [];
-      const uname = String(localStorage.getItem('hcs_username')||'').trim();
-      let allowed = [];
-      try{ allowed = JSON.parse(localStorage.getItem('hcs_allowed_hospitals')||'[]'); }catch(e){}
-      /* สิทธิ์ "โรงพยาบาล": เห็นเฉพาะคนไข้ของรพ.ที่ Admin ระบุไว้ (ไม่ได้ระบุ = ใช้ชื่อผู้ใช้เป็นชื่อรพ.แบบเดิม) */
-      if(role==='hospital'){
-        if(Array.isArray(allowed) && allowed.length && allowed[0]) return allowed.map(h=>String(h).trim()).filter(Boolean);
-        return uname ? [uname] : [];
-      }
-      if(Array.isArray(allowed) && allowed.length) return allowed.map(h=>String(h).trim()).filter(Boolean);
-      /* สิทธิ์ "Sale": Admin ยังไม่ได้ติ๊กรพ.ให้ → ไม่เห็นคนไข้เลย (ปลอดภัยไว้ก่อน) */
-      if(role==='sale') return [HOSP_DENY_ALL];
-      const central = ['admin','titiwutnav'];
-      if(uname && !central.includes(uname.toLowerCase())) return [uname];
-      return [];
-    }catch(e){ return []; }
+      const act = hcsActiveHosp();
+      if(role==='admin') return (act && act!==HCS_ALL_HOSP) ? [act] : [];
+      const scope = hcsHospScope() || [];
+      if(!scope.length) return [HOSP_DENY_ALL];
+      if(act && scope.includes(act)) return [act];
+      return scope;
+    }catch(e){ return [HOSP_DENY_ALL]; }
   }
   function renderList(){
     let list = getFilteredRecords();
@@ -7920,10 +8081,20 @@ document.addEventListener('DOMContentLoaded', init);
       localStorage.setItem('hcs_username', data.username);
       localStorage.setItem('hcs_allowed_hospitals', JSON.stringify(data.allowedHospitals||[]));
       localStorage.setItem('hcs_display_name', String(data.displayName||'').trim());
+      localStorage.setItem('hcs_license_no', String(data.licenseNo||'').trim());
+      /* รพ.ที่เลือกเข้าดูได้ + รหัสยังเป็น 1234 หรือไม่ (ให้หน้าเว็บขึ้นแนะนำตั้งรหัสใหม่) */
+      var opts = Array.isArray(data.hospitals) ? data.hospitals : [];
+      localStorage.setItem('hcs_hosp_options', JSON.stringify(opts));
+      localStorage.removeItem('hcs_active_hospital');   // ล็อกอินใหม่ = เลือกรพ.ใหม่ทุกครั้ง
+      if(data.mustChange) localStorage.setItem('hcs_must_change','1'); else localStorage.removeItem('hcs_must_change');
+      try{ sessionStorage.removeItem('hcs_pw_skip'); }catch(e){}
+      /* ผู้ใช้ที่มีสิทธิ์รพ.เดียว → เลือกให้เลย ไม่ต้องถาม */
+      if(data.role !== 'admin' && opts.length === 1) localStorage.setItem('hcs_active_hospital', String(opts[0]));
     }catch(e){}
     location.reload();
   }
 
+  function roleLabel(r){ return r === 'admin' ? 'ผู้ดูแลระบบ' : r === 'audiologist' ? 'Audiologist' : r === 'sale' ? 'Sale' : r === 'hospital' ? 'โรงพยาบาล (เดิม)' : 'ผู้ใช้งาน (เดิม)'; }
   function escH(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 
   async function tryLogin(){
@@ -7965,11 +8136,11 @@ document.addEventListener('DOMContentLoaded', init);
     var dname = (localStorage.getItem('hcs_display_name') || '').trim();
     var bar = document.getElementById('userBar');
     document.getElementById('ubName').textContent = '👤 ' + (dname || uname);
-    document.getElementById('ubRole').textContent = role === 'admin' ? 'ผู้ดูแลระบบ' : (role === 'hospital' ? 'โรงพยาบาล' : (role === 'sale' ? 'Sale' : 'ผู้ใช้งาน'));
+    document.getElementById('ubRole').textContent = roleLabel(role);
     if(role === 'admin') document.getElementById('ubAdminBtn').style.display = 'inline-block';
     bar.style.display = 'flex';
   }
-  document.getElementById('ubLogoutBtn').addEventListener('click', function(){
+  function doLogout(){
     var t = localStorage.getItem('hcs_token');
     if(t) postAction('logout', {token:t});
     try{
@@ -7978,49 +8149,247 @@ document.addEventListener('DOMContentLoaded', init);
       localStorage.removeItem('hcs_username');
       localStorage.removeItem('hcs_allowed_hospitals');
       localStorage.removeItem('hcs_display_name');
+      localStorage.removeItem('hcs_license_no');
+      localStorage.removeItem('hcs_hosp_options');
+      localStorage.removeItem('hcs_active_hospital');
+      localStorage.removeItem('hcs_must_change');
     }catch(e){}
     location.reload();
+  }
+  document.getElementById('ubLogoutBtn').addEventListener('click', doLogout);
+
+  /* ══════════════ บัญชีผู้ใช้: แนะนำตั้งรหัสใหม่ + เลือกรพ.ที่จะเข้าดู (เพิ่ม 5 ต.ค. 69) ══════════════ */
+  var ALL_HOSP = '__ALL__';
+  function myRole(){ return localStorage.getItem('hcs_role') || 'user'; }
+  function activeHosp(){ return String(localStorage.getItem('hcs_active_hospital')||'').trim(); }
+  function hospLabel(h){ return h === ALL_HOSP ? 'ทุกโรงพยาบาล' : h; }
+  function setUbHosp(){
+    var el = document.getElementById('ubHospName'); if(!el) return;
+    var a = activeHosp();
+    el.textContent = a ? hospLabel(a) : 'เลือกรพ.';
+    var btn = document.getElementById('ubHospBtn'); if(btn) btn.title = (a ? 'กำลังดูข้อมูล: '+hospLabel(a)+' — ' : '') + 'กดเพื่อเปลี่ยนโรงพยาบาล';
+  }
+  function cleanList(a){ return (Array.isArray(a) ? a : []).map(function(x){ return String(x||'').trim(); }).filter(Boolean); }
+  function storedHospOptions(){
+    try{ var a = JSON.parse(localStorage.getItem('hcs_hosp_options')||'null'); if(Array.isArray(a)) return cleanList(a); }catch(e){}
+    return null;
+  }
+  async function hospOptions(){
+    try{
+      var res = await postAction('listHospitals', {token: localStorage.getItem('hcs_token')});
+      if(res && res.status === 'ok' && Array.isArray(res.hospitals)){
+        var list = cleanList(res.hospitals);
+        if(myRole() === 'admin'){ localStorage.setItem('hcs_hosp_options', JSON.stringify(list)); return list; }
+        /* ผู้ใช้ทั่วไป: เชื่อเฉพาะคำตอบจากเซิร์ฟเวอร์รุ่นใหม่ที่กรองตามสิทธิ์แล้ว (scoped) */
+        if(res.scoped){
+          localStorage.setItem('hcs_hosp_options', JSON.stringify(list));
+          localStorage.setItem('hcs_allowed_hospitals', JSON.stringify(list));
+          return list;
+        }
+      }
+    }catch(e){}
+    if(myRole() === 'admin') return storedHospOptions() || [];
+    var s = storedHospOptions();
+    if(s && s.length) return s;
+    return (window.hcsHospScope && window.hcsHospScope()) || [];
+  }
+  function acctShow(which){
+    document.getElementById('haPw').style.display = which === 'pw' ? '' : 'none';
+    document.getElementById('haHosp').style.display = which === 'hosp' ? '' : 'none';
+    document.getElementById('hcsAcct').classList.toggle('open', !!which);
+  }
+
+  /* ── เลือกรพ. ── */
+  var _hospRequired = false, _hospItems = [];
+  function renderHospItems(){
+    var q = (document.getElementById('haHospSearch').value||'').trim().toLowerCase();
+    var cur = activeHosp();
+    var items = _hospItems.filter(function(h){ return !q || h === ALL_HOSP || h.toLowerCase().indexOf(q) !== -1; });
+    document.getElementById('haHospList').innerHTML = items.length ? items.map(function(h){
+      var on = (h === cur);
+      return '<button type="button" class="ha-hosp'+(h===ALL_HOSP?' all':'')+(on?' on':'')+'" data-h="'+escH(h)+'">'+(h===ALL_HOSP?'🌐 ':'🏥 ')+escH(hospLabel(h))+(on?'<span class="ha-tick">✓ กำลังดูอยู่</span>':'')+'</button>';
+    }).join('') : '<div class="ha-loading">ไม่พบรพ.ที่ค้นหา</div>';
+  }
+  async function openHospPicker(required){
+    _hospRequired = !!required;
+    acctShow('hosp');
+    var listEl = document.getElementById('haHospList'), errEl = document.getElementById('haHospErr');
+    var search = document.getElementById('haHospSearch');
+    errEl.textContent = ''; search.value = ''; search.style.display = 'none';
+    document.getElementById('haHospCancel').style.display = required ? 'none' : '';
+    document.getElementById('haHospLogout').style.display = required ? '' : 'none';
+    document.getElementById('haHospSub').textContent = 'ต้องการเข้าดูข้อมูลในนามโรงพยาบาลไหน';
+    listEl.innerHTML = '<div class="ha-loading">⏳ กำลังโหลดรายชื่อรพ....</div>';
+    var opts = await hospOptions();
+    var isAdmin = myRole() === 'admin';
+    if(!isAdmin && !opts.length){
+      listEl.innerHTML = '';
+      errEl.textContent = 'บัญชีนี้ยังไม่ได้รับสิทธิ์เข้าถึงโรงพยาบาลใด — กรุณาติดต่อผู้ดูแลระบบ';
+      document.getElementById('haHospLogout').style.display = '';
+      return;
+    }
+    if(required && !isAdmin && opts.length === 1){ chooseHosp(opts[0]); return; }
+    if(isAdmin) document.getElementById('haHospSub').textContent = 'ผู้ดูแลระบบเลือกดู "ทุกโรงพยาบาล" หรือเข้าในนามรพ.ใดรพ.หนึ่งก็ได้';
+    _hospItems = (isAdmin ? [ALL_HOSP] : []).concat(opts);
+    if(_hospItems.length > 8) search.style.display = '';
+    renderHospItems();
+  }
+  function chooseHosp(h){
+    var prev = activeHosp();
+    try{ localStorage.setItem('hcs_active_hospital', h); }catch(e){}
+    setUbHosp();
+    acctShow(null);
+    /* เปลี่ยนรพ. → โหลดหน้าใหม่ ให้รายชื่อ/คิว/โทรติดตาม กรองตามรพ.ใหม่ทั้งหมด */
+    if(prev !== h) location.reload();
+  }
+  document.getElementById('haHospList').addEventListener('click', function(e){
+    var b = e.target.closest('button.ha-hosp'); if(!b) return;
+    chooseHosp(b.getAttribute('data-h'));
   });
+  document.getElementById('haHospSearch').addEventListener('input', renderHospItems);
+  document.getElementById('haHospCancel').addEventListener('click', function(){ if(!_hospRequired) acctShow(null); });
+  document.getElementById('haHospLogout').addEventListener('click', doLogout);
+  document.getElementById('ubHospBtn').addEventListener('click', function(){ openHospPicker(false); });
+
+  /* ── ตั้ง/เปลี่ยนรหัสผ่าน ── */
+  var _pwSuggest = false;
+  function openPwModal(suggest){
+    _pwSuggest = !!suggest;
+    acctShow('pw');
+    ['haPwOld','haPwNew','haPwNew2'].forEach(function(id){ document.getElementById(id).value = ''; });
+    document.getElementById('haPwOld').style.display = suggest ? 'none' : '';
+    var errEl = document.getElementById('haPwErr'); errEl.textContent = ''; errEl.className = 'ha-err';
+    document.getElementById('haPwSub').innerHTML = suggest
+      ? 'บัญชีนี้ยังใช้รหัสผ่านเริ่มต้น <b>1234</b> อยู่<br>แนะนำให้ตั้งรหัสใหม่ที่จำได้ เพื่อไม่ให้คนอื่นเข้าบัญชีของคุณได้'
+      : 'เปลี่ยนรหัสผ่านของบัญชี "' + escH(localStorage.getItem('hcs_username')||'') + '"';
+    document.getElementById('haPwSkip').textContent = suggest ? 'ข้ามไปก่อน (จะถามอีกครั้งตอนล็อกอินครั้งหน้า)' : 'ยกเลิก';
+    document.getElementById('haPwSave').disabled = false;
+    setTimeout(function(){ try{ document.getElementById(suggest ? 'haPwNew' : 'haPwOld').focus(); }catch(e){} }, 50);
+  }
+  function afterPwStep(){ acctShow(null); if(_pwSuggest) ensureHospital(); }
+  async function savePw(){
+    var errEl = document.getElementById('haPwErr'); errEl.className = 'ha-err';
+    var oldPw = _pwSuggest ? '1234' : document.getElementById('haPwOld').value;
+    var n1 = document.getElementById('haPwNew').value, n2 = document.getElementById('haPwNew2').value;
+    if(!_pwSuggest && !oldPw){ errEl.textContent = 'กรอกรหัสผ่านปัจจุบัน'; return; }
+    if(n1.length < 4){ errEl.textContent = 'รหัสใหม่ต้องมีอย่างน้อย 4 ตัว'; return; }
+    if(n1 === '1234'){ errEl.textContent = 'ห้ามใช้ 1234 เป็นรหัสใหม่'; return; }
+    if(n1 !== n2){ errEl.textContent = 'รหัสใหม่ 2 ช่องไม่ตรงกัน'; return; }
+    var btn = document.getElementById('haPwSave'); btn.disabled = true; errEl.textContent = 'กำลังบันทึก...';
+    var res = await postAction('changePassword', {token: localStorage.getItem('hcs_token'), oldPassword: oldPw, newPassword: n1});
+    btn.disabled = false;
+    if(res && res.status === 'ok'){
+      try{ localStorage.removeItem('hcs_must_change'); }catch(e){}
+      errEl.className = 'ha-err ha-ok'; errEl.textContent = 'ตั้งรหัสใหม่แล้ว ✓';
+      setTimeout(afterPwStep, 700);
+    } else {
+      errEl.textContent = (res && res.message) || 'บันทึกไม่สำเร็จ';
+    }
+  }
+  document.getElementById('haPwSave').addEventListener('click', savePw);
+  ['haPwOld','haPwNew','haPwNew2'].forEach(function(id){
+    document.getElementById(id).addEventListener('keydown', function(e){ if(e.key === 'Enter') savePw(); });
+  });
+  document.getElementById('haPwSkip').addEventListener('click', function(){
+    if(_pwSuggest){ try{ sessionStorage.setItem('hcs_pw_skip','1'); }catch(e){} }
+    afterPwStep();
+  });
+  document.getElementById('ubPwBtn').addEventListener('click', function(){ openPwModal(false); });
+
+  /* ── เปิดเว็บ/ล็อกอินเสร็จ: (1) รหัสยังเป็น 1234 → แนะนำตั้งใหม่ (2) ยังไม่ได้เลือกรพ. → ให้เลือก ── */
+  function ensureHospital(){
+    var a = activeHosp();
+    if(myRole() !== 'admin'){
+      var sc = (window.hcsHospScope && window.hcsHospScope()) || [];
+      if(a && a !== ALL_HOSP && sc.indexOf(a) !== -1) return;
+      if(sc.length === 1){ localStorage.setItem('hcs_active_hospital', sc[0]); setUbHosp(); if(a && a !== sc[0]) location.reload(); return; }
+      if(a){ try{ localStorage.removeItem('hcs_active_hospital'); }catch(e){} setUbHosp(); }
+      openHospPicker(true);
+      return;
+    }
+    if(!a) openHospPicker(true);
+  }
+  if(localStorage.getItem('hcs_token')){
+    setUbHosp();
+    var _skipPw = false; try{ _skipPw = sessionStorage.getItem('hcs_pw_skip') === '1'; }catch(e){}
+    if(localStorage.getItem('hcs_must_change') === '1' && !_skipPw) openPwModal(true);
+    else ensureHospital();
+  }
 
   /* ── แผง Admin จัดการผู้ใช้ ── */
   function fmtDate(iso){ try{ return new Date(iso).toLocaleDateString('th-TH'); }catch(e){ return iso||'-'; } }
-  async function loadHospitalOptions(){
+  var _amHospMaster = [];
+  function renderHospCheckboxes(list, keepChecked){
     var wrap = document.getElementById('amHospList');
-    wrap.textContent = 'กำลังโหลดรายชื่อรพ....';
-    /* รายชื่อรพ. รวมจาก 2 แหล่ง: (1) รายชื่อผู้ป่วยที่บันทึกไว้ในเครื่องนี้ (localStorage) ซึ่งเป็นแหล่งข้อมูลจริงที่ใช้งานอยู่ตอนนี้
-       (2) ชีต Google Sheet ฝั่งเซิร์ฟเวอร์ (ถ้ามี/เชื่อมต่อได้) — กันไม่ให้รายชื่อหายไปถ้าฝั่งใดฝั่งหนึ่งว่างหรือดึงไม่ได้ */
-    var set = {};
-    try{
-      (window.hcsGetRecords ? window.hcsGetRecords() : []).forEach(function(r){
-        var h = (r.hospital||'').trim();
-        if(h) set[h] = true;
-      });
-    }catch(e){}
-    try{
-      var t = localStorage.getItem('hcs_token');
-      var res = await postAction('listHospitals', {token:t});
-      if(res && res.status === 'ok' && res.hospitals){
-        res.hospitals.forEach(function(h){ h = String(h||'').trim(); if(h) set[h] = true; });
-      }
-    }catch(e){}
-    var list = Object.keys(set).sort(function(a,b){ return a.localeCompare(b,'th'); });
+    var checked = {};
+    (keepChecked || []).forEach(function(h){ checked[h] = true; });
     if(!list.length){
-      wrap.innerHTML = '<span style="color:#9aa5ba">ยังไม่มีข้อมูลรพ.ในระบบ (จะมีตัวเลือกให้หลังบันทึกข้อมูลผู้ป่วยของรพ.นั้นครั้งแรก)</span>';
+      wrap.innerHTML = '<span style="color:#9aa5ba">ยังไม่มีรายชื่อรพ. — เพิ่มชื่อรพ.ในกล่องสีเขียวด้านบนก่อน</span>';
       return;
     }
     wrap.innerHTML = list.map(function(h){
       var v = escH(h);
-      return '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap"><input type="checkbox" class="am-hosp-cb" value="'+v+'"> '+v+'</label>';
+      return '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap"><input type="checkbox" class="am-hosp-cb" value="'+v+'"'+(checked[h]?' checked':'')+'> '+v+'</label>';
     }).join('');
-    var dl = document.getElementById('amHospDl');
-    if(dl) dl.innerHTML = list.map(function(h){ return '<option value="'+escH(h)+'"></option>'; }).join('');
   }
-  /* สิทธิ์ "โรงพยาบาล" ใช้ช่องพิมพ์ชื่อรพ.ช่องเดียว (ชื่อรพ. ≠ ชื่อผู้ใช้ได้) — สิทธิ์อื่นใช้ช่องติ๊กรายชื่อรพ.เหมือนเดิม */
+  function amCheckedHosps(){ return Array.from(document.querySelectorAll('.am-hosp-cb:checked')).map(function(cb){ return cb.value; }); }
+  function renderHospMaster(list){
+    _amHospMaster = list.slice();
+    var el = document.getElementById('amHospMaster');
+    el.innerHTML = list.length ? list.map(function(h){
+      return '<span class="am-hm-chip">'+escH(h)+' <button type="button" class="am-hm-del" data-h="'+escH(h)+'" title="ลบออกจากรายชื่อ">✕</button></span>';
+    }).join('') : '<span style="color:#9aa5ba">ยังไม่มีรายชื่อรพ.</span>';
+    var keep = amCheckedHosps();
+    var extra = keep.filter(function(h){ return list.indexOf(h) === -1; });
+    renderHospCheckboxes(list.concat(extra), keep);
+  }
+  async function loadHospitalOptions(){
+    document.getElementById('amHospList').textContent = 'กำลังโหลดรายชื่อรพ....';
+    document.getElementById('amHospMaster').textContent = 'กำลังโหลด...';
+    var list = [];
+    try{
+      var res = await postAction('listHospitals', {token: localStorage.getItem('hcs_token')});
+      if(res && res.status === 'ok') list = cleanList(res.hospitals);
+    }catch(e){}
+    try{ localStorage.setItem('hcs_hosp_options', JSON.stringify(list)); }catch(e){}
+    renderHospMaster(list);
+  }
+  async function addHospital(){
+    var inp = document.getElementById('amNewHosp'), msgEl = document.getElementById('amMsg');
+    var name = (inp.value||'').trim();
+    if(!name){ inp.focus(); return; }
+    msgEl.style.color = '#8a93a8'; msgEl.textContent = 'กำลังเพิ่มรพ....';
+    var res = await postAction('addHospital', {token: localStorage.getItem('hcs_token'), hospital: name});
+    if(res && res.status === 'ok'){
+      inp.value = '';
+      msgEl.style.color = '#1a8a4c'; msgEl.textContent = 'เพิ่ม "'+name+'" แล้ว ✓';
+      var list = cleanList(res.hospitals);
+      try{ localStorage.setItem('hcs_hosp_options', JSON.stringify(list)); }catch(e){}
+      renderHospMaster(list);
+    } else { msgEl.style.color = '#c8283e'; msgEl.textContent = (res && res.message) || 'เพิ่มรพ.ไม่สำเร็จ'; }
+  }
+  document.getElementById('amAddHospBtn').addEventListener('click', addHospital);
+  document.getElementById('amNewHosp').addEventListener('keydown', function(e){ if(e.key === 'Enter') addHospital(); });
+  document.getElementById('amHospMaster').addEventListener('click', async function(e){
+    var b = e.target.closest('button.am-hm-del'); if(!b) return;
+    var h = b.getAttribute('data-h');
+    if(!confirm('ลบ "'+h+'" ออกจากรายชื่อรพ.?\n\nข้อมูลผู้ป่วยของรพ.นี้ยังอยู่ครบ — แค่จะไม่ขึ้นเป็นตัวเลือกให้ติ๊กสิทธิ์อีก')) return;
+    var msgEl = document.getElementById('amMsg');
+    var res = await postAction('deleteHospital', {token: localStorage.getItem('hcs_token'), hospital: h});
+    if(res && res.status === 'ok'){
+      var list = cleanList(res.hospitals);
+      try{ localStorage.setItem('hcs_hosp_options', JSON.stringify(list)); }catch(e){}
+      renderHospMaster(list);
+      msgEl.style.color = '#1a8a4c'; msgEl.textContent = 'ลบ "'+h+'" ออกจากรายชื่อแล้ว';
+    } else { msgEl.style.color = '#c8283e'; msgEl.textContent = (res && res.message) || 'ลบไม่สำเร็จ'; }
+  });
+  /* Admin ดูได้ทุกรพ. → ไม่ต้องติ๊กรพ. · Audiologist (และ Admin) มีช่องเลขที่ใบอนุญาต */
   function amSyncRoleFields(){
-    var isHosp = document.getElementById('amRole').value === 'hospital';
-    var a = document.getElementById('amHospNameWrap'), b = document.getElementById('amHospListWrap');
-    if(a) a.style.display = isHosp ? '' : 'none';
-    if(b) b.style.display = isHosp ? 'none' : '';
+    var role = document.getElementById('amRole').value, isAdmin = role === 'admin';
+    var b = document.getElementById('amHospListWrap'), n = document.getElementById('amAdminAllNote'), lw = document.getElementById('amLicenseWrap');
+    if(b) b.style.display = isAdmin ? 'none' : '';
+    if(n) n.style.display = isAdmin ? '' : 'none';
+    if(lw) lw.style.display = (role === 'audiologist' || isAdmin) ? '' : 'none';
   }
   async function refreshUserList(){
     var listEl = document.getElementById('amUserList');
@@ -8033,12 +8402,16 @@ document.addEventListener('DOMContentLoaded', init);
     listEl.innerHTML = res.users.map(function(u){
       var hospArr = u.allowedHospitals || [];
       /* Sale ที่ยังไม่ได้ติ๊กรพ. = ไม่เห็นคนไข้เลย (ต่างจากสิทธิ์อื่นที่ "ไม่เลือก" แปลว่าเห็นทั้งหมด) */
-      var hospTxt = hospArr.length ? escH(hospArr.join(', ')) : (u.role==='sale' ? '<span style="color:#c8283e">ยังไม่ได้เลือก (ไม่เห็นคนไข้)</span>' : 'ทั้งหมด');
+      var hospTxt = (u.role==='admin') ? '<b style="color:#3958ff">ทุกรพ.</b>'
+                  : hospArr.length ? escH(hospArr.join(', '))
+                  : (u.role==='sale' ? '<span style="color:#c8283e">ยังไม่ได้เลือก (ไม่เห็นคนไข้)</span>' : '<span style="color:#c8283e">ยังไม่ได้เลือก</span> <span style="color:#9aa5ba">(ใช้ชื่อผู้ใช้เป็นชื่อรพ.)</span>');
+      var lic = String(u.licenseNo||'').trim();
       var dname = (u.displayName||'');
-      var editBtn = '<button type="button" class="am-edit" data-user="'+escH(u.username)+'" data-role="'+escH(u.role)+'" data-hosp="'+escH(hospArr.join(','))+'" data-dname="'+escH(dname)+'">แก้ไข</button>';
+      var editBtn = '<button type="button" class="am-edit" data-user="'+escH(u.username)+'" data-role="'+escH(u.role)+'" data-hosp="'+escH(hospArr.join(','))+'" data-dname="'+escH(dname)+'" data-lic="'+escH(lic)+'">แก้ไข</button>';
       var delBtn = (u.username===me) ? '' : '<button type="button" class="am-del" data-user="'+escH(u.username)+'">ลบ</button>';
-      var roleTxt = u.role==='admin' ? 'ผู้ดูแลระบบ' : (u.role==='hospital' ? 'โรงพยาบาล' : (u.role==='sale' ? 'Sale' : 'ผู้ใช้งาน'));
-      return '<tr><td>'+escH(u.username)+'</td><td>'+(dname ? escH(dname) : '<span style="color:#9aa5ba">–</span>')+'</td><td>'+roleTxt+'</td><td>'+hospTxt+'</td><td>'+fmtDate(u.created_at)+'</td><td>'+editBtn+' '+delBtn+'</td></tr>';
+      var resetBtn = (u.username===me) ? '' : '<button type="button" class="am-reset" data-user="'+escH(u.username)+'" title="ตั้งรหัสผ่านกลับเป็น 1234">รีเซ็ตรหัส</button>';
+      var roleTxt = roleLabel(u.role);
+      return '<tr><td>'+escH(u.username)+'</td><td>'+(dname ? escH(dname) : '<span style="color:#9aa5ba">–</span>')+(lic ? '<br><span style="color:#8a93a8;font-size:11.5px">ผ.ส. '+escH(lic)+'</span>' : '')+'</td><td>'+roleTxt+'</td><td>'+hospTxt+'</td><td>'+fmtDate(u.created_at)+'</td><td><div class="am-btns">'+editBtn+resetBtn+delBtn+'</div></td></tr>';
     }).join('');
   }
   var adminBtn = document.getElementById('ubAdminBtn');
@@ -8058,26 +8431,25 @@ document.addEventListener('DOMContentLoaded', init);
     var dEl = document.getElementById('amDisplayName');
     var newUsername = (uEl.value||'').trim(), newPassword = pEl.value||'', newRole = rEl.value;
     var newDisplayName = (dEl.value||'').trim();
-    var newAllowedHospitals = Array.from(document.querySelectorAll('.am-hosp-cb:checked')).map(function(cb){ return cb.value; });
-    /* สิทธิ์ "โรงพยาบาล": ใช้ "ชื่อโรงพยาบาล" ที่พิมพ์ไว้ (เว้นว่าง = ใช้ชื่อผู้ใช้) — ชื่อผู้ใช้กับชื่อรพ.ต่างกันได้ */
-    if(newRole === 'hospital'){
-      var hnEl = document.getElementById('amHospName');
-      var hospName = ((hnEl && hnEl.value) || '').trim() || newUsername;
-      newAllowedHospitals = [hospName];
-    }
-    /* สิทธิ์ "Sale": ต้องติ๊กรพ.ที่ดูแลอย่างน้อย 1 แห่ง ไม่งั้นล็อกอินไปก็ไม่เห็นคนไข้เลย */
-    if(newRole === 'sale' && !newAllowedHospitals.length){
-      if(!confirm('บัญชี Sale นี้ยังไม่ได้เลือกรพ.ที่ดูแล — เมื่อล็อกอินจะไม่เห็นรายชื่อคนไข้เลย\n\nต้องการบันทึกต่อหรือไม่?')) return;
-    }
+    var lEl = document.getElementById('amLicense');
+    var newLicense = (newRole === 'audiologist' || newRole === 'admin') ? ((lEl.value||'').trim()) : '';
+    var newAllowedHospitals = amCheckedHosps();
     var msgEl = document.getElementById('amMsg');
-    if(!newUsername){ msgEl.style.color = '#c8283e'; msgEl.textContent = 'กรอกชื่อผู้ใช้'; return; }
+    var bad = function(t){ msgEl.style.color = '#c8283e'; msgEl.textContent = t; };
+    if(!newUsername) return bad('กรอกชื่อผู้ใช้');
+    if((newRole === 'sale' || newRole === 'audiologist') && !newDisplayName) return bad('กรอกชื่อ–สกุล (ใช้ลงชื่อในฟอร์มอัตโนมัติ)');
+    if(newRole === 'audiologist' && !newLicense) return bad('กรอกเลขที่ใบอนุญาตของ Audiologist');
+    /* Admin ดูได้ทุกรพ. (ไม่เก็บรายชื่อ) · สิทธิ์อื่นต้องได้รับสิทธิ์อย่างน้อย 1 รพ. */
+    if(newRole === 'admin') newAllowedHospitals = [];
+    else if(!newAllowedHospitals.length) return bad('ติ๊กโรงพยาบาลที่ให้สิทธิ์เข้าดูอย่างน้อย 1 แห่ง');
+    var _isExisting = Array.from(document.querySelectorAll('#amUserList button.am-edit')).some(function(b){ return b.getAttribute('data-user') === newUsername; });
     var t = localStorage.getItem('hcs_token');
     msgEl.style.color = '#8a93a8'; msgEl.textContent = 'กำลังบันทึก...';
-    var res = await postAction('addUser', {token:t, newUsername:newUsername, newPassword:newPassword, newRole:newRole, allowedHospitals:newAllowedHospitals, displayName:newDisplayName});
+    var res = await postAction('addUser', {token:t, newUsername:newUsername, newPassword:newPassword, newRole:newRole, allowedHospitals:newAllowedHospitals, displayName:newDisplayName, licenseNo:newLicense});
     if(res.status === 'ok'){
-      msgEl.style.color = '#1a8a4c'; msgEl.textContent = 'บันทึกแล้ว ✓';
-      uEl.value=''; pEl.value=''; rEl.value='user'; dEl.value='';
-      var _hn=document.getElementById('amHospName'); if(_hn) _hn.value='';
+      msgEl.style.color = '#1a8a4c';
+      msgEl.textContent = (!_isExisting && !newPassword) ? 'สร้างผู้ใช้ "'+newUsername+'" แล้ว ✓ — รหัสเริ่มต้นคือ 1234 (ล็อกอินครั้งแรกจะขึ้นแนะนำให้ตั้งรหัสใหม่)' : 'บันทึกแล้ว ✓';
+      uEl.value=''; pEl.value=''; rEl.value='audiologist'; dEl.value=''; lEl.value='';
       amSyncRoleFields();
       document.querySelectorAll('.am-hosp-cb').forEach(function(cb){ cb.checked = false; });
       refreshUserList();
@@ -8092,14 +8464,26 @@ document.addEventListener('DOMContentLoaded', init);
       document.getElementById('amPassword').value = '';
       document.getElementById('amRole').value = editBtn.getAttribute('data-role')||'user';
       document.getElementById('amDisplayName').value = editBtn.getAttribute('data-dname')||'';
-      var hospSet = (editBtn.getAttribute('data-hosp')||'').split(',').filter(Boolean);
-      document.querySelectorAll('.am-hosp-cb').forEach(function(cb){ cb.checked = hospSet.indexOf(cb.value) !== -1; });
-      var _hnEl = document.getElementById('amHospName');
-      if(_hnEl) _hnEl.value = (editBtn.getAttribute('data-role')==='hospital') ? (hospSet[0] || editBtn.getAttribute('data-user') || '') : '';
+      document.getElementById('amLicense').value = editBtn.getAttribute('data-lic')||'';
+      var hospSet = (editBtn.getAttribute('data-hosp')||'').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+      /* รพ.ที่ผู้ใช้มีสิทธิ์อยู่แล้วแต่ไม่อยู่ในรายชื่อกลาง → ยังโชว์ให้ติ๊ก กันสิทธิ์หายตอนกดบันทึก */
+      var extra = hospSet.filter(function(h){ return _amHospMaster.indexOf(h) === -1; });
+      renderHospCheckboxes(_amHospMaster.concat(extra), hospSet);
       amSyncRoleFields();
       var msgEl = document.getElementById('amMsg');
       msgEl.style.color = '#8a93a8';
-      msgEl.textContent = 'กำลังแก้ไข "'+editBtn.getAttribute('data-user')+'" — เว้นช่องรหัสผ่านว่างไว้ถ้าไม่ต้องการเปลี่ยนรหัส';
+      var _r = editBtn.getAttribute('data-role')||'';
+      msgEl.textContent = 'กำลังแก้ไข "'+editBtn.getAttribute('data-user')+'" — เว้นช่องรหัสผ่านว่างไว้ถ้าไม่ต้องการเปลี่ยนรหัส' + ((_r==='user'||_r==='hospital') ? ' · บัญชีรุ่นเก่า: เลือกสิทธิ์ใหม่เป็น Audiologist หรือ Sale' : '');
+      return;
+    }
+    var resetBtn = e.target.closest('button.am-reset');
+    if(resetBtn){
+      var ru = resetBtn.getAttribute('data-user');
+      if(!confirm('รีเซ็ตรหัสผ่านของ "'+ru+'" กลับเป็น 1234 ?\n\nผู้ใช้จะถูกแนะนำให้ตั้งรหัสใหม่ตอนล็อกอินครั้งถัดไป')) return;
+      var rres = await postAction('resetPassword', {token: localStorage.getItem('hcs_token'), targetUsername: ru});
+      var rmsg = document.getElementById('amMsg');
+      if(rres && rres.status === 'ok'){ rmsg.style.color = '#1a8a4c'; rmsg.textContent = 'รีเซ็ตรหัสของ "'+ru+'" เป็น 1234 แล้ว ✓'; }
+      else { rmsg.style.color = '#c8283e'; rmsg.textContent = (rres && rres.message) || 'รีเซ็ตไม่สำเร็จ'; }
       return;
     }
     var btn = e.target.closest('button.am-del'); if(!btn) return;
