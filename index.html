@@ -160,6 +160,48 @@ body { font-family: 'Sarabun','TH Sarabun New',Tahoma,sans-serif; color: #1a1e2e
 .idcard-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 10px}
 .idcard-status{font-size:12.5px;color:#64748b;line-height:1.45;flex:1;min-width:180px}
 .idcard-status.ok{color:#15803D}.idcard-status.err{color:#B91C1C}.idcard-status.warn{color:#B45309}
+/* ── ถ่ายรูปบัตรประชาชน ── */
+body.idp-lock{overflow:hidden}
+.idp-ov{position:fixed;inset:0;z-index:100050;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.idp-ov[hidden]{display:none}
+.idp-box{background:#fff;border-radius:16px;box-shadow:0 24px 60px rgba(15,23,42,.35);width:min(640px,100%);max-height:calc(100dvh - 32px);display:flex;flex-direction:column;overflow:hidden;color:#1e293b}
+.idp-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e2e8f0;font-size:15px}
+.idp-x{border:none;background:#f1f5f9;border-radius:8px;width:32px;height:32px;font-size:15px;cursor:pointer;color:#475569}
+.idp-x:hover{background:#e2e8f0}
+.idp-body{padding:14px 16px 16px;overflow:auto}
+.idp-stage{position:relative;background:#0f172a;border-radius:12px;overflow:hidden;line-height:0}
+.idp-stage video{width:100%;height:auto;display:block}
+.idp-frame{position:absolute;left:50%;top:50%;width:82%;aspect-ratio:85.6/54;transform:translate(-50%,-50%);border:3px solid #fff;border-radius:14px;box-shadow:0 0 0 2000px rgba(15,23,42,.45);pointer-events:none}
+.idp-frame span{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:rgba(15,23,42,.55);padding:4px 10px;border-radius:20px;line-height:1.2;color:#fff;font-size:12.5px;white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.idp-tip{font-size:12.5px;color:#64748b;margin:10px 2px 0;line-height:1.5}
+.idp-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex-wrap:wrap}
+.idp-actions .btn{padding:9px 14px;font-size:14px}
+.idp-msg{font-size:14px;margin:12px 0 0;line-height:1.5;display:flex;align-items:center;gap:8px}
+.idp-msg small{color:#64748b;font-size:12.5px}
+.idp-msg.err{color:#B91C1C;display:block}.idp-msg.warn{color:#B45309}
+.idp-thumb{display:block;max-width:100%;max-height:220px;margin:0 auto;border-radius:10px;border:1px solid #e2e8f0}
+.idp-thumb.sm{max-height:130px;max-width:46%;margin:0;flex:none}
+.idp-spin{width:16px;height:16px;border:2.5px solid #cbd5e1;border-top-color:#2563eb;border-radius:50%;animation:idpSpin .8s linear infinite;flex:none}
+@keyframes idpSpin{to{transform:rotate(360deg)}}
+.idp-review{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.idp-note{font-size:13px;color:#475569;line-height:1.55}
+.idp-warnchip{background:#FEF3C7;border:1px solid #FCD34D;border-radius:5px;padding:0 5px;margin:0 3px;color:#92400E}
+.idp-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 10px}
+.idp-grid .wide{grid-column:span 3}
+.idp-f{display:flex;flex-direction:column;gap:3px;font-size:12px;color:#64748b}
+.idp-f input{font:inherit;font-size:15px;color:#0f172a;padding:7px 9px;border:1.5px solid #cbd5e1;border-radius:8px;background:#fff;min-width:0}
+.idp-f input:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+.idp-f.warn input{background:#FFFBEB;border-color:#F59E0B}
+.idp-cidhint{font-size:12.5px;margin-top:-4px}
+@media (max-width:520px){
+  .idp-ov{padding:0;align-items:flex-end}
+  .idp-box{border-radius:16px 16px 0 0;max-height:94dvh}
+  .idp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .idp-grid .wide{grid-column:span 2}
+  .idp-f input{font-size:16px}
+  .idp-review{flex-direction:column;align-items:stretch}
+  .idp-thumb.sm{max-width:100%;margin:0 auto}
+}
 /* ══════════════════════════════════════════════════════════════
    Purple Wizard design system — เฉพาะส่วนกรอกข้อมูล (#sidebar)
    Light-first · indigo/violet gradient · card wizard · rounded-rect controls
@@ -3151,7 +3193,7 @@ function buildSidebar(){
       👤 กรอกเฉพาะข้อมูลผู้ป่วย — ข้อมูลเครื่องช่วยฟังกรอกจากปุ่ม 🦻 · Audiogram จากปุ่ม 📈 ในหน้ารายการ
     </div>
     ${sec('👤 ข้อมูลผู้ป่วย (ใช้ร่วมทุกฟอร์ม)',true,`
-      <div class="idcard-bar"><button type="button" class="btn btn-primary" id="btnReadIdCard">🪪 อ่านบัตรประชาชน</button><span id="idCardStatus" class="idcard-status">เสียบบัตรแล้วกดปุ่ม — เติมชื่อ เลขบัตร วันเกิด ที่อยู่ให้อัตโนมัติ (HN ต้องพิมพ์เอง)</span></div>
+      <div class="idcard-bar"><button type="button" class="btn btn-primary" id="btnReadIdCard">🪪 อ่านบัตรประชาชน</button><button type="button" class="btn btn-primary" id="btnPhotoIdCard">📷 ถ่ายรูปบัตร</button><span id="idCardStatus" class="idcard-status">เสียบบัตรแล้วกด 🪪 หรือกด 📷 ถ่ายรูปบัตร — เติมชื่อ เลขบัตร วันเกิด ที่อยู่ให้อัตโนมัติ (HN ต้องพิมพ์เอง)</span></div>
       <div class="row"><div class="fld" style="max-width:130px"><label>HN</label><input type="text" data-bind="hn"></div><div class="fld" style="max-width:90px"><label>คำนำหน้า</label><select data-bind="namePrefix"><option value="นาย">นาย</option><option value="นาง">นาง</option><option value="นางสาว">นางสาว</option><option value="เด็กชาย">เด็กชาย</option><option value="เด็กหญิง">เด็กหญิง</option><option value="พระ">พระ</option><option value="แม่ชี">แม่ชี</option></select></div><div class="fld"><label>ชื่อ</label><input type="text" data-bind="nameFirst"></div><div class="fld"><label>นามสกุล</label><input type="text" data-bind="nameLast"></div></div>
       <div id="dupHint" class="dup-hint" style="display:none"></div>
       <div class="row"><div class="fld"><label>เลขบัตรประชาชน <span style="color:#94a3b8;font-weight:400">(ไม่บังคับ)</span></label><input type="text" id="inpCitizenId" data-bind="citizenId" inputmode="numeric" maxlength="17" placeholder="x-xxxx-xxxxx-xx-x"><div class="hint" id="cidHint" style="margin-top:3px"></div></div></div>
@@ -3931,13 +3973,18 @@ async function readIdCard(){
   }
   if(btn) btn.disabled=false;
   if(!d || !d.ok){ idCardStatus('❌ '+((d&&d.message)||'อ่านบัตรไม่สำเร็จ ลองถอดบัตรแล้วเสียบใหม่'),'err'); return; }
+  if(!idCardConfirmReplace(d)) return;
+  applyIdCard(d);
+}
+/* เคสนี้มีชื่อคนอื่นอยู่แล้ว → ถามก่อนแทนที่ (ใช้ทั้งเครื่องอ่านบัตรและรูปถ่ายบัตร) */
+function idCardConfirmReplace(d){
   const first=(d.firstName||'')+(d.middleName?' '+d.middleName:'');
   if((S.nameFirst||S.nameLast) && (S.nameFirst!==first || S.nameLast!==(d.lastName||''))){
     if(!confirm('เคสนี้มีชื่อ "'+(S.nameFirst||'')+' '+(S.nameLast||'')+'" อยู่แล้ว\nจะแทนที่ด้วยข้อมูลจากบัตร "'+first+' '+(d.lastName||'')+'" หรือไม่?')){
-      idCardStatus('ยกเลิกแล้ว — ไม่ได้เปลี่ยนข้อมูล'); return;
+      idCardStatus('ยกเลิกแล้ว — ไม่ได้เปลี่ยนข้อมูล'); return false;
     }
   }
-  applyIdCard(d);
+  return true;
 }
 function applyIdCard(d){
   const pf=(d.prefix||'').trim();
@@ -3947,7 +3994,7 @@ function applyIdCard(d){
   if(prefix) S.namePrefix=prefix;
   S.nameFirst=(d.firstName||'')+(d.middleName?' '+d.middleName:'');
   S.nameLast=d.lastName||'';
-  const birth=idCardBirthToThai(d.birth); if(birth) S.birth=birth;
+  const birth=d.birthThai || idCardBirthToThai(d.birth); if(birth) S.birth=birth;
   const a=d.address||{};
   if(a.province || a.houseNo){
     let dist=a.district||'';
@@ -3965,9 +4012,397 @@ function applyIdCard(d){
   const notes=[];
   if(d.demo) notes.push('โหมดทดสอบ — ข้อมูลจำลอง');
   if(idCardExpired(d.expireDate)) notes.push('บัตรหมดอายุแล้ว (ข้อมูลยังใช้ได้)');
-  idCardStatus('✅ อ่านบัตรแล้ว: '+S.namePrefix+S.nameFirst+' '+S.nameLast+' — กรอก HN ต่อได้เลย'+(notes.length?' · ⚠️ '+notes.join(' · '):''), notes.length?'warn':'ok');
+  idCardStatus((d.photo?'✅ ใส่ข้อมูลจากรูปบัตรแล้ว: ':'✅ อ่านบัตรแล้ว: ')+S.namePrefix+S.nameFirst+' '+S.nameLast+' — กรอก HN ต่อได้เลย'+(notes.length?' · ⚠️ '+notes.join(' · '):''), notes.length?'warn':'ok');
   const hnEl=document.querySelector('#sidebar [data-bind="hn"]');
   if(hnEl && !hnEl.value) hnEl.focus();
+}
+/* ══ ถ่ายรูปบัตรประชาชน → แยกข้อมูลจากข้อความ OCR ══
+   ข้อความ OCR มาจาก Google Drive (ผ่าน Apps Script action "ocrIdCard") — แยกเป็นโครงสร้างเดียวกับที่ ThaiIDAgent ส่งมา
+   แล้วใช้ applyIdCard() ตัวเดิมเติมลงฟอร์ม */
+const IDP_MONTHS = {'มค':1,'กพ':2,'มีค':3,'เมย':4,'พค':5,'มิย':6,'กค':7,'สค':8,'กย':9,'ตค':10,'พย':11,'ธค':12};
+const IDP_EN_MONTHS = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+const IDP_PREFIXES = ['นางสาว','เด็กชาย','เด็กหญิง','นาย','นาง','น.ส.','ด.ช.','ด.ญ.','พระครู','พระมหา','พระ','สามเณร','แม่ชี','ว่าที่ร้อยตรี','ว่าที่ ร.ต.'];
+function idpLev(a,b){
+  if(a===b) return 0;
+  const m=a.length, n=b.length; if(!m) return n; if(!n) return m;
+  let prev=Array.from({length:n+1},(_,j)=>j), cur=new Array(n+1);
+  for(let i=1;i<=m;i++){
+    cur[0]=i;
+    for(let j=1;j<=n;j++) cur[j]=Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+(a[i-1]===b[j-1]?0:1));
+    [prev,cur]=[cur,prev];
+  }
+  return prev[n];
+}
+/* หาคำที่ใกล้ที่สุดในรายการ (แก้ OCR อ่านผิด 1-2 ตัวอักษร) — ไม่เจอที่ใกล้พอคืนค่าเดิม */
+function idpClosest(word, list){
+  if(!word || !list || !list.length) return {value:word||'', exact:false, fixed:false};
+  if(list.includes(word)) return {value:word, exact:true, fixed:false};
+  let best=null, bd=1e9;
+  for(const c of list){ const d=idpLev(word,c); if(d<bd){ bd=d; best=c; } }
+  const tol = word.length<=4 ? 1 : word.length<=8 ? 2 : 3;
+  return bd<=tol ? {value:best, exact:false, fixed:true} : {value:word, exact:false, fixed:false};
+}
+function idpCidOk(d){
+  if(typeof validCitizenId==='function') return validCitizenId(d);
+  if(!/^\d{13}$/.test(d)) return false;
+  let s=0; for(let i=0;i<12;i++) s+=(+d[i])*(13-i);
+  return (11 - s%11)%10 === +d[12];
+}
+function idpNormalize(text){
+  return String(text||'')
+    .replace(/^﻿/,'')
+    .replace(/[๐-๙]/g, c=>String(c.charCodeAt(0)-0x0E50))
+    .replace(/ํา/g,'ำ')               // ํ + า → ำ
+    .replace(/เเ/g,'แ')               // เ + เ → แ
+    .replace(/[​-‍ \t]/g,' ')
+    .replace(/\r/g,'')
+    .split('\n').map(l=>l.replace(/ {2,}/g,' ').trim()).filter(Boolean);
+}
+/* วันที่ไทย "12 มี.ค. 2530" → "25300312" · ภาษาอังกฤษ "12 Mar. 1987" → "25300312" */
+function idpThaiDate(s){
+  const m=/(\d{1,2})\s*(เ?[ก-ฮ][ั-ฺ็-๎]?\s*\.?\s*[ก-ฮ]\s*\.?)\s*(\d{4})/.exec(s);
+  if(m){
+    const mo=IDP_MONTHS[m[2].replace(/[\s.]/g,'')];
+    const y=+m[3], d=+m[1];
+    if(mo && y>2300 && y<2700 && d>=1 && d<=31) return String(y)+String(mo).padStart(2,'0')+String(d).padStart(2,'0');
+  }
+  const y=/(?:^|\D)(2[45]\d\d)(?:\D|$)/.exec(s);       // บางใบมีแค่ปี
+  if(y && !/[ก-ฮ]\.\s*[ก-ฮ]\./.test(s)) return y[1]+'0000';
+  return '';
+}
+function idpEnDate(s){
+  const m=/(\d{1,2})\s*([A-Za-z]{3})[a-z]*\.?\s*(\d{4})/.exec(s);
+  if(!m) return '';
+  const mo=IDP_EN_MONTHS[m[2].toLowerCase()], y=+m[3], d=+m[1];
+  if(!mo || y<1850 || y>2200 || d<1 || d>31) return '';
+  return String(y+543)+String(mo).padStart(2,'0')+String(d).padStart(2,'0');
+}
+function idpFindCid(lines){
+  const fix=s=>s.replace(/[Oo]/g,'0').replace(/[Il|]/g,'1').replace(/S/g,'5').replace(/B/g,'8');
+  const cands=[];
+  lines.forEach((ln,i)=>{
+    const pri = /ประจำตัว|Identification|ID\s*No/i.test(ln) ? 0 : 1;
+    const src = pri===0 ? fix(ln) : ln;
+    const runs = src.match(/\d[\d\s\-]{10,30}\d/g) || [];
+    runs.forEach(r=>{
+      const d=r.replace(/\D/g,'');
+      if(d.length<13) return;
+      for(let k=0;k+13<=d.length;k++){
+        const c=d.slice(k,k+13);
+        cands.push({c, ok:idpCidOk(c), pri, exact:d.length===13, i});
+      }
+    });
+  });
+  cands.sort((a,b)=>(b.ok-a.ok)||(a.pri-b.pri)||(b.exact-a.exact)||(a.i-b.i));
+  return cands[0] ? {cid:cands[0].c, ok:cands[0].ok} : {cid:'', ok:false};
+}
+function idpSplitPrefix(tokens){
+  if(!tokens.length) return {prefix:'', rest:[]};
+  const t0=tokens[0];
+  if(IDP_PREFIXES.includes(t0)) return {prefix:t0, rest:tokens.slice(1)};
+  if(/^(?:[ก-ฮ]{1,3}\.){1,4}$/.test(t0)) return {prefix:t0, rest:tokens.slice(1)};          // ยศย่อ เช่น ร.ต.อ. / จ.ส.อ.
+  const ab=/^((?:[ก-ฮ]{1,3}\.){1,4})(.+)$/.exec(t0);                                         // "น.ส.สมหญิง" ติดกัน
+  if(ab) return {prefix:ab[1], rest:[ab[2], ...tokens.slice(1)]};
+  for(const p of ['นางสาว','เด็กชาย','เด็กหญิง','นาย','นาง']){
+    if(t0.startsWith(p) && t0.length>p.length+1) return {prefix:p, rest:[t0.slice(p.length), ...tokens.slice(1)]};
+  }
+  return {prefix:'', rest:tokens};
+}
+function idpFindName(lines){
+  const labelRe=/ชื่อ\s*ตัว\s*และ\s*ชื่อ\s*ส\S*|ชื่อ\s*ตัว\S*|ชื่อ\s*-?\s*สกุล|ชื่อ(?=\s)/;
+  const isPrefixStart=ln=>{ const t=ln.split(' ')[0]; return IDP_PREFIXES.includes(t) || /^(?:[ก-ฮ]{1,3}\.){1,4}/.test(t) || /^(นางสาว|เด็กชาย|เด็กหญิง|นาย|นาง)[ก-๙]/.test(t); };
+  let raw='', idx=-1;
+  for(let i=0;i<lines.length;i++){
+    const m=labelRe.exec(lines[i]);
+    if(m && /ชื่อ\s*ตัว|สกุล/.test(m[0])){
+      raw=lines[i].slice(m.index+m[0].length).trim();
+      if(!/[ก-๙]/.test(raw) && lines[i+1]) raw=lines[i+1];
+      idx=i; break;
+    }
+  }
+  if(!raw){
+    for(let i=0;i<lines.length;i++){
+      const ln=lines[i];
+      if(/[A-Za-z]/.test(ln) || /\d/.test(ln) || /ที่อยู่|เกิด|ศาสนา|บัตร|ประจำตัว|ราชอาณาจักร/.test(ln)) continue;
+      if(isPrefixStart(ln)){ raw=ln; idx=i; break; }
+    }
+  }
+  raw=raw.replace(/[^\sก-๙.]/g,' ').replace(/\s+/g,' ').trim();
+  const tokens=raw ? raw.split(' ') : [];
+  const {prefix, rest}=idpSplitPrefix(tokens);
+  let first='', middle='', last='';
+  if(rest.length===1) first=rest[0];
+  else if(rest.length>=2){ first=rest[0]; last=rest[rest.length-1]; middle=rest.slice(1,-1).join(' '); }
+  /* ชื่ออังกฤษ — ใช้เดาคำนำหน้าถ้าฝั่งไทยอ่านไม่ออก */
+  let enTitle='';
+  for(const ln of lines){ const m=/\b(Mr|Mrs|Miss|Ms|Master)\b\.?/i.exec(ln); if(m && /name/i.test(ln)){ enTitle=m[1].toLowerCase(); break; } }
+  return {prefix, first, middle, last, enTitle, tokenCount:rest.length, line:idx};
+}
+const IDP_ADDR_STOP=/วันออกบัตร|วันบัตรหมดอายุ|หมดอายุ|Date\s*of|เจ้าพนักงาน|ศาสนา|Religion|ออกบัตร|Expiry|Issue/i;
+function idpFindAddressText(lines){
+  for(let i=0;i<lines.length;i++){
+    const m=/ที่?\s*อยู่/.exec(lines[i]);
+    if(!m) continue;
+    const parts=[lines[i].slice(m.index+m[0].length)];
+    const hasEnd=s=>/(?:^|\s|\d)(?:จ\.|จังหวัด)\s*[ก-๙]|กรุงเทพ/.test(s);
+    for(let j=i+1;j<lines.length && j<=i+3 && !hasEnd(parts.join(' '));j++){
+      const ln=lines[j];
+      if(IDP_ADDR_STOP.test(ln) || /[A-Za-z]{3,}/.test(ln) || /\d{1,2}\s*เ?[ก-ฮ][ั-ฺ]?\.\s*[ก-ฮ]\.\s*\d{4}/.test(ln)) break;
+      if(/^\d{4}-\d{2}-\d{8}$/.test(ln.replace(/\s/g,''))) break;     // เลขใต้รูป
+      parts.push(ln);
+    }
+    let s=parts.join(' ').replace(/\s+/g,' ').trim();
+    const cut=s.search(IDP_ADDR_STOP); if(cut>0) s=s.slice(0,cut).trim();
+    return s;
+  }
+  return '';
+}
+function idpParseAddress(s){
+  const a={houseNo:'',moo:'',soi:'',road:'',extra:'',subdistrict:'',district:'',districtRaw:'',province:''};
+  if(!s) return a;
+  s=' '+s.replace(/\s*\.\s*/g,'. ').replace(/([ก-ฮ])\.\s+(?=[ก-๙])/g,'$1.')+' ';
+  s=s.replace(/(\S)(หมู่ที่|หมู่บ้าน|ซอย|ถนน|ตำบล|แขวง|อำเภอ|จังหวัด|กรุงเทพ)/g,'$1 $2');
+  const markers=[
+    ['moo',/\sหมู่\s*ที่\s*/g],['extra',/\sหมู่บ้าน\s*/g],['moo',/\sหมู่(?!บ้าน)\s*/g],['moo',/\sม\.\s*(?=\d)/g],
+    ['soi',/\sซอย\s*/g],['soi',/\sซ\.\s*/g],['road',/\sถนน\s*/g],['road',/\sถ\.\s*/g],
+    ['subdistrict',/\sตำบล\s*/g],['subdistrict',/\sต\.\s*/g],['subdistrict',/\sแขวง\s*/g],
+    ['district',/\sอำเภอ\s*/g],['district',/\sอ\.\s*/g],['districtKhet',/\sเขต\s*/g],
+    ['province',/\sจังหวัด\s*/g],['province',/\sจ\.\s*/g],['bkk',/\sกรุงเทพ\S*/g]
+  ];
+  const hits=[];
+  for(const [k,re] of markers){ re.lastIndex=0; let m; while((m=re.exec(s))){ hits.push({k,start:m.index,end:m.index+m[0].length}); } }
+  hits.sort((x,y)=>x.start-y.start||(y.end-y.start)-(x.end-x.start));
+  const used=[]; let lastEnd=-1;
+  for(const h of hits){ if(h.start>=lastEnd){ used.push(h); lastEnd=h.end; } }
+  const head=s.slice(0, used.length?used[0].start:s.length).trim();
+  if(head){ const t=head.split(' '); a.houseNo=t[0]; if(t.length>1) a.extra=t.slice(1).join(' '); }
+  used.forEach((h,i)=>{
+    const v=s.slice(h.end, i+1<used.length?used[i+1].start:s.length).trim();
+    if(h.k==='bkk'){ a.province='กรุงเทพมหานคร'; return; }
+    if(h.k==='districtKhet'){ if(!a.district){ a.district='เขต'+v; a.districtRaw='เขต'+v; } return; }
+    if(h.k==='moo'){ if(!a.moo) a.moo=(v.match(/\d+/)||[v])[0]; return; }
+    if(h.k==='extra'){ a.extra=[a.extra,'หมู่บ้าน'+v].filter(Boolean).join(' '); return; }
+    if(h.k==='district'){ if(!a.district){ a.district=v.replace(/\s/g,''); a.districtRaw='อำเภอ'+a.district; } return; }
+    if(h.k==='subdistrict' || h.k==='province'){ if(!a[h.k]) a[h.k]=v.replace(/\s/g,''); return; }
+    if(!a[h.k]) a[h.k]=v;
+  });
+  return a;
+}
+function idpFixAddress(a, flags){
+  if(typeof THAI_DISTRICTS!=='object') return a;
+  const provs=Object.keys(THAI_DISTRICTS);
+  if(a.province){
+    let p=a.province.replace(/^จ\.?/,'');
+    if(/^กรุงเทพ/.test(p)) p='กรุงเทพมหานคร';
+    const r=idpClosest(p, provs); a.province=r.value;
+    if(!r.exact && !r.fixed) flags.push('province');
+  }
+  const dl=THAI_DISTRICTS[a.province];
+  if(dl && a.district){
+    let d=a.district;
+    if(a.province==='กรุงเทพมหานคร' && !/^เขต/.test(d)) d='เขต'+d;
+    const r=idpClosest(d, dl); a.district=r.value;
+    if(a.province==='กรุงเทพมหานคร') a.districtRaw=r.value;
+    if(!r.exact && !r.fixed) flags.push('district');
+  }
+  return a;
+}
+function parseIdCardOcr(text){
+  const lines=idpNormalize(text);
+  const flags=[];
+  const {cid, ok}=idpFindCid(lines);
+  if(!cid || !ok) flags.push('cid');
+  const nm=idpFindName(lines);
+  let prefix=nm.prefix;
+  if(!prefix && nm.enTitle) prefix={mr:'นาย',mrs:'นาง',miss:'นางสาว',ms:'นางสาว',master:'เด็กชาย'}[nm.enTitle]||'';
+  if(!prefix) flags.push('prefix');
+  if(!nm.first) flags.push('first');
+  if(!nm.last) flags.push('last');
+  if(nm.tokenCount>2) flags.push('first','last');
+  /* วันเกิด / วันหมดอายุ — หาในบรรทัดที่มีคำกำกับก่อน แล้วค่อยใช้ภาษาอังกฤษสำรอง */
+  let birth='', expire='';
+  lines.forEach((ln,i)=>{
+    const nxt=lines[i+1]||'';
+    if(!birth && /เกิด/.test(ln)) birth=idpThaiDate(ln)||idpThaiDate(nxt);
+    if(!expire && /หมดอายุ/.test(ln)) expire=/ตลอดชีพ/.test(ln+nxt)?'99999999':(idpThaiDate(ln)||idpThaiDate(nxt));
+  });
+  if(!birth) lines.forEach((ln,i)=>{ if(!birth && /Birth/i.test(ln)) birth=idpEnDate(ln)||idpEnDate(lines[i+1]||''); });
+  if(!expire) lines.forEach((ln,i)=>{ if(!expire && /Expiry/i.test(ln)) expire=/LIFE\s*LONG/i.test(ln)?'99999999':(idpEnDate(ln)||idpEnDate(lines[i+1]||'')); });
+  if(!birth) flags.push('birth');
+  const addrText=idpFindAddressText(lines);
+  const address=idpFixAddress(idpParseAddress(addrText), flags);
+  if(!addrText) flags.push('address');
+  return {ok:true, photo:true, cid, cidValid:ok, prefix, firstName:nm.first, middleName:nm.middle, lastName:nm.last,
+          birth, expireDate:expire, address, addressText:addrText, flags:[...new Set(flags)], lines};
+}
+/* ── หน้าจอถ่ายรูปบัตร ── คอม (เว็บแคม): เปิดกล้องในหน้าเว็บพร้อมกรอบบัตร · มือถือ/แท็บเล็ต: เปิดแอปกล้องของเครื่อง (ชัดกว่า โฟกัสได้) */
+let _idpStream=null, _idpData=null;
+function idpEl(){
+  let ov=document.getElementById('idpOverlay');
+  if(ov) return ov;
+  ov=document.createElement('div'); ov.id='idpOverlay'; ov.className='idp-ov'; ov.hidden=true;
+  ov.innerHTML=`<div class="idp-box" role="dialog" aria-modal="true" aria-labelledby="idpTitle">
+    <div class="idp-head"><b id="idpTitle">📷 ถ่ายรูปบัตรประชาชน</b><button type="button" class="idp-x" data-idp="close" aria-label="ปิด">✕</button></div>
+    <div class="idp-body" id="idpBody"></div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click', e=>{
+    const b=e.target.closest('[data-idp]'); if(!b) return;
+    const act=b.getAttribute('data-idp');
+    if(act==='close') idpClose();
+    else if(act==='shoot') idpShoot();
+    else if(act==='file') idpPickFile(false);
+    else if(act==='retake') idpStart();
+    else if(act==='apply') idpApply();
+  });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape' && !ov.hidden) idpClose(); });
+  let fi=document.getElementById('idpFile');
+  if(!fi){
+    fi=document.createElement('input'); fi.type='file'; fi.accept='image/*'; fi.id='idpFile'; fi.hidden=true;
+    document.body.appendChild(fi);
+    fi.addEventListener('change', ()=>{ const f=fi.files&&fi.files[0]; fi.value=''; if(f) idpProcessBlob(f); });
+  }
+  return ov;
+}
+function idpStopCam(){ if(_idpStream){ _idpStream.getTracks().forEach(t=>t.stop()); _idpStream=null; } }
+function idpClose(){ idpStopCam(); const ov=document.getElementById('idpOverlay'); if(ov) ov.hidden=true; document.body.classList.remove('idp-lock'); }
+function idpShow(html){ const ov=idpEl(); document.getElementById('idpBody').innerHTML=html; ov.hidden=false; document.body.classList.add('idp-lock'); }
+function idpIsTouch(){ return window.matchMedia && matchMedia('(pointer: coarse)').matches && /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent+(navigator.maxTouchPoints>1&&/Mac/.test(navigator.platform)?' iPad':'')); }
+function idpPickFile(useCamera){
+  idpEl(); const fi=document.getElementById('idpFile');
+  if(useCamera) fi.setAttribute('capture','environment'); else fi.removeAttribute('capture');
+  fi.click();
+}
+async function idpStart(){
+  idpStopCam();
+  if(!(window.hcsApi && localStorage.getItem('hcs_token'))){ idCardStatus('❌ ต้องเข้าสู่ระบบและต่ออินเทอร์เน็ตก่อน ถึงจะอ่านรูปบัตรได้','err'); return; }
+  if(idpIsTouch()){ idpPickFile(true); return; }              // มือถือ: เปิดแอปกล้องเลย
+  if(!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)){ idpPickFile(false); return; }
+  idpShow(`<div class="idp-stage" id="idpStage"><video id="idpVideo" playsinline autoplay muted></video><div class="idp-frame"><span>วางบัตรให้พอดีกรอบ</span></div></div>
+    <div class="idp-tip">💡 ถือบัตรให้นิ่ง แสงสว่างพอ ไม่มีแสงไฟสะท้อนบนบัตร · ตัวหนังสือต้องคมชัด</div>
+    <div class="idp-actions"><button type="button" class="btn btn-ghost" data-idp="file">🖼️ เลือกรูปจากเครื่อง</button><button type="button" class="btn btn-primary idp-shoot" data-idp="shoot" disabled>📸 ถ่ายรูป</button></div>`);
+  try{
+    _idpStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}, width:{ideal:1920}, height:{ideal:1080}}, audio:false});
+    const v=document.getElementById('idpVideo'); if(!v){ idpStopCam(); return; }
+    v.srcObject=_idpStream;
+    v.onloadedmetadata=()=>{ const sh=document.querySelector('#idpOverlay [data-idp="shoot"]'); if(sh){ sh.disabled=false; sh.focus(); } };
+  }catch(e){
+    idpStopCam();
+    const why = e && e.name==='NotAllowedError' ? 'เบราว์เซอร์ไม่ได้อนุญาตให้ใช้กล้อง (กดไอคอนกล้องที่แถบที่อยู่เว็บเพื่ออนุญาต)' : 'ไม่พบกล้องในเครื่องนี้';
+    idpShow(`<div class="idp-msg err">📷 ${why}</div><div class="idp-tip">ใช้รูปบัตรที่ถ่ายไว้แทนได้ (ถ่ายด้วยมือถือแล้วส่งเข้าคอม)</div>
+      <div class="idp-actions"><button type="button" class="btn btn-ghost" data-idp="close">ปิด</button><button type="button" class="btn btn-primary" data-idp="file">🖼️ เลือกรูปจากเครื่อง</button></div>`);
+  }
+}
+function idpShoot(){
+  const v=document.getElementById('idpVideo'); if(!v || !v.videoWidth) return;
+  /* ตัดเฉพาะบริเวณกรอบบัตร (เผื่อขอบ 6%) — OCR แม่นขึ้นเพราะไม่มีพื้นหลังรก ๆ */
+  const st=document.getElementById('idpStage').getBoundingClientRect(), fr=document.querySelector('#idpStage .idp-frame').getBoundingClientRect();
+  const sx=v.videoWidth/st.width, sy=v.videoHeight/st.height, padX=fr.width*0.06, padY=fr.height*0.06;
+  const x=Math.max(0,(fr.left-st.left-padX)*sx), y=Math.max(0,(fr.top-st.top-padY)*sy);
+  const w=Math.min(v.videoWidth-x,(fr.width+2*padX)*sx), h=Math.min(v.videoHeight-y,(fr.height+2*padY)*sy);
+  const c=document.createElement('canvas'); c.width=Math.round(w); c.height=Math.round(h);
+  c.getContext('2d').drawImage(v,x,y,w,h,0,0,c.width,c.height);
+  idpStopCam();
+  c.toBlob(b=>idpProcessBlob(b),'image/jpeg',0.92);
+}
+/* ย่อรูปให้ด้านยาวไม่เกิน 2000px (รูปมือถือ 12MP ส่งช้าเกิน) */
+function idpPrepare(blob){
+  return new Promise((res,rej)=>{
+    const url=URL.createObjectURL(blob), img=new Image();
+    img.onload=()=>{
+      const k=Math.min(1, 2000/Math.max(img.naturalWidth,img.naturalHeight));
+      const c=document.createElement('canvas'); c.width=Math.round(img.naturalWidth*k); c.height=Math.round(img.naturalHeight*k);
+      const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(img,0,0,c.width,c.height);
+      URL.revokeObjectURL(url);
+      res(c.toDataURL('image/jpeg',0.9));
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error('เปิดรูปไม่ได้ — ใช้ไฟล์ .jpg หรือ .png')); };
+    img.src=url;
+  });
+}
+async function idpProcessBlob(blob){
+  let dataUrl='';
+  try{ dataUrl=await idpPrepare(blob); }
+  catch(e){ idpShow(`<div class="idp-msg err">❌ ${e.message}</div><div class="idp-actions"><button type="button" class="btn btn-primary" data-idp="retake">ลองใหม่</button></div>`); return; }
+  idpShow(`<img class="idp-thumb" src="${dataUrl}" alt=""><div class="idp-msg"><span class="idp-spin"></span> กำลังอ่านตัวหนังสือจากรูป… (ประมาณ 5-10 วินาที)</div>`);
+  idCardStatus('⏳ กำลังอ่านข้อมูลจากรูปบัตร…');
+  let res=null;
+  try{ res=await window.hcsApi.postAction('ocrIdCard', {token:localStorage.getItem('hcs_token'), image:dataUrl.split(',')[1]}); }
+  catch(e){ res={status:'error', message:String(e)}; }
+  if(document.getElementById('idpOverlay').hidden) return;                   // ผู้ใช้กดปิดไปแล้ว
+  if(!res || res.status!=='ok'){
+    const msg=(res&&res.message)||'อ่านรูปไม่สำเร็จ';
+    idCardStatus('❌ '+msg,'err');
+    idpShow(`<img class="idp-thumb" src="${dataUrl}" alt=""><div class="idp-msg err">❌ ${idpEsc(msg)}</div>
+      <div class="idp-actions"><button type="button" class="btn btn-ghost" data-idp="close">ปิด</button><button type="button" class="btn btn-primary" data-idp="retake">📷 ถ่ายใหม่</button></div>`);
+    return;
+  }
+  const d=parseIdCardOcr(res.text||'');
+  if(!d.cid && !d.firstName && !d.lastName){
+    idCardStatus('❌ อ่านข้อความบนบัตรไม่ออก — ลองถ่ายใหม่ให้ชัดขึ้น','err');
+    idpShow(`<img class="idp-thumb" src="${dataUrl}" alt=""><div class="idp-msg err">❌ อ่านข้อความบนบัตรไม่ออก<br><small>ถ่ายใหม่ให้บัตรเต็มกรอบ ตัวหนังสือคมชัด ไม่มีแสงสะท้อน</small></div>
+      <div class="idp-actions"><button type="button" class="btn btn-ghost" data-idp="close">ปิด</button><button type="button" class="btn btn-primary" data-idp="retake">📷 ถ่ายใหม่</button></div>`);
+    return;
+  }
+  _idpData=d;
+  idpReview(d, dataUrl);
+}
+function idpEsc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function idpReview(d, dataUrl){
+  const a=d.address||{}, fl=new Set(d.flags||[]);
+  const pf=IDCARD_PREFIX_MAP[d.prefix]||d.prefix||'';
+  const birthTxt=idCardBirthToThai(d.birth);
+  const cidFmt=d.cid ? [d.cid.slice(0,1),d.cid.slice(1,5),d.cid.slice(5,10),d.cid.slice(10,12),d.cid.slice(12)].join('-') : '';
+  const fld=(key,label,val,opt)=>{ opt=opt||{};
+    const warn=fl.has(opt.flag||key) || (opt.need && !val);
+    return `<label class="idp-f${warn?' warn':''}${opt.wide?' wide':''}"><span>${label}</span><input type="text" data-idpf="${key}" value="${idpEsc(val)}"${opt.attrs||''}></label>`; };
+  idpShow(`<div class="idp-review">
+    <img class="idp-thumb sm" src="${dataUrl}" alt="รูปบัตร">
+    <div class="idp-note">ตรวจทานให้ตรงกับบัตรก่อน — ช่อง<span class="idp-warnchip">สีเหลือง</span>อ่านได้ไม่แน่ใจ แก้ได้เลย</div>
+  </div>
+  <div class="idp-grid">
+    ${fld('prefix','คำนำหน้า',pf,{need:true})}
+    ${fld('firstName','ชื่อ',[d.firstName,d.middleName].filter(Boolean).join(' '),{flag:'first',need:true})}
+    ${fld('lastName','นามสกุล',d.lastName,{flag:'last',need:true})}
+    ${fld('cid','เลขบัตรประชาชน',cidFmt,{wide:true,attrs:' inputmode="numeric" maxlength="17"'})}
+    <div class="idp-cidhint wide" id="idpCidHint"></div>
+    ${fld('birth','วันเกิด (เช่น 12 มี.ค. 2530)',birthTxt,{wide:true})}
+    ${fld('houseNo','บ้านเลขที่',[a.houseNo,a.extra].filter(Boolean).join(' '),{flag:'address'})}
+    ${fld('moo','หมู่',a.moo)}
+    ${fld('soi','ซอย',a.soi)}
+    ${fld('road','ถนน',a.road)}
+    ${fld('subdistrict','ตำบล/แขวง',a.subdistrict,{flag:'address'})}
+    ${fld('district','อำเภอ/เขต',a.district,{flag:'district'})}
+    ${fld('province','จังหวัด',a.province,{flag:'province',wide:true})}
+  </div>
+  ${idCardExpired(d.expireDate)?'<div class="idp-msg warn">⚠️ บัตรหมดอายุแล้ว (ข้อมูลยังใช้ได้)</div>':''}
+  <div class="idp-actions"><button type="button" class="btn btn-ghost" data-idp="retake">📷 ถ่ายใหม่</button><button type="button" class="btn btn-primary" data-idp="apply">✅ ใส่ลงฟอร์ม</button></div>`);
+  const cidIn=document.querySelector('#idpOverlay [data-idpf="cid"]');
+  const upd=()=>{
+    const dg=cidIn.value.replace(/\D/g,'').slice(0,13);
+    const h=document.getElementById('idpCidHint'); if(!h) return;
+    const ok=dg.length===13 && idpCidOk(dg);
+    h.innerHTML=!dg?'<span style="color:#94a3b8">ไม่พบเลขบัตร — พิมพ์เองได้</span>':dg.length<13?`<span style="color:#B45309">ได้ ${dg.length}/13 หลัก</span>`:ok?'<span style="color:#15803D">✅ เลขบัตรถูกต้อง</span>':'<span style="color:#B91C1C">⚠️ เลขบัตรไม่ถูกต้อง — เทียบกับบัตรอีกครั้ง</span>';
+    cidIn.closest('.idp-f').classList.toggle('warn', !ok);
+  };
+  cidIn.addEventListener('input', upd); upd();
+  document.querySelectorAll('#idpOverlay [data-idpf]').forEach(inp=>inp.addEventListener('input',()=>{ if(inp!==cidIn && inp.value.trim()) inp.closest('.idp-f').classList.remove('warn'); }));
+  const firstWarn=document.querySelector('#idpOverlay .idp-f.warn input'); if(firstWarn) firstWarn.focus();
+}
+function idpApply(){
+  const v=k=>{ const el=document.querySelector(`#idpOverlay [data-idpf="${k}"]`); return el?el.value.trim().replace(/\s+/g,' '):''; };
+  const fn=v('firstName').split(' ');
+  const cid=v('cid').replace(/\D/g,'');
+  const prov=v('province');
+  const dist=v('district');
+  const d={ok:true, photo:true, prefix:v('prefix'), firstName:fn[0]||'', middleName:fn.slice(1).join(' '), lastName:v('lastName'),
+    cid: cid.length===13 ? cid : '', birthThai:v('birth'), expireDate:(_idpData&&_idpData.expireDate)||'',
+    address:{houseNo:v('houseNo'), extra:'', moo:v('moo').replace(/^หมู่(ที่)?\s*/,''), soi:v('soi'), road:v('road'),
+      subdistrict:v('subdistrict'), district:dist, districtRaw:dist, province:prov}};
+  if(!d.firstName && !d.lastName){ alert('ยังไม่มีชื่อ-นามสกุล'); return; }
+  if(!idCardConfirmReplace(d)) return;
+  idpClose();
+  applyIdCard(d);
 }
 function bindDataBindScope(root){
   if(!root) return;
@@ -4046,6 +4481,8 @@ function bindInputs(){
   bindAddrCascade();
   const _btnIdCard = document.getElementById('btnReadIdCard');
   if(_btnIdCard) _btnIdCard.addEventListener('click', readIdCard);
+  const _btnIdPhoto = document.getElementById('btnPhotoIdCard');
+  if(_btnIdPhoto) _btnIdPhoto.addEventListener('click', idpStart);
 
   /* ช่องเลขบัตรประชาชน (ไม่บังคับ): ใส่ขีดคั่นให้อัตโนมัติ + ตรวจหลักตรวจสอบ (checksum) */
   const cidEl = document.getElementById('inpCitizenId');
