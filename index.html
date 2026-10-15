@@ -4305,47 +4305,60 @@ function idpShoot(){
   idpStopCam();
   c.toBlob(b=>idpProcessBlob(b),'image/jpeg',0.92);
 }
-/* ย่อรูปให้ด้านยาวไม่เกิน 2000px (รูปมือถือ 12MP ส่งช้าเกิน) */
-function idpPrepare(blob){
+/* โหลดรูป → ย่อด้านยาวไม่เกิน 2000px (รูปมือถือ 12MP ส่งช้าเกิน) · หมุนได้ทีละ 90° (คนมักถือบัตรตะแคงตอนถือมือถือแนวตั้ง) */
+function idpLoadImage(blob){
   return new Promise((res,rej)=>{
     const url=URL.createObjectURL(blob), img=new Image();
-    img.onload=()=>{
-      const k=Math.min(1, 2000/Math.max(img.naturalWidth,img.naturalHeight));
-      const c=document.createElement('canvas'); c.width=Math.round(img.naturalWidth*k); c.height=Math.round(img.naturalHeight*k);
-      const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(img,0,0,c.width,c.height);
-      URL.revokeObjectURL(url);
-      res(c.toDataURL('image/jpeg',0.9));
-    };
+    img.onload=()=>{ URL.revokeObjectURL(url); res(img); };
     img.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error('เปิดรูปไม่ได้ — ใช้ไฟล์ .jpg หรือ .png')); };
     img.src=url;
   });
 }
+function idpRender(img, deg){
+  const k=Math.min(1, 2000/Math.max(img.naturalWidth,img.naturalHeight));
+  const w=Math.round(img.naturalWidth*k), h=Math.round(img.naturalHeight*k), side=(deg%180)!==0;
+  const c=document.createElement('canvas'); c.width=side?h:w; c.height=side?w:h;
+  const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height);
+  g.translate(c.width/2,c.height/2); g.rotate(deg*Math.PI/180); g.drawImage(img,-w/2,-h/2,w,h);
+  return c.toDataURL('image/jpeg',0.9);
+}
+/* คะแนนความน่าเชื่อของผลอ่าน — ใช้เลือกทิศที่หมุนถูก */
+function idpScore(d){ return (d.cidValid?4:d.cid?1:0)+(d.firstName?2:0)+(d.lastName?2:0)+(d.prefix?1:0)+(d.birth?1:0)+(d.address&&d.address.province?1:0); }
 async function idpProcessBlob(blob){
-  let dataUrl='';
-  try{ dataUrl=await idpPrepare(blob); }
+  let img=null;
+  try{ img=await idpLoadImage(blob); }
   catch(e){ idpShow(`<div class="idp-msg err">❌ ${e.message}</div><div class="idp-actions"><button type="button" class="btn btn-primary" data-idp="retake">ลองใหม่</button></div>`); return; }
-  idpShow(`<img class="idp-thumb" src="${dataUrl}" alt=""><div class="idp-msg"><span class="idp-spin"></span> กำลังอ่านตัวหนังสือจากรูป… (ประมาณ 5-10 วินาที)</div>`);
-  idCardStatus('⏳ กำลังอ่านข้อมูลจากรูปบัตร…');
-  let res=null;
-  try{ res=await window.hcsApi.postAction('ocrIdCard', {token:localStorage.getItem('hcs_token'), image:dataUrl.split(',')[1]}); }
-  catch(e){ res={status:'error', message:String(e)}; }
-  if(document.getElementById('idpOverlay').hidden) return;                   // ผู้ใช้กดปิดไปแล้ว
-  if(!res || res.status!=='ok'){
-    const msg=(res&&res.message)||'อ่านรูปไม่สำเร็จ';
-    idCardStatus('❌ '+msg,'err');
-    idpShow(`<img class="idp-thumb" src="${dataUrl}" alt=""><div class="idp-msg err">❌ ${idpEsc(msg)}</div>
-      <div class="idp-actions"><button type="button" class="btn btn-ghost" data-idp="close">ปิด</button><button type="button" class="btn btn-primary" data-idp="retake">📷 ถ่ายใหม่</button></div>`);
-    return;
+  /* รูปแนวตั้ง = บัตรตะแคง → ลองหมุนทวนเข็มก่อน (ถือมือถือแนวตั้งส่วนใหญ่หัวบัตรอยู่ขวา) แล้วค่อยตามเข็ม · แนวนอนลองตรงก่อนแล้วกลับหัว */
+  const portrait=img.naturalHeight>img.naturalWidth*1.1;
+  const tries=portrait ? [-90, 90, 0] : [0, 180];
+  let best=null, firstUrl='';
+  for(let i=0;i<tries.length;i++){
+    const dataUrl=idpRender(img, tries[i]); if(!firstUrl) firstUrl=dataUrl;
+    idpShow(`<img class="idp-thumb" src="${dataUrl}" alt=""><div class="idp-msg"><span class="idp-spin"></span> ${i? 'ลองหมุนรูปแล้วอ่านใหม่… ('+(i+1)+'/'+tries.length+')' : 'กำลังอ่านตัวหนังสือจากรูป… (ประมาณ 5-10 วินาที)'}</div>`);
+    idCardStatus('⏳ กำลังอ่านข้อมูลจากรูปบัตร…');
+    let res=null;
+    try{ res=await window.hcsApi.postAction('ocrIdCard', {token:localStorage.getItem('hcs_token'), image:dataUrl.split(',')[1]}); }
+    catch(e){ res={status:'error', message:String(e)}; }
+    if(document.getElementById('idpOverlay').hidden) return;                   // ผู้ใช้กดปิดไปแล้ว
+    if(!res || res.status!=='ok'){
+      const msg=(res&&res.message)||'อ่านรูปไม่สำเร็จ';
+      idCardStatus('❌ '+msg,'err');
+      idpShow(`<img class="idp-thumb" src="${dataUrl}" alt=""><div class="idp-msg err">❌ ${idpEsc(msg)}</div>
+        <div class="idp-actions"><button type="button" class="btn btn-ghost" data-idp="close">ปิด</button><button type="button" class="btn btn-primary" data-idp="retake">📷 ถ่ายใหม่</button></div>`);
+      return;
+    }
+    const d=parseIdCardOcr(res.text||''), sc=idpScore(d);
+    if(!best || sc>best.sc) best={d, sc, dataUrl};
+    if(d.cidValid && d.firstName && d.lastName) break;                         // ได้ครบแล้ว ไม่ต้องลองทิศอื่น
   }
-  const d=parseIdCardOcr(res.text||'');
-  if(!d.cid && !d.firstName && !d.lastName){
+  if(!best || best.sc<2){
     idCardStatus('❌ อ่านข้อความบนบัตรไม่ออก — ลองถ่ายใหม่ให้ชัดขึ้น','err');
-    idpShow(`<img class="idp-thumb" src="${dataUrl}" alt=""><div class="idp-msg err">❌ อ่านข้อความบนบัตรไม่ออก<br><small>ถ่ายใหม่ให้บัตรเต็มกรอบ ตัวหนังสือคมชัด ไม่มีแสงสะท้อน</small></div>
+    idpShow(`<img class="idp-thumb" src="${firstUrl}" alt=""><div class="idp-msg err">❌ อ่านข้อความบนบัตรไม่ออก<br><small>ถ่ายใหม่ให้บัตรเต็มจอ ตัวหนังสือคมชัด ไม่มีแสงสะท้อน</small></div>
       <div class="idp-actions"><button type="button" class="btn btn-ghost" data-idp="close">ปิด</button><button type="button" class="btn btn-primary" data-idp="retake">📷 ถ่ายใหม่</button></div>`);
     return;
   }
-  _idpData=d;
-  idpReview(d, dataUrl);
+  _idpData=best.d;
+  idpReview(best.d, best.dataUrl);
 }
 function idpEsc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function idpReview(d, dataUrl){
