@@ -5253,14 +5253,19 @@ const _idbKV = (function(){
   let p = null;
   function db(){
     if(p) return p;
-    p = new Promise((res, rej)=>{
+    const open = ver => new Promise((res, rej)=>{
       try{
-        const r = indexedDB.open('hearform_cache', 1);
-        r.onupgradeneeded = ()=>{ try{ r.result.createObjectStore('kv'); }catch(e){} };
+        const r = ver ? indexedDB.open('hearform_cache', ver) : indexedDB.open('hearform_cache');
+        r.onupgradeneeded = ()=>{ try{ if(!r.result.objectStoreNames.contains('kv')) r.result.createObjectStore('kv'); }catch(e){} };
         r.onsuccess = ()=>res(r.result);
         r.onerror = ()=>rej(r.error);
         r.onblocked = ()=>rej(new Error('idb blocked'));
       }catch(e){ rej(e); }
+    });
+    /* ฐานข้อมูลมีอยู่แล้วแต่ไม่มีที่เก็บ 'kv' (เช่น ถูกสร้างไว้ไม่ครบ) → เปิดใหม่ด้วยเวอร์ชันถัดไปเพื่อสร้างให้ */
+    p = open(0).then(d=>{
+      if(d.objectStoreNames.contains('kv')) return d;
+      const v = d.version + 1; d.close(); return open(v);
     });
     return p;
   }
