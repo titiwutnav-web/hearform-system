@@ -2121,6 +2121,7 @@ const SEC3 = [
 const S11_LABELS = ['ปิด-เปิด เปลี่ยนแบตเตอรี่ เปิดฝาเครื่องได้ด้วยตนเอง','ปรับ ลด/เพิ่ม ระดับเสียง เครื่องช่วยฟังได้ด้วยตนเอง','ทราบแหล่งให้บริการ ซ่อมแซมเครื่องช่วยฟัง','ทราบวิธีการดูแลรักษาเครื่องช่วยฟังที่ถูกต้อง','ใส่พิมพ์หู ได้อย่างถูกต้อง','ใช้เครื่องช่วยฟังอย่างน้อย 4 ชม. ต่อวัน','ถอดแบตเตอรี่ออกทุกครั้งเมื่อไม่ใช้งาน','เก็บเครื่องช่วยฟังไว้ในที่ที่เหมาะสมทุกครั้ง ไม่วางในที่ร้อน/เย็นเกินไป'];
 
 const DEFAULTS = {
+  s7_order:'',   /* ลำดับเครื่องตอนปริ้น: '12' = เครื่องที่เลือกเป็นเครื่องที่ 1, '21' = สลับเป็นเครื่องที่ 2 (สุ่มครั้งแรกที่ปริ้น แล้วจำไว้กับเคส) */
   hospital:'', place:'', namePrefix:'นาย',
   audiologist:'นายธิติวุฒิ นวคุณไพโรจน์', positionNum:'513', officer:'นายธิติวุฒิ นวคุณไพโรจน์',
   citizenId:'', examiner:'', examinerPosition:'',
@@ -3116,7 +3117,7 @@ const HA_CLEAR_KEYS = [
   'sn','sn_L','sn_R',
   'mSoft','mHard','sHalf','sFull','sSkel','sCanal','aRemoval','aCanalLock','aVent','ventSize','_ventManual','_ventAuto',
   's7_am','s7_am_model','s7_am_model_L','s7_am_model_R','s7_am_result','price',
-  'brand','model','modelL','modelR','brandL','brandR','snL','snR','cmp_reason','_reason_manual'
+  'brand','model','modelL','modelR','brandL','brandR','snL','snR','cmp_reason','_reason_manual','s7_order'
 ];
 function clearHearingAidData(){
   if(!confirm('ล้างข้อมูลเครื่องช่วยฟังของผู้ป่วยรายนี้ทั้งหมด?\n\n'
@@ -3354,7 +3355,7 @@ function haPage2(){
   return `<section class="sheet" id="p-ha2">
     <table class="formtbl">
       <tr><td><b>7.</b> การลองเครื่องช่วยฟังให้ผู้ที่สูญเสียการได้ยิน
-        <div class="indent">7.1 ยี่ห้อ <b>${f('s7_resound')}</b> รุ่น ${f('s7_resound_model_disp')} ผลการทดลอง ${f('s7_resound_result')}<br>7.2 ยี่ห้อ <b>${f('s7_am')}</b> รุ่น ${f('s7_am_model_disp')} ผลการทดลอง ${f('s7_am_result')}</div></td></tr>
+        <div class="indent">7.1 ยี่ห้อ <b>${f('s7_p1_brand')}</b> รุ่น ${f('s7_p1_model_disp')} ผลการทดลอง ${f('s7_p1_result')}<br>7.2 ยี่ห้อ <b>${f('s7_p2_brand')}</b> รุ่น ${f('s7_p2_model_disp')} ผลการทดลอง ${f('s7_p2_result')}</div></td></tr>
       <tr><td><b>8.</b> สรุปผลการใส่เครื่องช่วยฟัง
         ${cbv('dtype','body')} Body aid &nbsp; ${cbv('dtype','bte')} BTE &nbsp; ${cbv('dtype','ite')} ในช่องหู &nbsp; ${cbv('dtype','ric')} RIC<br>
         <span class="indent">ซ้าย (LEFT) ยี่ห้อ <b>${f('brandL')}</b> รุ่น <b>${f('modelL')}</b> เลขเครื่อง ${f('snL')} ราคา ${f('price')}</span><br>
@@ -3471,7 +3472,7 @@ function haPage3(){
             เครื่องที่ 2 BTE with Ear tip &nbsp; SD without lip reading = ${f('cmp_sd2_wo')} % &nbsp; SD with lip reading = ${f('cmp_sd2_w')} %
           </div>
         </div>
-        <div style="margin-top:3px">คนไข้เลือกเครื่องที่ &nbsp; ${cbv('cmp_choice','1')} 1 (${f('s7_resound')} ${f('s7_resound_model_disp')}) &nbsp;&nbsp; ${cbv('cmp_choice','2')} 2 (${f('s7_am')} ${f('s7_am_model_disp')})</div>
+        <div style="margin-top:3px">คนไข้เลือกเครื่องที่ &nbsp; ${cbv('cmp_choice_disp','1')} 1 (${f('s7_p1_brand')} ${f('s7_p1_model_disp')}) &nbsp;&nbsp; ${cbv('cmp_choice_disp','2')} 2 (${f('s7_p2_brand')} ${f('s7_p2_model_disp')})</div>
         <div style="margin-top:2px">&nbsp;&nbsp;&nbsp;&nbsp;ซ้าย (LEFT) ยี่ห้อ <b>${f('brandL')}</b> รุ่น <b>${f('modelL')}</b></div>
         <div style="margin-top:2px">&nbsp;&nbsp;&nbsp;&nbsp;ขวา (RIGHT) ยี่ห้อ <b>${f('brandR')}</b> รุ่น <b>${f('modelR')}</b></div>
         <div style="margin-top:2px">เนื่องจาก ${f('cmp_reason','style="min-width:480px"')}</div>
@@ -3567,6 +3568,14 @@ function fuPage(n,dateKey,byKey){
   </section>`;
 }
 
+/* สุ่มลำดับเครื่องที่ 1/2 ครั้งแรกที่จะปริ้น (ต้องมีทั้งเครื่องที่เลือกและเครื่องคู่เทียบ)
+   สุ่มแล้วจำไว้ในเคส → ปริ้นซ้ำกี่รอบลำดับก็เหมือนเดิม และใบประเมินกับหน้า Real Ear ตรงกันเสมอ */
+function ensureS7Order(){
+  if(S.s7_order==='12' || S.s7_order==='21') return false;
+  if(!S.s7_resound || !S.s7_am) return false;
+  S.s7_order = (Math.random() < 0.5) ? '12' : '21';
+  return true;
+}
 function buildSheets(){
   document.getElementById('sheets').innerHTML =
     earmoldPage() + haPage1() + haPage2() + audiogramPage() + haPage3() + haPage4() +
@@ -3646,6 +3655,18 @@ function updateDerived(){
   S.sn_disp = bothEar ? `ซ้าย ${S.snL||'-'} / ขวา ${S.snR||'-'}` : (S.sn||'');
   S.s7_resound_model_disp = bothEar ? `ซ้าย ${S.s7_resound_model_L||'-'} / ขวา ${S.s7_resound_model_R||'-'}` : (S.s7_resound_model||'');
   S.s7_am_model_disp = bothEar ? `ซ้าย ${S.s7_am_model_L||'-'} / ขวา ${S.s7_am_model_R||'-'}` : (S.s7_am_model||'');
+  /* ลำดับเครื่องที่ 1/2 บนฟอร์มปริ้น (ใบประเมินข้อ 7 + หน้า Real Ear) — ใช้ชุดเดียวกันทั้งสองหน้าเสมอ
+     ข้อมูลจริงยังเก็บแบบเดิม: s7_resound* = เครื่องที่คนไข้เลือก, s7_am* = เครื่องคู่เทียบ */
+  {
+    const _sel = { brand:S.s7_resound||'', model_disp:S.s7_resound_model_disp||'', result:S.s7_resound_result||'' };
+    const _cmp = { brand:S.s7_am||'',      model_disp:S.s7_am_model_disp||'',      result:S.s7_am_result||'' };
+    const _swap = S.s7_order==='21';
+    const _p1 = _swap ? _cmp : _sel, _p2 = _swap ? _sel : _cmp;
+    S.s7_p1_brand=_p1.brand; S.s7_p1_model_disp=_p1.model_disp; S.s7_p1_result=_p1.result;
+    S.s7_p2_brand=_p2.brand; S.s7_p2_model_disp=_p2.model_disp; S.s7_p2_result=_p2.result;
+    /* cmp_choice เก็บความหมายเดิม ('1' = s7_resound) → แปลงเป็นตำแหน่งบนกระดาษ */
+    S.cmp_choice_disp = !S.cmp_choice ? '' : (((S.cmp_choice==='1') !== _swap) ? '1' : '2');
+  }
 
   // ที่อยู่ — ประกอบสรุปที่อยู่จากช่องย่อย
   const _addrParts = [
@@ -5537,6 +5558,7 @@ function init(){
     updatePrintModalChips(ids.size);
   }
   function openPrintModal(){
+    if(ensureS7Order()) onAnyChange();
     const list = document.getElementById('printCheckList');
     list.innerHTML = PRINT_PAGES.map(([ids,label])=>{
       const isChecked = _printSelPids ? ids.some(id=>_printSelPids.has(id)) : true;
@@ -5620,6 +5642,8 @@ function init(){
   });
   document.getElementById('btnPreviewPrint').addEventListener('click', ()=>window.print());
   /* ── หลังปิดหน้าต่างปริ้น (ปริ้นเสร็จ/บันทึกเป็น PDF เสร็จ): บันทึกข้อมูล แล้วล้างฟอร์มกลับไปหน้าแรกให้พร้อมรับผู้ป่วยคนถัดไป ── */
+  /* กด Ctrl+P ตรงๆ (ไม่ผ่านหน้าต่างเลือกฟอร์ม) ก็ต้องสุ่มลำดับเครื่องก่อนเหมือนกัน */
+  window.addEventListener('beforeprint', ()=>{ try{ if(ensureS7Order()){ updateDerived(); render(); } }catch(e){ console.warn('s7order', e); } });
   window.addEventListener('afterprint', async ()=>{
     document.querySelectorAll('#sheets > .sheet.sheet-copy-clone').forEach(n=>n.remove());
     /* ถ้ายังไม่เลือกสิทธิ์การรักษา: ไม่บันทึกและไม่ล้างฟอร์ม — พากลับไปหน้ากรอกให้เลือกก่อน (กันข้อมูลหาย) */
