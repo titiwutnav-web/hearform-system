@@ -5245,6 +5245,52 @@ let _fullCache = {};
 const FULLCACHE_MAX = 1000;
 try{ _outbox = JSON.parse(localStorage.getItem(OUTBOX_KEY)||'[]'); }catch(e){ _outbox = []; }
 try{ _fullCache = JSON.parse(localStorage.getItem(FKEY)||'{}'); }catch(e){ _fullCache = {}; }
+/* ══ ย้ายแคชข้อมูลเต็มไปเก็บใน IndexedDB (เพิ่ม 17 ต.ค. 69) ══
+   localStorage ของ Safari/iPhone จุได้ 5 MB และนับตัวอักษรไทยเป็น 2 ไบต์ — ข้อมูลเต็ม 811 ราย (~2.3 ล้านตัวอักษร ≈ 4.7 MB)
+   จึงเขียนไม่ลง ระบบตัดแคชเหลือ 200 ราย + รายชื่อก็บันทึกลงเครื่องไม่ได้ → มือถือต้องรอเซิร์ฟเวอร์ทุกครั้ง
+   IndexedDB จุได้หลายร้อย MB → เก็บข้อมูลเต็มไว้ที่นี่ แล้วลบก้อนเดิมใน localStorage ทิ้งเพื่อคืนพื้นที่ */
+const _idbKV = (function(){
+  let p = null;
+  function db(){
+    if(p) return p;
+    p = new Promise((res, rej)=>{
+      try{
+        const r = indexedDB.open('hearform_cache', 1);
+        r.onupgradeneeded = ()=>{ try{ r.result.createObjectStore('kv'); }catch(e){} };
+        r.onsuccess = ()=>res(r.result);
+        r.onerror = ()=>rej(r.error);
+        r.onblocked = ()=>rej(new Error('idb blocked'));
+      }catch(e){ rej(e); }
+    });
+    return p;
+  }
+  return {
+    get(k){ return db().then(d=>new Promise((res, rej)=>{ const q = d.transaction('kv','readonly').objectStore('kv').get(k); q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error); })); },
+    set(k, v){ return db().then(d=>new Promise((res, rej)=>{ const tx = d.transaction('kv','readwrite'); tx.objectStore('kv').put(v, k); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); tx.onabort=()=>rej(tx.error); })); }
+  };
+})();
+let _fullIdbReady = null;   /* Promise ระหว่างเปิด IndexedDB / null = ใช้ไม่ได้ (ถอยไปใช้ localStorage แบบเดิม) */
+let _fullIdbOk = false;
+if(typeof indexedDB !== 'undefined'){
+  _fullIdbReady = _idbKV.get(FKEY).then(stored=>{
+    if(stored && typeof stored === 'object'){
+      Object.keys(stored).forEach(id=>{
+        const c = _fullCache[id], s2 = stored[id];
+        if(s2 && (!c || String(c._savedAt||'') < String(s2._savedAt||''))) _fullCache[id] = s2;
+      });
+    }
+    return _idbKV.set(FKEY, _fullCache);
+  }).then(()=>{
+    _fullIdbOk = true;
+    try{ localStorage.removeItem(FKEY); }catch(e){}
+  }).catch(()=>{ _fullIdbReady = null; _fullIdbOk = false; });
+}
+let _fullSaveTimer = null;
+function _flushFullCacheIdb(){
+  if(_fullSaveTimer){ clearTimeout(_fullSaveTimer); _fullSaveTimer = null; }
+  if(_fullIdbOk) _idbKV.set(FKEY, _fullCache).catch(()=>{});
+}
+window.addEventListener('pagehide', ()=>{ try{ _flushFullCacheIdb(); }catch(e){} });
 let _syncing = false;
 function saveOutbox(){ try{ localStorage.setItem(OUTBOX_KEY, JSON.stringify(_outbox)); }catch(e){} }
 /* ══ baseline snapshot — เก็บ "ข้อมูลเวอร์ชันที่เครื่องนี้โหลดมาตอนเปิดเคส" ไว้เทียบตอนบันทึก ══
@@ -5262,6 +5308,11 @@ function snapBase(rec){
 function baseFor(id){ return _baseSnap[id] || null; }
 let _entryOpen = false;
 function saveFullCache(){
+  if(_fullIdbReady){   /* เก็บลง IndexedDB — รวบหลายครั้งที่บันทึกติดกันเป็นครั้งเดียว */
+    if(_fullSaveTimer) clearTimeout(_fullSaveTimer);
+    _fullSaveTimer = setTimeout(()=>{ _fullSaveTimer = null; if(_fullIdbReady) _fullIdbReady.then(()=>{ if(_fullIdbOk) _idbKV.set(FKEY, _fullCache).catch(()=>{}); else saveFullCache(); }); }, 400);
+    return;
+  }
   try{ localStorage.setItem(FKEY, JSON.stringify(_fullCache)); }
   catch(e){
     // ที่เก็บเต็ม — ตัดรายการเก่าออกให้เหลือ 20 รายล่าสุด แล้วลองใหม่
