@@ -5273,6 +5273,14 @@ function saveFullCache(){
     }catch(e2){}
   }
 }
+/* ⚡ ข้อมูลเต็มในเครื่องเป็นเวอร์ชันเดียวกับในรายชื่อล่าสุดจากเซิร์ฟเวอร์หรือไม่ (เทียบ _savedAt + calledAt
+   เพราะ markCalled แก้ calledAt โดยไม่เปลี่ยน _savedAt) — ตรงกัน = เปิดจากเครื่องได้เลย ไม่ต้องถามเซิร์ฟเวอร์ (เพิ่ม 17 ต.ค. 69) */
+function fullIsFresh(id, listRec){
+  const c = _fullCache[id]; if(!c) return false;
+  const l = listRec || (typeof _recordsCache!=='undefined' ? _recordsCache.find(r=>r && r._id===id) : null);
+  if(!l) return false;
+  return String(c._savedAt||'') >= String(l._savedAt||'') && String(c.calledAt||'') === String(l.calledAt||'');
+}
 function upsertFullCache(rec){
   if(!rec || !rec._id) return;
   _fullCache[rec._id] = rec;
@@ -7617,6 +7625,7 @@ function init(){
     if(_recordsLoaded){            /* งานเบื้องหลังที่ต้องคุยกับเซิร์ฟเวอร์ — รอให้ได้ข้อมูลจริงก่อน ไม่ทำจากแคชเก่า */
       fillMissingRightTypes(list);
       clearExpiredQueues();
+      prefetchFullRecords(pageList.map(r=>r._id));
     }
     updateBulkBar();
     const _tb = document.getElementById('btnOpenTrash');      /* ถังขยะ: เปิดได้เฉพาะผู้ที่ลบข้อมูลได้ */
@@ -7674,6 +7683,49 @@ function init(){
         แล้ววาดตารางใหม่ให้ป้ายสิทธิ์ขึ้นเอง — ไม่ต้องแก้เซิร์ฟเวอร์ ── */
   const _rtFetched = new Set();
   let _rtFilling = false;
+  /* ⚡ ดึง "ข้อมูลเต็ม" ของผู้ป่วยที่ยังไม่มี/เก่ากว่าในรายชื่อ มาเก็บในเครื่องล่วงหน้าเบื้องหลัง
+        → กดปุ่ม 👤 🦻 📈 🖨️ แล้วเปิดได้ทันที ไม่ต้องรอ Apps Script (2-17 วิ ต่อครั้ง)
+        ดึงหน้าที่กำลังดูก่อน แล้วค่อยไล่ที่เหลือ ชุดละ 150 ราย · รายที่ลองแล้วไม่ดึงซ้ำจนกว่าจะมีการแก้ไขใหม่ (เพิ่ม 17 ต.ค. 69) */
+  let _pfBusy = false;
+  const _pfTried = {};
+  async function prefetchFullRecords(priorityIds){
+    if(_pfBusy || !_recordsLoaded) return;
+    const api = window.hcsApi; if(!api) return;
+    const t = localStorage.getItem('hcs_token'); if(!t) return;
+    const pend = new Set(_outbox.map(o=>o._id));
+    const sig = r => String(r._savedAt||'')+'|'+String(r.calledAt||'');
+    const want = r => r && r._id && !pend.has(r._id) && !fullIsFresh(r._id, r) && _pfTried[r._id] !== sig(r);
+    const byId = {}; _recordsCache.forEach(r=>{ if(r && r._id) byId[r._id] = r; });
+    const first = (priorityIds||[]).map(id=>byId[id]).filter(want);
+    const firstIds = new Set(first.map(r=>r._id));
+    const rest = _recordsCache.filter(r=>want(r) && !firstIds.has(r._id))
+      .sort((a,b)=>String(b._savedAt||'').localeCompare(String(a._savedAt||''))); /* รายที่แก้ล่าสุดก่อน */
+    const need = first.concat(rest);
+    if(!need.length) return;
+    _pfBusy = true;
+    try{
+      const CHUNK = 150;
+      for(let k=0; k<need.length; k+=CHUNK){
+        const part = need.slice(k, k+CHUNK);
+        let res = null;
+        try{ res = await api.postAction('getRecordsBulk', {token:t, ids:part.map(r=>r._id)}); }catch(e){ res = null; }
+        if(!(res && res.status==='ok' && Array.isArray(res.records))) break; /* เน็ตสะดุด — รอบหน้าค่อยต่อ */
+        part.forEach(r=>{ _pfTried[r._id] = sig(r); });
+        res.records.forEach(rec=>{
+          if(!rec || !rec._id || _outbox.some(o=>o._id===rec._id)) return;
+          const c = _fullCache[rec._id];
+          if(c && String(c._savedAt||'') > String(rec._savedAt||'')) return; /* ในเครื่องใหม่กว่า (เพิ่งบันทึก) */
+          _fullCache[rec._id] = rec;
+        });
+        const cids = Object.keys(_fullCache);
+        if(cids.length > FULLCACHE_MAX){
+          cids.sort((a,b)=>String(_fullCache[a]._savedAt||'').localeCompare(String(_fullCache[b]._savedAt||'')));
+          while(cids.length > FULLCACHE_MAX){ delete _fullCache[cids.shift()]; }
+        }
+        saveFullCache();
+      }
+    } finally { _pfBusy = false; }
+  }
   async function fillMissingRightTypes(fullList){
     if(_rtFilling) return;
     /* ⚡ Apps Script เวอร์ชันปัจจุบันส่ง rightType มากับ listRecords แล้ว — ถ้าว่างแปลว่าในฟอร์มก็ว่างจริง
@@ -7948,6 +8000,7 @@ function init(){
     const cached = _fullCache[id];
     const pending = _outbox.some(o=>o._id===id); // ยังไม่ส่งขึ้นเซิร์ฟเวอร์ = ตัวในเครื่องใหม่สุดแน่นอน ห้ามใช้ของเซิร์ฟเวอร์ทับ
     if(cached && pending) rec = cached;
+    else if(cached && fullIsFresh(id)) rec = cached; /* ⚡ ตรงกับเวอร์ชันล่าสุดบนเซิร์ฟเวอร์ → เปิดทันที (ถ้าห้องอื่นแก้แทรก ระบบรวมข้อมูล 3 ทางตอนบันทึกจัดการให้) */
     if(!rec){
       const oldTxt = btn.textContent; btn.disabled = true; btn.textContent = '⏳';
       const res = api ? await api.postAction('getRecord', {token:t, id}) : null;
