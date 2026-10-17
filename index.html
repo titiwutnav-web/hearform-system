@@ -1487,6 +1487,63 @@ body::before{
 
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+<style id="mobileRowSheetCss">
+/* ══ มือถือ: รายชื่อผู้ป่วยแบบกระชับ + เมนูเด้งจากด้านล่าง (เพิ่ม 17 ต.ค. 69) ══ */
+.lst-msub, .lst-chev { display:none; }
+#rowSheet { display:none; }
+@media (max-width:640px){
+  .list-table { min-width:0 !important; width:100% !important; table-layout:fixed !important; }
+  .list-table thead { display:none; }
+  .list-table td:nth-child(3), .list-table td:nth-child(5), .list-table td:nth-child(6), .list-table td:nth-child(7),
+  .list-table td:nth-child(8), .list-table td:nth-child(9), .list-table td:nth-child(10) { display:none !important; }
+  .list-table td:nth-child(2) { width:30px !important; padding-left:4px !important; padding-right:4px !important; color:#8B88A3; font-size:13px; vertical-align:top; padding-top:15px !important; }
+  .list-table.sel-mode td.td-chk { width:34px !important; vertical-align:top; padding-top:14px !important; }
+  .list-table.sel-mode td.td-chk input { width:20px; height:20px; }
+  .list-table td.lst-name { width:auto !important; white-space:normal !important; position:relative; padding:12px 30px 12px 4px !important; font-size:15.5px; font-weight:600; line-height:1.35; cursor:pointer; }
+  .list-table tbody tr { cursor:pointer; -webkit-tap-highlight-color:rgba(61,109,246,.12); }
+  .list-table tbody tr:active td { background:rgba(61,109,246,.07); }
+  .list-table .lst-note { position:static !important; display:inline-block; margin-top:5px; white-space:normal !important; max-width:100%; font-size:12px; }
+  .lst-msub { display:flex; flex-wrap:wrap; gap:5px 6px; align-items:center; margin-top:5px; font-weight:500; }
+  .lst-msub .lms-txt { font-size:12px; color:#6B6885; background:#F1F0FB; border-radius:9999px; padding:2px 9px; }
+  .lst-msub .right-pill, .lst-msub .queue-pill { font-size:11.5px; padding:2px 9px; }
+  .lst-msub .lms-miss { font-size:11.5px; font-weight:700; color:#B91C1C; background:#FEE2E2; border-radius:9999px; padding:2px 9px; }
+  .lst-chev { display:block; position:absolute; right:8px; top:50%; transform:translateY(-50%); font-size:24px; line-height:1; color:#B4B0CC; font-weight:400; }
+
+  #rowSheet { display:block; position:fixed; inset:0; z-index:99995; pointer-events:none; }
+  #rowSheet .rs-back { position:absolute; inset:0; background:rgba(28,24,56,.38); opacity:0; transition:opacity .18s; }
+  #rowSheet .rs-card { position:absolute; left:0; right:0; bottom:0; background:#fff; border-radius:22px 22px 0 0;
+    box-shadow:0 -12px 40px rgba(36,31,71,.22); padding:8px 16px calc(14px + env(safe-area-inset-bottom));
+    transform:translateY(105%); transition:transform .22s cubic-bezier(.2,.8,.2,1); max-height:88vh; overflow-y:auto;
+    font-family:'Poppins','Sarabun','TH Sarabun New',Tahoma,sans-serif; }
+  #rowSheet.show { pointer-events:auto; }
+  #rowSheet.show .rs-back { opacity:1; }
+  #rowSheet.show .rs-card { transform:translateY(0); }
+  html.rs-open, html.rs-open body { overflow:hidden; }
+  #rowSheet .rs-grip { width:40px; height:5px; border-radius:9999px; background:#DCD9EE; margin:2px auto 12px; }
+  #rowSheet .rs-name { font-size:18px; font-weight:700; color:#241F47; line-height:1.3; }
+  #rowSheet .rs-sub { font-size:13px; color:#6B6885; margin-top:4px; line-height:1.45; }
+  #rowSheet .rs-note { font-size:13px; color:#B91C1C; background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:6px 10px; margin-top:8px; }
+  #rowSheet .rs-main { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+  #rowSheet .rs-btn { position:relative; display:flex; flex-direction:column; align-items:flex-start; gap:6px; min-height:84px; padding:12px 13px;
+    border:1.5px solid #E5E2F7; border-radius:16px; background:#F8F7FD; font-family:inherit; text-align:left; color:#241F47; cursor:pointer; }
+  #rowSheet .rs-btn:active { background:#EDE9FE; }
+  #rowSheet .rs-ic { font-size:26px; line-height:1; }
+  #rowSheet .rs-tx { font-size:15px; font-weight:700; line-height:1.25; display:flex; flex-direction:column; gap:3px; }
+  #rowSheet .rs-tx small { font-size:11.5px; font-weight:500; color:#B91C1C; line-height:1.35; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+  #rowSheet .rs-tx small:empty { display:none; }
+  #rowSheet .rs-bad { display:none; position:absolute; top:9px; right:10px; width:20px; height:20px; border-radius:9999px; background:#DC2626; color:#fff; font-size:12px; font-weight:800; align-items:center; justify-content:center; }
+  #rowSheet .rs-btn.miss { border-color:#FECACA; background:#FFF7F7; }
+  #rowSheet .rs-btn.miss .rs-bad { display:flex; }
+  #rowSheet .rs-fu { display:flex; align-items:center; gap:8px; margin-top:14px; }
+  #rowSheet .rs-lbl { font-size:12.5px; color:#8B88A3; font-weight:700; white-space:nowrap; }
+  #rowSheet .rs-fub { flex:1; height:40px; border-radius:12px; border:1.5px solid #E5E2F7; background:#fff; font-family:inherit; font-size:13px; font-weight:600; color:#5B5675; cursor:pointer; }
+  #rowSheet .rs-fub.done { background:#DCFCE7; border-color:#86EFAC; color:#15803D; }
+  #rowSheet .rs-row { display:flex; gap:8px; margin-top:10px; }
+  #rowSheet .rs-sm { flex:1; height:44px; border-radius:12px; border:1.5px solid #E5E2F7; background:#fff; font-family:inherit; font-size:14px; font-weight:600; color:#241F47; cursor:pointer; white-space:nowrap; }
+  #rowSheet .rs-sm.rs-del { color:#B91C1C; border-color:#FECACA; background:#FFF7F7; flex:0 0 auto; padding:0 14px; }
+  #rowSheet .rs-close { display:block; width:100%; height:46px; margin-top:12px; border:none; border-radius:14px; background:#F1F0FB; font-family:inherit; font-size:15px; font-weight:700; color:#5B5675; cursor:pointer; }
+}
+</style>
 </head>
 <body>
 <div id="lockScreen">
@@ -7651,7 +7708,7 @@ function init(){
         <td class="td-chk"><input type="checkbox" data-act="sel" data-id="${r._id}"${_selIds.has(r._id)?' checked':''}></td>
         <td>${startIdx+i+1}</td>
         <td>${qBadge}</td>
-        <td class="lst-name" title="HN ${esc(r.hn)||'-'}">${esc(r.name)||'-'}${(()=>{ const nv = r.note || (_fullCache[r._id]||{}).note || ''; return nv ? `<div class="lst-note">📌 ${esc(nv)}</div>` : ''; })()}</td>
+        <td class="lst-name" title="HN ${esc(r.hn)||'-'}">${esc(r.name)||'-'}${(()=>{ const nv = r.note || (_fullCache[r._id]||{}).note || ''; return nv ? `<div class="lst-note">📌 ${esc(nv)}</div>` : ''; })()}${lstMobileSub(r, qToday, earTxt, rt)}<span class="lst-chev" aria-hidden="true">›</span></td>
         <td class="lst-fu"><span class="fu-track">${[1,2,3].map(n=>{
           const fc = _fullCache[r._id]||{};
           const d = r['fu'+n+'_date'] || fc['fu'+n+'_date'] || '';
@@ -7689,6 +7746,102 @@ function init(){
     const chkAll = document.getElementById('lstChkAll');
     if(chkAll) chkAll.checked = pageList.length>0 && pageList.every(r=>_selIds.has(r._id));
   }
+  /* ══════════════ มือถือ: แตะแถวผู้ป่วย → เมนูเด้งจากด้านล่าง (เพิ่ม 17 ต.ค. 69) ══════════════
+     บนจอแคบตารางกว้างเกินจอ ต้องเลื่อนซ้ายขวาหาปุ่ม → ซ่อนคอลัมน์รอง โชว์แค่ลำดับ + ชื่อ + บรรทัดสรุป
+     แตะแถวแล้วขึ้นเมนูปุ่มใหญ่ ปุ่มในเมนู "กดแทน" ปุ่มเดิมที่ซ่อนอยู่ในแถว → ใช้ตรรกะเดิมทั้งหมด ไม่ต้องเขียนซ้ำ */
+  function isMobileList(){ try{ return window.matchMedia('(max-width:640px)').matches; }catch(e){ return false; } }
+  function lstMobileSub(r, qToday, earTxt, rt){
+    const bits = [];
+    if(r.queueNo && qToday) bits.push(`<span class="queue-pill today">คิว ${r.queueNo}</span>`);
+    if(earTxt && earTxt!=='-') bits.push(`<span class="lms-txt">${esc(earTxt)}</span>`);
+    if(LST_RIGHT_TH[rt]) bits.push(`<span class="right-pill rp-${rt}">${LST_RIGHT_TH[rt]}</span>`);
+    if(rowMissing(r,'p').length || rowMissing(r,'ha').length) bits.push(`<span class="lms-miss">! ข้อมูลไม่ครบ</span>`);
+    return bits.length ? `<div class="lst-msub">${bits.join('')}</div>` : '';
+  }
+  let _rsId = null;
+  function rowSheetEl(){
+    let w = document.getElementById('rowSheet');
+    if(w) return w;
+    w = document.createElement('div');
+    w.id = 'rowSheet';
+    w.innerHTML = `<div class="rs-back"></div>
+      <div class="rs-card" role="dialog" aria-modal="true">
+        <div class="rs-grip"></div>
+        <div class="rs-head"><div class="rs-name"></div><div class="rs-sub"></div><div class="rs-note"></div></div>
+        <div class="rs-main">
+          <button class="rs-btn" data-px="edit"><span class="rs-ic">👤</span><span class="rs-tx">ข้อมูลผู้ป่วย<small></small></span><span class="rs-bad">!</span></button>
+          <button class="rs-btn" data-px="ha"><span class="rs-ic">🦻</span><span class="rs-tx">เครื่องช่วยฟัง<small></small></span><span class="rs-bad">!</span></button>
+          <button class="rs-btn" data-px="audio"><span class="rs-ic">📈</span><span class="rs-tx">Audiogram<small></small></span></button>
+          <button class="rs-btn" data-px="print"><span class="rs-ic">🖨️</span><span class="rs-tx">พิมพ์ฟอร์ม<small></small></span></button>
+        </div>
+        <div class="rs-fu"><span class="rs-lbl">ติดตามผล</span>
+          <button class="rs-fub" data-px="fu" data-fu="1"></button><button class="rs-fub" data-px="fu" data-fu="2"></button><button class="rs-fub" data-px="fu" data-fu="3"></button>
+        </div>
+        <div class="rs-row">
+          <button class="rs-sm" data-px="queue"></button>
+          <button class="rs-sm" data-px="noah">📤 Noah</button>
+          <button class="rs-sm rs-del" data-px="del">🗑️ ลบ</button>
+        </div>
+        <button class="rs-close" type="button">ปิด</button>
+      </div>`;
+    document.body.appendChild(w);
+    w.querySelector('.rs-back').addEventListener('click', closeRowSheet);
+    w.querySelector('.rs-close').addEventListener('click', closeRowSheet);
+    w.addEventListener('click', e=>{
+      const b = e.target.closest('[data-px]'); if(!b || !_rsId) return;
+      const act = b.getAttribute('data-px'), id = _rsId, fu = b.getAttribute('data-fu');
+      closeRowSheet();
+      const sel = `#lstBody [data-act="${act}"][data-id="${id}"]` + (fu ? `[data-fu="${fu}"]` : '');
+      const target = document.querySelector(sel);
+      if(target) setTimeout(()=>target.click(), 30);   /* ปล่อยให้เมนูปิดก่อน แล้วค่อยกดปุ่มจริงในแถว */
+      else alert('รายการนี้ถูกย้ายหรือรีเฟรชไปแล้ว — กรุณาแตะชื่อผู้ป่วยอีกครั้ง');
+    });
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape' && w.classList.contains('show')) closeRowSheet(); });
+    return w;
+  }
+  function openRowSheet(id){
+    const r = getRecords().find(x=>x && x._id===id); if(!r) return;
+    const w = rowSheetEl();
+    _rsId = id;
+    const fc = _fullCache[id] || {};
+    const rt = r.rightType || fc.rightType || '';
+    const ear = LST_EAR_TH[r.ear] || r.ear || '';
+    w.querySelector('.rs-name').textContent = r.name || '-';
+    w.querySelector('.rs-sub').textContent = ['HN ' + (r.hn||'-'), ear, LST_RIGHT_TH[rt]||'', r.model||'', r.fitDate ? ('ใส่ ' + r.fitDate) : ''].filter(Boolean).join(' · ');
+    const nv = r.note || fc.note || '';
+    const ne = w.querySelector('.rs-note'); ne.textContent = nv ? ('📌 ' + nv) : ''; ne.style.display = nv ? '' : 'none';
+    [['edit', rowMissing(r,'p')], ['ha', rowMissing(r,'ha')]].forEach(([act, miss])=>{
+      const b = w.querySelector(`[data-px="${act}"]`);
+      b.classList.toggle('miss', miss.length>0);
+      b.querySelector('small').textContent = miss.length ? ('ยังไม่ครบ: ' + miss.join(', ')) : '';
+    });
+    [1,2,3].forEach(n=>{
+      const d = r['fu'+n+'_date'] || fc['fu'+n+'_date'] || '';
+      const b = w.querySelector(`.rs-fub[data-fu="${n}"]`);
+      b.textContent = d ? ('✓ ครั้งที่ ' + n) : ('ครั้งที่ ' + n);
+      b.title = d ? ('มาติดตามเมื่อ ' + d) : 'แตะเพื่อบันทึกการมาติดตามผล';
+      b.classList.toggle('done', !!d);
+    });
+    const qToday = r.queueNo && r.queueDate===todayKey();
+    w.querySelector('[data-px="queue"]').textContent = r.queueNo ? ('🔢 คิว ' + r.queueNo + (qToday ? '' : ' (เก่า)') + ' ✎') : '➕ ใส่คิว';
+    w.querySelector('[data-px="del"]').style.display = canDeleteRecords() ? '' : 'none';
+    w.classList.add('show');
+    document.documentElement.classList.add('rs-open');
+  }
+  function closeRowSheet(){
+    const w = document.getElementById('rowSheet'); if(!w) return;
+    w.classList.remove('show'); _rsId = null;
+    document.documentElement.classList.remove('rs-open');
+  }
+  document.getElementById('lstBody').addEventListener('click', e=>{
+    if(!isMobileList()) return;
+    if(e.target.closest('button, input, a, select, label')) return;   /* ปุ่มเดิมทำงานตามปกติ */
+    const tr = e.target.closest('tr'); if(!tr) return;
+    const chk = tr.querySelector('input[data-act="sel"]'); if(!chk) return;   /* แถว "ยังไม่มีรายการ" */
+    const tbl = document.getElementById('lstTable');
+    if(tbl && tbl.classList.contains('sel-mode')){ chk.click(); return; }   /* โหมดเลือกหลายคน: แตะแถว = ติ๊ก */
+    openRowSheet(chk.getAttribute('data-id'));
+  });
   /* ── ล้างคิวที่หมดวันแล้วอัตโนมัติ: รายการไหน queueDate เป็นวันก่อนหน้า → เอาคิวออก (queueNo/queueDate/calledAt)
         บันทึกในเครื่องทันทีแล้วส่งขึ้นเซิร์ฟเวอร์เบื้องหลัง — ทำครั้งเดียวต่อรายการต่อการเปิดหน้า ── */
   const _qxDone = new Set();
