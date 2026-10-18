@@ -414,6 +414,9 @@ body.aud-fs{ overflow:hidden; }
 #sidebar .speech .minitog input { width:10px; height:10px; accent-color:#6D5DF6; margin:0; }
 #sidebar .speech .plus-wrap { display:flex; align-items:center; justify-content:center; gap:2px; }
 #sidebar .speech .plus-wrap span { font-weight:600; color:#8B88A3; }
+#sidebar .speech .plus-wrap.sp-cnt span { visibility:hidden; }
+#sidebar .speech select.sp-sel { min-width:72px; text-align:center; text-align-last:center; font-size:15px; padding:6px 8px; cursor:pointer; }
+#sidebar .speech input.sp-pb-custom { width:72px; margin-top:3px; font-size:15px; }
 .sp-m, .sp-n { vertical-align:super; font-size:0.72em; font-weight:700; }
 .sp-m { margin-right:.3px; } .sp-n { margin-left:.3px; }
 #sidebar .device-card { background: #FBFAFF; border: 1px solid #EDEBFB; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
@@ -2215,12 +2218,69 @@ const DEFAULTS = {
   w_volume_1:'Default', w_comm_1:'A', w_comm_2:'U',
   s11_1:'ผ่าน', s11_2:'ผ่าน', s11_3:'ผ่าน', s11_4:'ผ่าน', s11_5:'ผ่าน', s11_6:'ผ่าน', s11_7:'ผ่าน', s11_8:'ผ่าน',
   audio_env:'q', audio_reliab:'good',
+  sl_R:'30', sl_L:'30',   /* Speech: SL ตั้งต้น +30 dB ทุกเคส */
   rightType:'', /* สิทธิ์การรักษา: บังคับให้ติ๊กเลือกเองทุกครั้ง — ไม่ตั้งค่าเริ่มต้น และห้ามบันทึกถ้ายังไม่เลือก */
 };
 let S = {};
 
 /* ── generic helpers ─────────────────────────────────────────── */
 function f(k,extra){ extra=extra||''; return `<span class="fill" data-field="${k}" ${extra}></span>`; }
+/* ── Speech audiometry: ตัวเลือกแบบเลื่อนตัวเลข ──
+   SRT 0–110 ทีละ 5 · SL 0–50 ทีละ 5 + CNT (เลือก SRT/PB แล้ว SL ยังว่าง → ใส่ 30 ให้)
+   PB 100–0 ทีละ 4 + CNT + "พิมพ์เอง…" (เปิดช่องพิมพ์ค่าอื่น) · ค่าเก่าที่ไม่อยู่ในรายการจะถูกเพิ่มเป็นตัวเลือกให้ ไม่หาย */
+const isCNT = v => String(v||'').trim().toUpperCase()==='CNT';
+const SP_SRT = Array.from({length:23},(_,i)=>String(i*5));
+const SP_SL  = Array.from({length:11},(_,i)=>String(i*5)).concat(['CNT']);
+const SP_PB  = Array.from({length:26},(_,i)=>String(100-i*4)).concat(['CNT']);
+function spFillSelect(sel, list, extra){
+  if(!sel || sel.options.length) return;
+  sel.add(new Option('—',''));
+  list.forEach(v=>sel.add(new Option(v,v)));
+  (extra||[]).forEach(o=>sel.add(new Option(o[1],o[0])));
+}
+function spEnsureOpt(sel, v){
+  if(!sel || v==='' || v==null) return;
+  if(![...sel.options].some(o=>o.value===v)) sel.add(new Option(v,v), sel.options[1]||null);
+}
+function spPbInList(v){ return v==='' || SP_PB.includes(v); }
+function spReflect(){
+  ['R','L'].forEach(e=>{
+    ['srt','sl'].forEach(t=>{
+      const sel=document.querySelector(`#sidebar select[data-bind="${t}_${e}"]`); if(!sel) return;
+      spFillSelect(sel, t==='srt'?SP_SRT:SP_SL);
+      const v=String(S[t+'_'+e]??''); spEnsureOpt(sel,v);
+      if(document.activeElement!==sel) sel.value=v;
+    });
+    const w=document.getElementById('spSlWrap_'+e); if(w) w.classList.toggle('sp-cnt', isCNT(S['sl_'+e]));
+    const ps=document.getElementById('spPbSel_'+e), pi=document.getElementById('spPbCustom_'+e);
+    if(!ps) return;
+    spFillSelect(ps, SP_PB, [['__custom__','พิมพ์เอง…']]);
+    if(pi && document.activeElement===pi) return;
+    const v=String(S['pbpct_'+e]??''), inList=spPbInList(v) && !ps._custom;
+    if(document.activeElement!==ps) ps.value = inList ? v : '__custom__';
+    if(pi){ pi.style.display = inList ? 'none' : ''; pi.value = inList ? '' : v; }
+  });
+}
+function spBind(){
+  ['R','L'].forEach(e=>{
+    const autoSL=()=>{ if(!S['sl_'+e]){ S['sl_'+e]='30'; return true; } return false; };
+    const srt=document.querySelector(`#sidebar select[data-bind="srt_${e}"]`);
+    if(srt) srt.addEventListener('input', ()=>{ const ch = srt.value!=='' && autoSL(); spReflect(); if(ch) onAnyChange(); });
+    const sl=document.querySelector(`#sidebar select[data-bind="sl_${e}"]`);
+    if(sl) sl.addEventListener('input', ()=>spReflect());
+    const ps=document.getElementById('spPbSel_'+e), pi=document.getElementById('spPbCustom_'+e);
+    if(ps) ps.addEventListener('change', ()=>{
+      if(ps.value==='__custom__'){ ps._custom=true; S['pbpct_'+e]=pi?pi.value.trim():''; }
+      else { ps._custom=false; S['pbpct_'+e]=ps.value; if(ps.value!=='') autoSL(); }
+      spReflect();
+      if(ps.value==='__custom__' && pi) pi.focus();
+      onAnyChange();
+    });
+    if(pi) pi.addEventListener('input', ()=>{ S['pbpct_'+e]=pi.value.trim(); if(pi.value.trim()!=='') autoSL(); onAnyChange(); });
+    if(pi) pi.addEventListener('blur', ()=>{ if(ps && pi.value.trim()!=='') ps._custom=false; spReflect(); });
+  });
+  spReflect();
+}
 function cb(k){ return `<span class="cb" data-cb="${k}">☐</span>`; }
 function cbv(k,v){ return `<span class="cb" data-cbv="${k}:${v}">☐</span>`; }
 function esc(s){ return (s===undefined||s===null) ? '' : String(s); }
@@ -2597,8 +2657,8 @@ function audSumTable(){
     <tr><td rowspan="2" style="font-weight:700;background:#f8f9fa">BONE</td><td style="color:#c8102e;font-weight:700">Rt</td><td style="color:#c8102e">${avgSupPre(br)}${br?br.val:''}${avgSup(br)}${br?' dB':''}</td></tr>
     <tr><td style="color:#1452c4;font-weight:700">Lt</td><td style="color:#1452c4">${avgSupPre(bl)}${bl?bl.val:''}${avgSup(bl)}${bl?' dB':''}</td></tr>
     <tr><td style="font-weight:700;background:#e4edf5">EAR</td><td style="font-weight:700;background:#e4edf5">SRT</td><td style="font-weight:700;background:#e4edf5">SL / PB%</td></tr>
-    <tr><td style="font-weight:700;color:#c8102e">Rt</td><td style="color:#c8102e">${srt('R')}</td><td style="color:#c8102e">${S.sl_R?'+':''}${esc(S.sl_R)} / ${pb('R')}</td></tr>
-    <tr><td style="font-weight:700;color:#1452c4">Lt</td><td style="color:#1452c4">${srt('L')}</td><td style="color:#1452c4">${S.sl_L?'+':''}${esc(S.sl_L)} / ${pb('L')}</td></tr>
+    <tr><td style="font-weight:700;color:#c8102e">Rt</td><td style="color:#c8102e">${srt('R')}</td><td style="color:#c8102e">${S.sl_R&&!isCNT(S.sl_R)?'+':''}${esc(S.sl_R)} / ${pb('R')}</td></tr>
+    <tr><td style="font-weight:700;color:#1452c4">Lt</td><td style="color:#1452c4">${srt('L')}</td><td style="color:#1452c4">${S.sl_L&&!isCNT(S.sl_L)?'+':''}${esc(S.sl_L)} / ${pb('L')}</td></tr>
   </table>
   <table class="pta4-tbl">
     <tr><td colspan="3" class="pta4-hd">PTA 4 ความถี่ (500–4000 Hz)</td></tr>
@@ -3061,16 +3121,16 @@ function audiogramSectionBody(){
         <thead><tr><th></th><th>SRT (dB)</th><th>SL (dB)</th><th>PB %</th></tr></thead>
         <tbody>
           <tr><td style="font-weight:700;color:#c8102e">Rt.</td>
-            <td><div class="cellwrap"><div class="minitog"><label><input type="checkbox" data-bind="spMaskSRT_R">✱</label><label><input type="checkbox" data-bind="spNRSRT_R">+</label></div><input type="text" data-bind="srt_R"></div></td>
-            <td><div class="plus-wrap"><span>+</span><input type="text" data-bind="sl_R"></div></td>
-            <td><div class="cellwrap"><div class="minitog"><label><input type="checkbox" data-bind="spMaskPB_R">✱</label><label><input type="checkbox" data-bind="spNRPB_R">+</label></div><input type="text" data-bind="pbpct_R"></div></td></tr>
+            <td><div class="cellwrap"><div class="minitog"><label><input type="checkbox" data-bind="spMaskSRT_R">✱</label><label><input type="checkbox" data-bind="spNRSRT_R">+</label></div><select class="sp-sel" data-bind="srt_R"></select></div></td>
+            <td><div class="plus-wrap" id="spSlWrap_R"><span>+</span><select class="sp-sel" data-bind="sl_R"></select></div></td>
+            <td><div class="cellwrap"><div class="minitog"><label><input type="checkbox" data-bind="spMaskPB_R">✱</label><label><input type="checkbox" data-bind="spNRPB_R">+</label></div><select class="sp-sel" id="spPbSel_R"></select><input type="text" class="sp-pb-custom" id="spPbCustom_R" inputmode="numeric" placeholder="พิมพ์ %" style="display:none"></div></td></tr>
           <tr><td style="font-weight:700;color:#1452c4">Lt.</td>
-            <td><div class="cellwrap"><div class="minitog"><label><input type="checkbox" data-bind="spMaskSRT_L">✱</label><label><input type="checkbox" data-bind="spNRSRT_L">+</label></div><input type="text" data-bind="srt_L"></div></td>
-            <td><div class="plus-wrap"><span>+</span><input type="text" data-bind="sl_L"></div></td>
-            <td><div class="cellwrap"><div class="minitog"><label><input type="checkbox" data-bind="spMaskPB_L">✱</label><label><input type="checkbox" data-bind="spNRPB_L">+</label></div><input type="text" data-bind="pbpct_L"></div></td></tr>
+            <td><div class="cellwrap"><div class="minitog"><label><input type="checkbox" data-bind="spMaskSRT_L">✱</label><label><input type="checkbox" data-bind="spNRSRT_L">+</label></div><select class="sp-sel" data-bind="srt_L"></select></div></td>
+            <td><div class="plus-wrap" id="spSlWrap_L"><span>+</span><select class="sp-sel" data-bind="sl_L"></select></div></td>
+            <td><div class="cellwrap"><div class="minitog"><label><input type="checkbox" data-bind="spMaskPB_L">✱</label><label><input type="checkbox" data-bind="spNRPB_L">+</label></div><select class="sp-sel" id="spPbSel_L"></select><input type="text" class="sp-pb-custom" id="spPbCustom_L" inputmode="numeric" placeholder="พิมพ์ %" style="display:none"></div></td></tr>
         </tbody>
       </table>
-      <div class="hint">✱ = ใส่ Masking · + = No response — แสดงบนตาราง Summary ของหน้า Audiogram ที่พิมพ์</div>
+      <div class="hint">✱ = ใส่ Masking · + = No response — แสดงบนตาราง Summary ของหน้า Audiogram ที่พิมพ์ · SL ตั้งต้นที่ 30 (เลือก — เพื่อล้าง) · PB เลือก "พิมพ์เอง…" เพื่อใส่ค่าอื่น</div>
 
       <div class="subhead">Tuning fork tests</div>
       <div class="fld"><label>Weber</label><select data-bind="weber"><option value="Not heard">Not heard</option><option value="⭠O⭢">⭠O⭢</option><option value="O⭢Rt.">O⭢Rt.</option><option value="O⭢Lt.">O⭢Lt.</option></select></div>
@@ -3523,8 +3583,8 @@ function haPage1(){
             <table class="formtbl" style="width:auto;font-size:13px">
               <tr><td colspan="4" class="center b">Speech Discrimination</td></tr>
               <tr><td class="b">EAR</td><td class="b">SRT</td><td class="b">SL</td><td class="b">PB</td></tr>
-              <tr><td style="color:#c8102e">Rt.</td><td style="color:#c8102e">${f('srt_R','style="color:#c8102e"')}</td><td style="color:#c8102e">${S.sl_R?'+':''}${f('sl_R','style="color:#c8102e"')} dB</td><td style="color:#c8102e">${f('pbpct_R','style="color:#c8102e"')} %</td></tr>
-              <tr><td style="color:#1452c4">Lt.</td><td style="color:#1452c4">${f('srt_L','style="color:#1452c4"')}</td><td style="color:#1452c4">${S.sl_L?'+':''}${f('sl_L','style="color:#1452c4"')} dB</td><td style="color:#1452c4">${f('pbpct_L','style="color:#1452c4"')} %</td></tr>
+              <tr><td style="color:#c8102e">Rt.</td><td style="color:#c8102e">${f('srt_R','style="color:#c8102e"')}</td><td style="color:#c8102e"><span data-spunit="pre:sl_R"></span>${f('sl_R','style="color:#c8102e"')}<span data-spunit="dB:sl_R"></span></td><td style="color:#c8102e">${f('pbpct_R','style="color:#c8102e"')}<span data-spunit="pct:pbpct_R"></span></td></tr>
+              <tr><td style="color:#1452c4">Lt.</td><td style="color:#1452c4">${f('srt_L','style="color:#1452c4"')}</td><td style="color:#1452c4"><span data-spunit="pre:sl_L"></span>${f('sl_L','style="color:#1452c4"')}<span data-spunit="dB:sl_L"></span></td><td style="color:#1452c4">${f('pbpct_L','style="color:#1452c4"')}<span data-spunit="pct:pbpct_L"></span></td></tr>
             </table>
           </div>
         </div></td></tr>
@@ -4109,6 +4169,10 @@ function render(){
   document.querySelectorAll('[data-field]').forEach(el=>{
     const k=el.getAttribute('data-field'), v=(S[k]??'').toString();
     el.textContent=v; el.classList.toggle('empty', v.trim()==='');
+  });
+  document.querySelectorAll('[data-spunit]').forEach(el=>{
+    const [u,k]=el.getAttribute('data-spunit').split(':'), v=String(S[k]??'').trim(), cnt=isCNT(v);
+    el.textContent = u==='pre' ? (v && !cnt ? '+' : '') : (cnt ? '' : (u==='dB' ? ' dB' : ' %'));
   });
   document.querySelectorAll('[data-cb]').forEach(el=>{ el.textContent = S[el.getAttribute('data-cb')] ? '☑' : '☐'; });
   document.querySelectorAll('[data-paren]').forEach(el=>{ el.textContent = S[el.getAttribute('data-paren')] ? '✓' : ''; });
@@ -4836,6 +4900,7 @@ function bindOptionalToggle(){
 }
 function bindInputs(){
   bindDataBindScope(document.getElementById('sidebar'));
+  try{ spBind(); }catch(e){}
   document.querySelectorAll('#sidebar [data-bind-radio]').forEach(el=>{
     const k=el.getAttribute('data-bind-radio');
     el.addEventListener('change', ()=>{ if(el.checked){ S[k]=el.value; if(k==='ear') refreshDeviceCards(); onAnyChange(); } });
@@ -5037,6 +5102,7 @@ function reflectInputs(){
   renderHistList();
   syncBirthParts();
   try{ dpSync(true); reflectApptField(); }catch(e){}
+  try{ spReflect(); }catch(e){}
 }
 function reflectResultCombo(selId, inputId, val, list){
   const sel=document.getElementById(selId), inp=document.getElementById(inputId);
