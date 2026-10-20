@@ -1605,8 +1605,8 @@ body::before{
     <div class="am-sec-t">👥 ผู้ใช้งาน</div>
     <div class="am-form" id="amForm">
       <div class="am-form-title" id="amFormTitle">➕ เพิ่มผู้ใช้ใหม่</div>
-      <div class="am-fld"><label>ชื่อผู้ใช้</label><input type="text" id="amUsername" autocomplete="off"></div>
-      <div class="am-fld"><label id="amPwLabel">รหัสผ่าน</label><input type="text" id="amPassword" autocomplete="off" placeholder="เว้นว่าง = 1234"></div>
+      <div class="am-fld"><label>ชื่อผู้ใช้</label><input type="text" id="amUsername" name="hf_acct_new_name" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" readonly data-lpignore="true" data-1p-ignore data-form-type="other" placeholder="ใช้ล็อกอิน เช่น somchai_bas"></div>
+      <div class="am-fld"><label id="amPwLabel">รหัสผ่าน</label><input type="text" id="amPassword" name="hf_acct_new_pin" autocomplete="off" readonly data-lpignore="true" data-1p-ignore data-form-type="other" placeholder="เว้นว่าง = 1234"></div>
       <div class="am-fld"><label>ชื่อ–สกุล <span style="font-weight:400;color:#9aa5ba">(ลงชื่อในฟอร์มอัตโนมัติ)</span></label><input type="text" id="amDisplayName" autocomplete="off" placeholder="เช่น นายสมชาย ใจดี"></div>
       <div class="am-fld" id="amLicenseWrap" style="max-width:150px"><label>เลขที่ใบอนุญาต <span style="font-weight:400;color:#9aa5ba">(ผ.ส.)</span></label><input type="text" id="amLicense" autocomplete="off" placeholder="เช่น 513"></div>
       <div class="am-fld" style="max-width:130px"><label>สิทธิ์</label>
@@ -2147,6 +2147,9 @@ const CH={ml:42,mr:42,mt:44,mb:26,dbMin:-10,dbMax:120,oct:42};
 .dup-hint{margin:2px 0 10px;padding:9px 12px;border:1.5px solid #fca5a5;background:#fef2f2;color:#991b1b;
   border-radius:9px;font-size:12.5px;line-height:1.55;font-weight:600}
 @media print{.dup-hint{display:none!important}}
+.dup-hint.add-ear{border-color:#fcd34d;background:#fffbeb;color:#92400e}
+.dup-hint.add-ear a{color:#0C6EA8;font-weight:600}
+.addear-wrap:has(.fill.empty){display:none}
 .chk-clear{border:1px dashed #cbd5e1;background:#fff;color:#64748b;border-radius:999px;font-family:inherit;font-size:12px;
   padding:3px 10px;cursor:pointer;line-height:1.3;align-self:center}
 .chk-clear:hover{border-color:#94a3b8;color:#334155;background:#f8fafc}
@@ -3613,7 +3616,7 @@ function haPage2(){
       <tr><td><b>8.</b> สรุปผลการใส่เครื่องช่วยฟัง
         ${cbv('dtype','body')} Body aid &nbsp; ${cbv('dtype','bte')} BTE &nbsp; ${cbv('dtype','ite')} ในช่องหู &nbsp; ${cbv('dtype','ric')} RIC<br>
         <span class="indent">ซ้าย (LEFT) ยี่ห้อ <b>${f('brandL')}</b> รุ่น <b>${f('modelL')}</b> เลขเครื่อง ${f('snL')} ราคา ${f('price')}</span><br>
-        <span class="indent">ขวา (RIGHT) ยี่ห้อ <b>${f('brandR')}</b> รุ่น <b>${f('modelR')}</b> เลขเครื่อง ${f('snR')} ราคา ${f('price')}</span></td></tr>
+        <span class="indent">ขวา (RIGHT) ยี่ห้อ <b>${f('brandR')}</b> รุ่น <b>${f('modelR')}</b> เลขเครื่อง ${f('snR')} ราคา ${f('price')}</span><span class="addear-wrap"><br><span class="indent">${f('addEarNote')}</span></span></td></tr>
       <tr><td><b>9.</b> ตรวจสอบประวัติการได้รับเครื่องช่วยฟัง (ถ้าเคยเบิกต้องนานเกิน 3 ปี) ได้ที่ www.nhso.go.th วันที่ ${f('fitDate')}</td></tr>
       <tr><td><b>10.</b> ผลการประเมินหลังการใส่เครื่องช่วยฟัง
         <div class="indent"><table style="border:0;border-collapse:collapse;font-size:13.5px"><tbody>
@@ -4063,6 +4066,8 @@ function updateDerived(){
   S.sn_disp = bothEar ? `ซ้าย ${S.snL||'-'} / ขวา ${S.snR||'-'}` : (S.sn||'');
   S.s7_resound_model_disp = bothEar ? `ซ้าย ${S.s7_resound_model_L||'-'} / ขวา ${S.s7_resound_model_R||'-'}` : (S.s7_resound_model||'');
   S.s7_am_model_disp = bothEar ? `ซ้าย ${S.s7_am_model_L||'-'} / ขวา ${S.s7_am_model_R||'-'}` : (S.s7_am_model||'');
+  /* ใส่เครื่องอีกข้างเพิ่มภายหลัง → หมายเหตุใต้ข้อ 8 ใบสปสช. บอกข้างเดิม (ยี่ห้อ/รุ่น/เลขเครื่อง/วันที่) — 20 ต.ค. 69 */
+  try{ S.addEarNote = addEarNoteText(); }catch(e){ S.addEarNote = ''; }
   /* ลำดับเครื่องที่ 1/2 บนฟอร์มปริ้น (ใบประเมินข้อ 7 + หน้า Real Ear) — ใช้ชุดเดียวกันทั้งสองหน้าเสมอ
      ข้อมูลจริงยังเก็บแบบเดิม: s7_resound* = เครื่องที่คนไข้เลือก, s7_am* = เครื่องคู่เทียบ */
   {
@@ -5683,7 +5688,20 @@ function missingHearingAidFields(s){
 async function doSave(scope){
   /* ── กันลงข้อมูลซ้ำ: HN หรือ ชื่อ-สกุล ตรงกับผู้ป่วยรายอื่นในโรงพยาบาลเดียวกัน = บันทึกไม่ได้ ── */
   {
-    const dup = findDupRecords();
+    let dup = findDupRecords();
+    const cand = addEarCandidate(dup);
+    if(cand){
+      const ce = earKeyOf(cand.ear), other = ce==='left' ? 'right' : 'left';
+      const TH = {left:'ซ้าย', right:'ขวา'};
+      const ok = confirm('ผู้ป่วยคนนี้มีรายการเดิมอยู่แล้ว:\n'+dupDescr(cand)+' · ใส่ข้าง'+TH[ce]
+        + '\n\nนี่คือการมาใส่เครื่องอีกข้างเพิ่ม (ข้าง'+TH[other]+') ใช่ไหม?'
+        + '\n\nตกลง = บันทึกเป็นรายการใหม่ของข้าง'+TH[other]+' (ใบสปสช. ข้อ 8 จะมีหมายเหตุบอกข้างเดิมให้)'
+        + '\nยกเลิก = ไม่บันทึก (ถ้าจะแก้ข้อมูลคนเดิม ให้กด ✏️ ที่รายการเดิม)');
+      if(!ok){ try{ jump('forms'); }catch(e){} return false; }
+      S.ear = other; S._addEarOf = cand._id;
+      try{ reflectInputs(); onAnyChange(); }catch(e){}
+      dup = findDupRecords();
+    }
     if(dup.hn || dup.name){
       let m = '⛔ บันทึกไม่ได้ — ข้อมูลซ้ำกับผู้ป่วยที่มีอยู่แล้ว\n';
       m += '\n(ระบบเทียบเฉพาะภายในรพ. "'+(S.hospital||'')+'" ที่กำลังกรอกอยู่ในฟอร์มนี้ — ถ้าไม่ใช่รพ.ที่ต้องการ ให้แก้ช่อง "โรงพยาบาล" ก่อน)';
@@ -5789,6 +5807,53 @@ function fullNameOfS(){
   return n || String(S.name||'');
 }
 /* คืน {hn: record|null, name: record|null} ของรายการที่ซ้ำกับข้อมูลที่กำลังกรอกอยู่ */
+/* ── ใส่เครื่องอีกข้างเพิ่มภายหลัง (เพิ่ม 20 ต.ค. 69) ──
+   คนเดียวกันมีได้ 2 รายการถ้าเป็นคนละข้าง (รายการหนึ่งซ้าย อีกรายการขวา) — แต่ละครั้งเบิกแยกกัน มีวันที่ใส่/นัดติดตามของตัวเอง
+   ใส่สองข้างพร้อมกันวันเดียว = รายการเดียว เลือก "สองข้าง" เหมือนเดิม */
+function earKeyOf(v){ v=String(v||'').trim(); if(v==='left'||v==='ซ้าย') return 'left'; if(v==='right'||v==='ขวา') return 'right'; if(v==='both'||v==='สองข้าง') return 'both'; return ''; }
+function isOtherEarPair(r){ const a=earKeyOf(S.ear), b=earKeyOf(r && r.ear); return (a==='left'&&b==='right')||(a==='right'&&b==='left'); }
+/* รายการเดิมที่น่าจะเป็น "ข้างเดิม" ของการมาใส่อีกข้าง — ยังไม่ได้เลือกข้างในรายการนี้ และรายการเดิมใส่ข้างเดียว */
+function addEarCandidate(d){
+  d = d || findDupRecords();
+  const recs = [d.hn, d.name].filter(Boolean);
+  if(!recs.length || recs.some(x=>x!==recs[0])) return null;
+  if(earKeyOf(S.ear)) return null;
+  const e = earKeyOf(recs[0].ear);
+  return (e==='left'||e==='right') ? recs[0] : null;
+}
+function thDateNum(s){ const b=parseBirth(s); return (b&&b.year&&b.mon&&b.day) ? b.year*10000+b.mon*100+b.day : 0; }
+function addEarNoteText(){
+  const me = earKeyOf(S.ear); if(me!=='left' && me!=='right') return '';
+  const hosp = normHosp(S.hospital), hn = normHN(S.hn); if(!hosp || !hn) return '';
+  const myD = thDateNum(S.fitDate);
+  let best = null;
+  (getRecords()||[]).forEach(r=>{
+    if(!r || r._id===S._id || normHosp(r.hospital)!==hosp || normHN(r.hn)!==hn) return;
+    const e = earKeyOf(r.ear); if(e!=='left' && e!=='right' || e===me) return;
+    const d = thDateNum(r.fitDate);
+    /* นับเฉพาะข้างที่ใส่ไว้ก่อน — ใบของรายการเดิมไม่ต้องอ้างถึงข้างที่มาใส่ทีหลัง */
+    if(S._addEarOf!==r._id && !(d && myD && d<myD)) return;
+    if(!best || d > thDateNum(best.fitDate)) best = r;
+  });
+  if(!best) return '';
+  const TH = {left:'ซ้าย (LEFT)', right:'ขวา (RIGHT)'};
+  const sn = String(best.sn||'').split(',')[0].trim();
+  return 'หมายเหตุ: ข้าง'+TH[earKeyOf(best.ear)]+' ใส่เครื่องแล้ว'+(best.fitDate?'เมื่อ '+best.fitDate:'')
+       + ' — '+[best.brand,best.model].filter(Boolean).join(' ')+(sn?' เลขเครื่อง '+sn:'');
+}
+/* ดึงข้อมูลผู้ป่วย (ชื่อ เลขบัตร ที่อยู่ เบอร์ สิทธิ์) จากรายการเดิม — ลิงก์เล็กในแถบแจ้งเตือน ไม่ต้องพิมพ์ใหม่ */
+async function copyPatientFromRecord(id){
+  let rec = _fullCache[id];
+  if(!rec){
+    try{ const res = await window.hcsApi.postAction('getRecord', {token:localStorage.getItem('hcs_token'), id});
+         if(res && res.status==='ok' && res.record){ rec = res.record; upsertFullCache(rec); } }catch(e){}
+  }
+  if(!rec){ alert('โหลดข้อมูลรายการเดิมไม่สำเร็จ — ลองใหม่อีกครั้ง'); return; }
+  ['namePrefix','nameFirst','nameLast','hn','citizenId','phone','birth','rightType','addr_no','addr_moo','addr_soi','addr_road','addr_subdistrict','addr_district','addr_province','addr_zip']
+    .forEach(k=>{ if(rec[k]!==undefined && rec[k]!==null && String(rec[k]).trim()!=='') S[k]=rec[k]; });
+  reflectInputs(); onAnyChange();
+  flash('📋 ดึงข้อมูลผู้ป่วยจากรายการเดิมแล้ว');
+}
 function findDupRecords(){
   const out = {hn:null, name:null};
   const hosp = normHosp(S.hospital);
@@ -5800,6 +5865,7 @@ function findDupRecords(){
     const r = list[i];
     if(!r || r._id===S._id) continue;
     if(normHosp(r.hospital)!==hosp) continue;
+    if(isOtherEarPair(r)) continue;            // คนเดิมแต่คนละข้าง (ใส่อีกข้างเพิ่มภายหลัง) = ไม่ซ้ำ
     if(hn && !out.hn   && normHN(r.hn)===hn)             out.hn = r;
     if(nm && !out.name && normPersonName(r.name)===nm)   out.name = r;
     if(out.hn && out.name) break;
@@ -5819,7 +5885,21 @@ function dupDescr(r){
 function renderDupHint(){
   const box = document.getElementById('dupHint'); if(!box) return;
   const d = findDupRecords();
-  if(!d.hn && !d.name){ box.style.display='none'; box.innerHTML=''; return; }
+  if(!d.hn && !d.name){ box.style.display='none'; box.innerHTML=''; box.classList.remove('add-ear'); return; }
+  const cand = addEarCandidate(d);
+  if(cand){
+    const eh2 = t => String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const ce = earKeyOf(cand.ear), other = ce==='left' ? 'ขวา' : 'ซ้าย';
+    box.classList.add('add-ear'); box.style.display='';
+    box.innerHTML = 'ℹ️ มีรายการเดิมของคนนี้แล้ว → '+eh2(dupDescr(cand))+' · ใส่ข้าง'+(ce==='left'?'ซ้าย':'ขวา')
+      + '<br><span style="font-weight:400">ถ้ามาใส่เครื่องอีกข้างเพิ่ม (ข้าง'+other+') บันทึกต่อได้เลย ระบบจะถามยืนยันก่อน · '
+      + '<a href="#" data-copyfrom="'+eh2(cand._id)+'">ดึงข้อมูลผู้ป่วยจากรายการเดิม</a>'
+      + '<br>ถ้าเป็นการแก้ไขข้อมูลคนเดิม ให้กลับไปกด ✏️ ที่รายการเดิมแทน</span>';
+    const a = box.querySelector('[data-copyfrom]');
+    if(a) a.onclick = e=>{ e.preventDefault(); copyPatientFromRecord(a.getAttribute('data-copyfrom')); };
+    return;
+  }
+  box.classList.remove('add-ear');
   const lines = [];
   const eh = t => String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   if(d.hn)   lines.push('HN นี้มีอยู่แล้ว → '+eh(dupDescr(d.hn)));
@@ -9589,6 +9669,29 @@ document.addEventListener('DOMContentLoaded', init);
     }
     syncHospAll();
   });
+  /* ── กันเบราว์เซอร์ (Safari/Chrome) เติมชื่อผู้ใช้/รหัสที่เคยล็อกอินลงช่อง "เพิ่มผู้ใช้" เอง (เคยเกิด 16 ต.ค. 69: ตั้ง "สฤษี_บาส" แต่ได้ "พุทธโสธร")
+     ช่องเป็น readonly ไว้ก่อน → เบราว์เซอร์ไม่เติม · ปลดเมื่อผู้ใช้แตะ/โฟกัสเอง ── */
+  var _amTyped = {};
+  ['amUsername','amPassword'].forEach(function(id){
+    var el = document.getElementById(id); if(!el) return;
+    var unlock = function(){ if(el.readOnly) el.readOnly = false; };
+    el.addEventListener('pointerdown', unlock);
+    el.addEventListener('focus', unlock);
+    el.addEventListener('keydown', function(){ _amTyped[id] = true; });
+    el.addEventListener('paste', function(){ _amTyped[id] = true; });
+  });
+  function amLockAutofill(){
+    _amTyped = {};
+    ['amUsername','amPassword'].forEach(function(id){ var el = document.getElementById(id); if(el && document.activeElement !== el) el.readOnly = true; });
+  }
+  /* ล้างค่าที่โผล่มาเองโดยผู้ใช้ไม่ได้พิมพ์ (เฉพาะโหมดเพิ่มผู้ใช้ใหม่) */
+  function amScrubAutofill(){
+    if(_amEditing) return;
+    ['amUsername','amPassword'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el && el.value && !_amTyped[id]) el.value = '';
+    });
+  }
   /* ── โหมดฟอร์ม: เพิ่มใหม่ / แก้ไขผู้ใช้เดิม ── */
   var _amEditing = null;   // ชื่อผู้ใช้เดิมที่กำลังแก้ (null = กำลังเพิ่มผู้ใช้ใหม่)
   function amSetMode(editUser){
@@ -9615,7 +9718,7 @@ document.addEventListener('DOMContentLoaded', init);
     amSyncRoleFields();
   }
   document.getElementById('amCancelEdit').addEventListener('click', function(){
-    amResetForm(); document.getElementById('amMsg').textContent = '';
+    amResetForm(); amLockAutofill(); document.getElementById('amMsg').textContent = '';
   });
   function amCheckedHosps(){ return Array.from(document.querySelectorAll('.am-hosp-cb:checked')).map(function(cb){ return cb.value; }); }
   function renderHospMaster(list){
@@ -9705,6 +9808,8 @@ document.addEventListener('DOMContentLoaded', init);
     document.getElementById('amMsg').textContent = '';
     await loadHospitalOptions();
     amResetForm();
+    amLockAutofill();
+    setTimeout(amScrubAutofill, 400); setTimeout(amScrubAutofill, 1500);
     refreshUserList();
   });
   document.getElementById('amRole').addEventListener('change', amSyncRoleFields);
@@ -9734,16 +9839,35 @@ document.addEventListener('DOMContentLoaded', init);
     if(editing && newUsername !== editing && exists) return bad('ชื่อผู้ใช้ "'+newUsername+'" มีอยู่แล้ว เลือกชื่ออื่น');
     if(editing && editing === me && newUsername !== editing) return bad('เปลี่ยนชื่อผู้ใช้ของบัญชีที่กำลังใช้อยู่ไม่ได้');
     if(editing && editing === me && newRole !== 'admin') return bad('เปลี่ยนสิทธิ์บัญชีตัวเองออกจากผู้ดูแลระบบไม่ได้');
+    /* ชื่อผู้ใช้ตรงกับชื่อรพ. = มักเป็นค่าที่เบราว์เซอร์เติมให้เอง (ชื่อบัญชีรพ.รุ่นเก่า) — Sale/Audiologist ควรใช้ชื่อคน */
+    var _usernameIsHosp = (newRole === 'sale' || newRole === 'audiologist') && _amHospMaster.indexOf(newUsername) !== -1 && (!editing || newUsername !== editing);
+    if(_usernameIsHosp && !confirm('⚠️ ชื่อผู้ใช้ "'+newUsername+'" ตรงกับชื่อโรงพยาบาล\n\nบัญชี '+roleLabel(newRole)+' ควรใช้ชื่อคน เช่น somchai_bas\nชื่อนี้อาจถูกเบราว์เซอร์เติมให้เองโดยไม่ได้ตั้งใจ\n\nกด "ยกเลิก" เพื่อกลับไปแก้ชื่อผู้ใช้ · กด "ตกลง" ถ้าตั้งใจใช้ชื่อนี้จริง')){
+      bad('แก้ชื่อผู้ใช้ให้ถูกก่อน แล้วกดบันทึกอีกครั้ง');
+      try{ uEl.readOnly = false; uEl.focus(); uEl.select(); }catch(err){}
+      return;
+    }
     if(editing && newUsername !== editing && !confirm('เปลี่ยนชื่อผู้ใช้จาก "'+editing+'" เป็น "'+newUsername+'" ?\n\nผู้ใช้คนนี้จะต้องล็อกอินใหม่ด้วยชื่อใหม่')) return;
+    /* ผู้ใช้ใหม่: สรุปให้ตรวจก่อนสร้างทุกครั้ง — เห็นชัดว่า "ชื่อผู้ใช้ที่ใช้ล็อกอิน" คืออะไร */
+    if(!editing){
+      var _sum = '➕ ยืนยันสร้างผู้ใช้ใหม่\n\n'
+        + '🔑 ชื่อผู้ใช้ (ใช้ล็อกอิน):  ' + newUsername + '\n'
+        + '🔒 รหัสผ่าน:  ' + (newPassword ? newPassword : '1234 (รหัสเริ่มต้น)') + '\n'
+        + '👤 ชื่อ–สกุล:  ' + (newDisplayName || '–') + '\n'
+        + '🏷️ สิทธิ์:  ' + roleLabel(newRole) + (newLicense ? '  · ผ.ส. ' + newLicense : '') + '\n'
+        + '🏥 รพ.:  ' + (newRole === 'admin' ? 'ทุกรพ.' : newAllowedHospitals.join(', ')) + '\n\n'
+        + 'ตรวจ "ชื่อผู้ใช้" ให้ถูกต้องก่อนกดตกลง';
+      if(!confirm(_sum)) { msgEl.textContent = ''; return; }
+    }
     var t = localStorage.getItem('hcs_token');
     msgEl.style.color = '#8a93a8'; msgEl.textContent = 'กำลังบันทึก...';
     var res = await postAction('addUser', {token:t, newUsername:newUsername, newPassword:newPassword, newRole:newRole, allowedHospitals:newAllowedHospitals, displayName:newDisplayName, licenseNo:newLicense, originalUsername: editing || '', isNew: !editing});
     if(res.status === 'ok'){
       msgEl.style.color = '#1a8a4c';
       msgEl.textContent = !editing
-        ? ('สร้างผู้ใช้ "'+newUsername+'" แล้ว ✓' + (newPassword ? '' : ' — รหัสเริ่มต้นคือ 1234 (ล็อกอินครั้งแรกจะขึ้นแนะนำให้ตั้งรหัสใหม่)'))
+        ? ('สร้างผู้ใช้แล้ว ✓ — ล็อกอินด้วยชื่อ "'+newUsername+'" รหัส '+(newPassword ? '"'+newPassword+'"' : '1234 (ล็อกอินครั้งแรกจะขึ้นแนะนำให้ตั้งรหัสใหม่)'))
         : ('บันทึกการแก้ไข "'+newUsername+'" แล้ว ✓' + (newUsername !== editing ? ' (เปลี่ยนชื่อจาก "'+editing+'")' : '') + (newPassword ? ' · ตั้งรหัสใหม่แล้ว' : ''));
       amResetForm();
+      amLockAutofill();
       refreshUserList();
     } else {
       msgEl.style.color = '#c8283e'; msgEl.textContent = res.message || 'บันทึกไม่สำเร็จ';
