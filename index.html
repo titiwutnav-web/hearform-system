@@ -556,6 +556,7 @@ body.aud-fs{ overflow:hidden; }
 .pm-checklist { display:flex; flex-direction:column; gap:7px; margin-bottom:4px; }
 .pm-checklist label { display:flex; align-items:center; gap:8px; font-size:13.5px; color:#1a1e2e; cursor:pointer; }
 .pm-checklist input { width:16px; height:16px; flex-shrink:0; }
+.pm-checklist label.pm-ck-all { font-weight:700; padding-bottom:8px; margin-bottom:2px; border-bottom:1px solid #e5e8f0; }
 .pm-fld { margin-bottom:14px; }
 .pm-fld label { display:block; font-size:12px; color:#64748b; margin-bottom:5px; font-weight:600; }
 .pm-fld input[type=number], .pm-fld select { width:100%; height:36px; padding:0 10px; border:1.5px solid #e2e6ee; border-radius:8px; font-family:inherit; font-size:13.5px; box-sizing:border-box; }
@@ -937,6 +938,132 @@ body.aud-fs{ overflow:hidden; }
   .audio-hdr, .audio-hdr * { color: #000 !important; }
   .freqinp, .freq-grid input { border:none !important; }
   @page { size: A4; margin: 0; }
+}
+/* ══════════════ 🧠 ABR (แท็บในหน้า Audiogram + ใบรายงาน p-abr) ══════════════ */
+#sidebar .aud-tabs{display:flex;gap:6px;margin:14px 32px 0;padding:4px;background:#F1F4FA;border:1px solid #E1E6F0;border-radius:12px;position:sticky;top:0;z-index:5}
+#sidebar .aud-tabs button{flex:1;border:0;background:transparent;border-radius:9px;padding:9px 10px;font:inherit;font-size:14px;font-weight:700;color:#5B6478;cursor:pointer}
+#sidebar .aud-tabs button.on{background:#fff;color:#0C3D5E;box-shadow:0 1px 4px rgba(20,40,80,.12)}
+#sidebar .abr-hint{margin:0 0 6px;padding:9px 12px;background:#F4F9FF;border:1px solid #CFE3F7;border-radius:10px;color:#0C6EA8;font-size:12.5px;line-height:1.5}
+#sidebar .abr-hintsm{font-size:11.5px;color:#64748b;margin:6px 0;line-height:1.5}
+#sidebar .abr-warnbox{margin:8px 0 12px;padding:9px 12px;background:#FFF7E6;border:1px solid #F5D08A;border-radius:10px;color:#8A5300;font-size:12.5px;line-height:1.5}
+#sidebar .abr-modes{display:flex;gap:8px;margin:10px 0 12px;flex-wrap:wrap}
+#sidebar .abr-chip{flex:1;min-width:150px;display:flex;flex-direction:column;align-items:flex-start;gap:1px;border:1.5px solid #E1E6F0;background:#fff;border-radius:10px;padding:8px 12px;font:inherit;cursor:pointer;color:#334155;text-align:left}
+#sidebar .abr-chip b{font-size:13.5px}
+#sidebar .abr-chip span{font-size:11.5px;color:#64748b}
+#sidebar .abr-chip.on{border-color:#0C6EA8;background:#EEF6FD;color:#0C3D5E;box-shadow:0 0 0 3px rgba(12,110,168,.12)}
+#sidebar .abr-unit{position:relative}
+#sidebar .abr-unit>i{position:absolute;right:11px;bottom:12px;font-style:normal;font-size:11.5px;color:#94a3b8;pointer-events:none}
+#sidebar .abr-gc.abr-unit>i{bottom:50%;transform:translateY(50%)}
+#sidebar .abr-unit input{padding-right:54px!important}
+#sidebar .abr-grid{display:grid;grid-template-columns:minmax(96px,1.1fr) 1fr 1fr;gap:6px 10px;align-items:center;margin:8px 0}
+#sidebar .abr-gh{font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:6px}
+#sidebar .abr-gl b{display:block;font-size:13px;color:#241F47}
+#sidebar .abr-gl span{display:block;font-size:11px;color:#94a3b8;line-height:1.3}
+#sidebar .abr-gc input{width:100%;height:40px;padding:0 12px;border:1.5px solid #E5E2F7;border-radius:10px;font:inherit;font-size:15px;font-variant-numeric:tabular-nums;background:#fff;color:#241F47;box-sizing:border-box}
+#sidebar .abr-gc input::placeholder,#sidebar .abr-pair input::placeholder{color:#CDD3DE}
+#sidebar .abr-gc input:focus,#sidebar .abr-pair input:focus{outline:none;border-color:#6D5DF6;box-shadow:0 0 0 3px rgba(109,93,246,.15)}
+#sidebar .abr-right{color:#c8102e} #sidebar .abr-left{color:#1452c4}
+#sidebar .abr-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:currentColor;flex:0 0 auto}
+#sidebar .abr-left .abr-dot{border-radius:1px}
+#sidebar .abr-morph{display:flex;flex-direction:column;gap:4px}
+#sidebar .abr-mini{border:1.5px solid #E1E6F0;background:#fff;border-radius:8px;padding:6px 9px;font:inherit;font-size:12px;font-weight:600;color:#475569;cursor:pointer;text-align:left}
+#sidebar .abr-mini.on{border-color:#0C6EA8;background:#EEF6FD;color:#0C3D5E}
+#sidebar .abr-m-poor.on{border-color:#D18A00;background:#FFF7E6;color:#8A5300}
+#sidebar .abr-m-none.on,#sidebar .abr-m-none_hl.on{border-color:#C53030;background:#FFF1F1;color:#9B1C1C}
+#sidebar .abr-comp{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 4px}
+#sidebar .abr-thr{border:1px solid #E5E9F2;border-radius:12px;padding:10px 12px;margin:0 0 10px;background:#fff}
+#sidebar .abr-thr-h{font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap}
+#sidebar .abr-thr-sum{font-weight:600;color:#0C3D5E;font-size:12px;margin-left:auto}
+#sidebar .abr-thr-row{display:grid;grid-template-columns:62px 1fr 1fr 56px;gap:6px;align-items:center;margin:4px 0}
+#sidebar .abr-thr-head span{font-size:11px;color:#94a3b8;font-weight:600}
+#sidebar .abr-thr-f{font-size:12.5px;font-weight:600;color:#334155}
+#sidebar .abr-pair{display:flex;gap:4px}
+#sidebar .abr-pair input{flex:1;min-width:0;height:36px;padding:0 8px;border:1.5px solid #E5E2F7;border-radius:8px;font:inherit;font-size:14px;box-sizing:border-box}
+#sidebar .abr-nr{border:1.5px solid #E1E6F0;background:#fff;border-radius:8px;font:inherit;font-size:11px;font-weight:700;color:#94a3b8;padding:0 7px;cursor:pointer}
+#sidebar .abr-nr.on{border-color:#C53030;background:#FFF1F1;color:#9B1C1C}
+#sidebar .abr-ehl{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;color:#0C3D5E}
+#sidebar .abr-result{border:1.5px solid #CFE3F7;border-radius:12px;padding:12px 14px;background:#FBFDFF;margin-bottom:16px}
+#sidebar .abr-empty{color:#64748b;font-size:13px}
+#sidebar .abr-tblwrap{overflow-x:auto;margin:0 -4px;padding:0 4px}
+#sidebar .abr-tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:8px}
+#sidebar .abr-tbl th{font-size:11.5px;color:#475569;text-align:right;padding:4px 6px;border-bottom:1px solid #E1E6F0;font-weight:700;vertical-align:bottom}
+#sidebar .abr-tbl th small{display:block;font-weight:500;color:#94a3b8;font-size:10.5px}
+#sidebar .abr-tbl td{padding:6px;border-bottom:1px solid #EEF1F6;text-align:right;font-variant-numeric:tabular-nums}
+#sidebar .abr-tbl td:first-child,#sidebar .abr-tbl th:first-child{text-align:left;white-space:nowrap}
+#sidebar .abr-tbl td:last-child{text-align:left}
+#sidebar .abr-v.bad,#sidebar .abr-bad{color:#B42318;font-weight:700}
+#sidebar .abr-v.warn{color:#8A5300;font-weight:700}
+#sidebar .abr-pat{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11.5px;font-weight:700;background:#E8F5EE;color:#11643A}
+#sidebar .abr-p-equivocal,#sidebar .abr-p-incomplete{background:#FFF4E0;color:#8A5300}
+#sidebar .abr-p-peripheral{background:#EAF1FF;color:#1E40AF}
+#sidebar .abr-p-retrocochlear,#sidebar .abr-p-no_response{background:#FDECEC;color:#9B1C1C}
+#sidebar .abr-sec{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;color:#0C6EA8;margin:10px 0 4px}
+#sidebar .abr-line{font-size:13px;line-height:1.5;margin:3px 0;color:#1f2937}
+#sidebar .abr-imp{background:#0C3D5E;color:#fff;border-radius:10px;padding:8px 12px 10px;margin:10px 0;font-size:13.5px;font-weight:600;line-height:1.5}
+#sidebar .abr-imp .abr-sec{color:#9FD3F7;margin-top:2px}
+#sidebar .abr-notes{margin:0;padding-left:18px;font-size:12px;color:#475569;line-height:1.5}
+#sidebar .abr-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+#sidebar .abr-ck{font-size:12.5px;color:#334155;display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+@media (max-width:640px){
+  #sidebar .aud-tabs{margin:10px 14px 0}
+  #sidebar .abr-grid{grid-template-columns:84px 1fr 1fr;gap:6px}
+  #sidebar .abr-unit input{padding-right:40px!important}
+  #sidebar .abr-unit>i{right:7px;font-size:10.5px}
+  #sidebar .abr-thr-row{grid-template-columns:48px 1fr 1fr 40px}
+  #sidebar .abr-tbl{font-size:11.5px}
+}
+@media print{#sidebar .aud-tabs{display:none!important}}
+
+/* ใบรายงาน ABR — พิมพ์ขาวดำได้ชัด (สีใช้แค่เส้น/สัญลักษณ์หู) */
+.sheet.abr-off{display:none!important}
+.sheet.abr-sheet{display:block;min-height:296mm;box-sizing:border-box;padding:12mm 14mm 10mm;font-size:10.5pt}
+/* ห้ามให้ .sheet เป็น flex ซ้อน flex — Chrome ปริ้นแล้วได้หน้าแรกว่าง */
+#abrSheetBody{display:flex;flex-direction:column;min-height:calc(296mm - 22mm)}
+.abr-sheet .abr-p-head{display:flex;justify-content:space-between;align-items:flex-end;gap:8mm;border-bottom:2px solid #0c3d5e;padding-bottom:3mm}
+.abr-sheet .abr-p-hosp{border-left:1.5px solid #bcdcef;padding-left:4.5mm}
+.abr-sheet .abr-p-k{font-size:8.5pt;color:#0c6ea8;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+.abr-sheet .abr-p-hn{font-size:19pt;font-weight:800;color:#0c3d5e;line-height:1.2;margin-top:.5mm}
+.abr-sheet .abr-p-dep{font-size:9.5pt;color:#3a6a86;margin-top:1mm}
+.abr-sheet .abr-p-pat{font-size:10.5pt;line-height:1.85}
+.abr-sheet .abr-ln{display:inline-block;border-bottom:1px dotted #555;padding:0 2mm;font-weight:600;color:#0c3d5e;line-height:1.4}
+.abr-sheet .abr-p-title{margin:4.5mm 0 2mm;font-size:15pt;font-weight:800;letter-spacing:.5px;color:#0c3d5e;display:flex;align-items:baseline;gap:4mm;flex-wrap:wrap}
+.abr-sheet .abr-p-title span{font-size:9.5pt;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#3a6a86}
+.abr-sheet .abr-p-params{display:grid;grid-template-columns:auto 1fr;column-gap:6mm;row-gap:1mm;font-size:10pt}
+.abr-sheet .abr-p-params b{color:#555;font-weight:600}
+.abr-sheet .abr-p-h{display:flex;align-items:baseline;gap:3mm;margin:4.5mm 0 2mm;font-size:9.5pt;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#0c3d5e}
+.abr-sheet .abr-p-n{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:8.5pt;color:#0c6ea8}
+.abr-sheet .abr-p-rule{flex:1;height:1px;background:#cfd8e3;align-self:center}
+.abr-sheet .abr-p-u{font-size:8.5pt;font-weight:500;letter-spacing:0;text-transform:none;color:#666}
+.abr-sheet .abr-p-tbl{width:100%;border-collapse:collapse;font-size:10.5pt}
+.abr-sheet .abr-p-tbl th{font-size:8.5pt;font-weight:700;color:#333;padding:1.1mm 2mm;text-align:right;border-bottom:1px solid #cfd8e3}
+.abr-sheet .abr-p-tbl thead tr:first-child th{font-size:7.5pt;letter-spacing:1.5px;text-transform:uppercase;color:#666;text-align:center;border-bottom:0}
+.abr-sheet .abr-p-tbl td{padding:1.2mm 2mm;text-align:right;border-bottom:1px solid #dde3ea;font-variant-numeric:tabular-nums}
+.abr-sheet .abr-p-tbl .l{text-align:left;white-space:nowrap;font-weight:600}
+.abr-sheet .abr-p-tbl .l.s{font-weight:500;color:#444;font-size:9.5pt}
+.abr-sheet .abr-p-tbl .g{width:3mm;padding:0;border-bottom:0}
+.abr-sheet .abr-p-tbl .flag,.abr-sheet .abr-p-under .flag{font-weight:800;color:#b42318}
+.abr-sheet .abr-p-tbl td.flag{background:#fdeeee}
+.abr-sheet .abr-p-norm td{font-size:8.5pt;color:#666;border-bottom:1.5px solid #333}
+.abr-sheet .abr-p-ehl td{font-weight:700;border-bottom:1.5px solid #333}
+.abr-sheet .abr-p-mk{display:inline-block;width:2.4mm;height:2.4mm;margin-right:2mm;vertical-align:middle}
+.abr-sheet .abr-p-mk.right{border-radius:50%;background:#c8102e}
+.abr-sheet .abr-p-mk.left{background:#1452c4}
+.abr-sheet .abr-p-under{display:flex;justify-content:space-between;gap:4mm;margin-top:2mm;font-size:9pt;color:#444}
+.abr-sheet .abr-p-under small{color:#777}
+.abr-sheet .abr-p-find{display:flex;flex-direction:column;gap:1.4mm;font-size:9pt;line-height:1.38}
+.abr-sheet .abr-p-find .abr-p-ln+.abr-p-ln{margin-top:.6mm}
+.abr-sheet .abr-p-row{display:grid;grid-template-columns:38mm 1fr;gap:4mm}
+.abr-sheet .abr-p-row b.right{color:#c8102e} .abr-sheet .abr-p-row b.left{color:#1452c4}
+.abr-sheet .abr-p-imp{margin-top:4mm;border:1.8px solid #0c3d5e;border-left-width:5px;padding:2.2mm 5mm 2.6mm}
+.abr-sheet .abr-p-imp-t{font-size:10.5pt;font-weight:700;line-height:1.42;margin-top:1mm;color:#111}
+.abr-sheet .abr-p-notes{margin:0;padding-left:5mm;font-size:9pt;line-height:1.5;color:#333}
+.abr-sheet .abr-p-spacer{flex:1;min-height:5mm}
+.abr-sheet .abr-p-sign{display:flex;justify-content:flex-end;text-align:center;font-size:10.5pt;line-height:1.6}
+.abr-sheet .abr-p-signname{border-bottom:1.2px dotted #444;min-width:65mm;min-height:6mm;font-weight:600;color:#0c3d5e;margin-top:1mm}
+.abr-sheet .abr-p-signpos{color:#555;margin-top:1mm}
+.abr-sheet .abr-p-foot{margin-top:3mm;border-top:1px solid #cfd8e3;padding-top:2mm;font-size:7pt;color:#777;line-height:1.35}
+@media print{
+  .abr-sheet .abr-p-head,.abr-sheet .abr-p-head *,.abr-sheet .abr-p-title,.abr-sheet .abr-p-title *,.abr-sheet .abr-ln,.abr-sheet .abr-p-h{color:#000!important}
 }
 </style>
 <style id="themeLiquidGlass">
@@ -1669,6 +1796,7 @@ body::before{
         <a data-jump="p-ha1">2 ประเมิน</a>
         <a data-jump="p-ha2">3 สรุป</a>
         <a data-jump="p-audio">4 Audiogram</a>
+        <a data-jump="p-abr">ABR</a>
         <a data-jump="p-ha3">5 เปรียบเทียบ</a>
         <a data-jump="p-ha4">6 Worksheet</a>
         <a data-jump="p-fu1">7–9 ติดตาม</a>
@@ -1939,6 +2067,945 @@ body::before{
     </div>
   </div>
 </div>
+<script>
+/* ABR-ENGINE BEGIN — สร้างอัตโนมัติจาก abr-interpreter/src/engine ด้วย ABR/sync-abr-engine.py ห้ามแก้ตรงนี้ด้วยมือ · source e9c9b4b91d3bf845 */
+window.ABRE = (function () {
+'use strict';
+const MODS = {};
+/* ---- src/engine/norms.js ---- */
+MODS.norms = (function () {
+/**
+ * The published normative sets.
+ *
+ * Copied value for value from what the running installation served at
+ * /api/norms, except where a comment below says the owner changed or added
+ * a set. They are not editable from the page: a report that names
+ * one of these has to mean the same limits in every copy of this
+ * application. A laboratory with its own table adds it as a set of its
+ * own (norm_sets), which starts from one of these.
+ */
+
+const DEFAULT_SET = "standard";
+
+const REFERENCES = [
+  "Picton, T. W. (2010). Human auditory evoked potentials. Plural Publishing.",
+  "Hood, L. J. (1998). Clinical applications of the auditory brainstem response. Singular Publishing Group.",
+];
+
+const STANDARD_NAME = "Standard normative ABR (click, 90 dB nHL, rarefaction, 11.1/s)";
+const STANDARD_SOURCE = "Standard normative latency of ABR — click 90 dB nHL, rarefaction, rate 11.1/s, 2000 sweeps, filter 100-3000 Hz, mean +/- 2 SD.";
+
+const BAUCH_NAME = "Bauch (1996) / Lightfoot (1992) (click, 90 dB nHL, 10.1/s)";
+const BAUCH_SOURCE = "Bauch, C. D., Olsen, W. O., & Pool, A. F. (1996). ABR indices: sensitivity, specificity, and tumor size. American Journal of Audiology, 5(1), 97-104. Lightfoot, G. R. (1992). ABR screening for acoustic neuromata: the role of rate-induced latency shift measurements. British Journal of Audiology, 26(4), 217-227. Click 90 dB nHL, 10.1/s and 81.1/s, upper limits.";
+
+// Hood: values corrected to the table in RACD 417 "Waveform Analysis & Interpretation"
+// (Isarangura, 2565), as the owner instructed on 2026-10-21. The running installation
+// served wave I 1.31-1.57 and III-V 1.51-1.99; the slide gives 1.31-1.75 and 1.51-2.07.
+const HOOD_NAME = "Hood (1998) reference (click, 90 dB nHL, 7.7/s)";
+const HOOD_SOURCE = "Hood, L. J. (1998). Clinical applications of the auditory brainstem response — normal females 20-30 years, click 90 dB nHL, rate 7.7/s, mean +/- 2 SD.";
+
+// Added on the owner's instruction, 2026-10-21: every reference in his reporting
+// material, so the set is chosen per study.
+// "Norm ABR RAMA" is the table on the Ramathibodi ABR/ECochG reporting form (also the
+// summary slide of RACD 417); interaural limits 0.4 ms from the same slide; the form
+// gives V slow/V fast 0.6-0.8 ms and the owner chose 0.8.
+const RAMA_NAME = "Norm ABR RAMA (click, 90 dB nHL)";
+const RAMA_SOURCE = "Norm ABR RAMA — Ramathibodi ABR reporting form. Interaural wave V and I-V differences <= 0.4 ms, wave V slow/fast rate shift <= 0.8 ms (RACD 417 Waveform Analysis & Interpretation, Isarangura, 2565).";
+// The Ramathibodi table on the RACD 417 normative slide (mean +/- 2 SD).
+const RAMA_SLIDE_NAME = "Ramathibodi RACD 417 (click, 90 dB nHL, rarefaction, 11.1/s)";
+const RAMA_SLIDE_SOURCE = "Ramathibodi normative ABR — click 90 dB nHL, rarefaction, filter 100-3000 Hz, rate 11.1/s, 2000 sweeps, mean +/- 2 SD (RACD 417 Waveform Analysis & Interpretation, Isarangura, 2565).";
+
+const GENERAL_NAME = "General adult reference (click, ~80 dB nHL)";
+const GENERAL_SOURCE = "General adult click reference, ~80 dB nHL, after Picton, T. W. (2010). Human auditory evoked potentials. Plural Publishing.";
+
+const PUBLISHED = [
+  {
+    key: "standard", name: STANDARD_NAME, source: STANDARD_SOURCE, refLevelDb: 90,
+    norms: {
+      name: STANDARD_NAME, source: STANDARD_SOURCE, refLevelDb: 90,
+      waveIMin: 1.41, waveIMax: 1.92, waveIiiMin: 3.5, waveIiiMax: 4.13,
+      waveVMin: 5.32, waveVMax: 6.01,
+      iplIIiiMin: 1.78, iplIIiiMax: 2.5, iplIiiVMin: 1.62, iplIiiVMax: 2.07,
+      iplIVMin: 3.63, iplIVMax: 4.34,
+      ildVMax: 0.4, ildIVMax: 0.4, vIRatioMin: 1, rateShiftMax: 0.8, minNeuroLevelDb: 70,
+    },
+  },
+  {
+    key: "bauch1996", name: BAUCH_NAME, source: BAUCH_SOURCE, refLevelDb: 90,
+    norms: {
+      name: BAUCH_NAME, source: BAUCH_SOURCE, refLevelDb: 90,
+      waveIMin: null, waveIMax: null, waveIiiMin: null, waveIiiMax: null,
+      waveVMin: null, waveVMax: 6.02,
+      iplIIiiMin: null, iplIIiiMax: 2.51, iplIiiVMin: null, iplIiiVMax: 2.31,
+      iplIVMin: null, iplIVMax: 4.54,
+      ildVMax: 0.4, ildIVMax: 0.4, vIRatioMin: 1, rateShiftMax: 0.75, minNeuroLevelDb: 70,
+    },
+  },
+  {
+    key: "hood1998", name: HOOD_NAME, source: HOOD_SOURCE, refLevelDb: 90,
+    norms: {
+      name: HOOD_NAME, source: HOOD_SOURCE, refLevelDb: 90,
+      waveIMin: 1.31, waveIMax: 1.75, waveIiiMin: 3.4, waveIiiMax: 3.76,
+      waveVMin: 5.13, waveVMax: 5.61,
+      iplIIiiMin: 1.77, iplIIiiMax: 2.33, iplIiiVMin: 1.51, iplIiiVMax: 2.07,
+      iplIVMin: 3.52, iplIVMax: 4.16,
+      ildVMax: 0.4, ildIVMax: 0.4, vIRatioMin: 1, rateShiftMax: 0.8, minNeuroLevelDb: 70,
+    },
+  },
+  {
+    key: "rama", name: RAMA_NAME, source: RAMA_SOURCE, refLevelDb: 90,
+    norms: {
+      name: RAMA_NAME, source: RAMA_SOURCE, refLevelDb: 90,
+      waveIMin: 1.41, waveIMax: 1.87, waveIiiMin: 3.43, waveIiiMax: 4.14,
+      waveVMin: 5.27, waveVMax: 6.03,
+      iplIIiiMin: 1.77, iplIIiiMax: 2.53, iplIiiVMin: 1.59, iplIiiVMax: 2.14,
+      iplIVMin: 3.61, iplIVMax: 4.42,
+      ildVMax: 0.4, ildIVMax: 0.4, vIRatioMin: 1, rateShiftMax: 0.8, minNeuroLevelDb: 70,
+    },
+  },
+  {
+    key: "rama_racd417", name: RAMA_SLIDE_NAME, source: RAMA_SLIDE_SOURCE, refLevelDb: 90,
+    norms: {
+      name: RAMA_SLIDE_NAME, source: RAMA_SLIDE_SOURCE, refLevelDb: 90,
+      waveIMin: 1.44, waveIMax: 1.92, waveIiiMin: 3.5, waveIiiMax: 4.13,
+      waveVMin: 5.32, waveVMax: 6.01,
+      iplIIiiMin: 1.78, iplIIiiMax: 2.5, iplIiiVMin: 1.62, iplIiiVMax: 2.07,
+      iplIVMin: 3.63, iplIVMax: 4.34,
+      ildVMax: 0.4, ildIVMax: 0.4, vIRatioMin: 1, rateShiftMax: 0.8, minNeuroLevelDb: 70,
+    },
+  },
+  {
+    key: "general", name: GENERAL_NAME, source: GENERAL_SOURCE, refLevelDb: 80,
+    norms: {
+      name: GENERAL_NAME, source: GENERAL_SOURCE, refLevelDb: 80,
+      waveIMin: null, waveIMax: 2, waveIiiMin: null, waveIiiMax: 4.4,
+      waveVMin: null, waveVMax: 6.2,
+      iplIIiiMin: null, iplIIiiMax: 2.6, iplIiiVMin: null, iplIiiVMax: 2.4,
+      iplIVMin: null, iplIVMax: 4.5,
+      ildVMax: 0.4, ildIVMax: 0.4, vIRatioMin: 1, rateShiftMax: 0.8, minNeuroLevelDb: 70,
+    },
+  },
+];
+
+/** Every limit a set is made of, in the order the form lists them. */
+const NORM_FIELDS = [
+  "waveIMin", "waveIMax", "waveIiiMin", "waveIiiMax", "waveVMin", "waveVMax",
+  "iplIIiiMin", "iplIIiiMax", "iplIiiVMin", "iplIiiVMax", "iplIVMin", "iplIVMax",
+  "ildVMax", "ildIVMax", "rateShiftMax", "vIRatioMin", "refLevelDb", "minNeuroLevelDb",
+];
+
+/** A blank in one of these means "no limit on that side". The rest are required. */
+const OPTIONAL_FIELDS = new Set([
+  "waveIMax", "waveIiiMax",
+  "waveIMin", "waveIiiMin", "waveVMin",
+  "iplIIiiMin", "iplIiiVMin", "iplIVMin",
+]);
+
+/**
+ * Check a laboratory's own limits before they are kept.
+ *
+ * Returns the cleaned set, or throws with a message the page can show
+ * as it is. A lower bound above its upper bound is refused rather than
+ * stored: every report measured against it would be wrong.
+ */
+function validateNorms(input) {
+  const out = {};
+  for (const key of NORM_FIELDS) {
+    const raw = input ? input[key] : undefined;
+    if (raw === null || raw === undefined || raw === "") {
+      if (OPTIONAL_FIELDS.has(key)) { out[key] = null; continue; }
+      throw new Error("ต้องกรอก " + key);
+    }
+    const n = Number(raw);
+    if (!Number.isFinite(n) || n < 0 || n > 200) {
+      throw new Error("ค่า " + key + " ไม่ถูกต้อง");
+    }
+    out[key] = n;
+  }
+  for (const [low, high] of [
+    ["waveIMin", "waveIMax"], ["waveIiiMin", "waveIiiMax"], ["waveVMin", "waveVMax"],
+    ["iplIIiiMin", "iplIIiiMax"], ["iplIiiVMin", "iplIiiVMax"], ["iplIVMin", "iplIVMax"],
+  ]) {
+    if (out[low] !== null && out[high] !== null && out[low] >= out[high]) {
+      throw new Error("ค่าต่ำสุดของ " + high.replace(/Max$/, "") + " ต้องน้อยกว่าค่าสูงสุด");
+    }
+  }
+  return out;
+}
+return { DEFAULT_SET, REFERENCES, PUBLISHED, NORM_FIELDS, OPTIONAL_FIELDS, validateNorms };
+})();
+
+/* ---- src/engine/neuro.js ---- */
+MODS.neuro = (function () {
+/**
+ * The neurodiagnostic reading of one ear, and the comparison of two.
+ *
+ * RECONSTRUCTED. The engine that served the original installation ran
+ * on the server and was not recoverable from the page. What is here is
+ * written to the contract the page reads (finding keys, pattern names,
+ * the shape of the interaural items) and to the rules the page itself
+ * states:
+ *
+ *   - a value is outside the range when it is above the upper limit;
+ *     one below the lower limit is "early", shown as a caution, not an
+ *     abnormality;
+ *   - without wave I no pattern of abnormality is concluded, because
+ *     wave V alone cannot tell a cochlear loss from a retrocochlear one;
+ *   - the hearing-loss correction allows 0.1 ms for every 10 dB beyond
+ *     50 dB HL at 4 kHz, widens the wave V limit in that ear, and is
+ *     taken off the interaural difference in the ear with the later
+ *     response.
+ *
+ * Every rule should be checked against the clinic's own protocol before
+ * the reports are relied on.
+ */
+
+const LABELS = {
+  wave_i: "Wave I",
+  wave_iii: "Wave III",
+  wave_v: "Wave V",
+  ipl_i_iii: "I–III interval",
+  ipl_iii_v: "III–V interval",
+  ipl_i_v: "I–V interval",
+  rate_shift: "Wave V slow→fast shift",
+  v_i_ratio: "V/I amplitude ratio",
+};
+
+const round2 = (n) => Math.round(n * 100) / 100;
+const fmt = (n) => n.toFixed(2);
+const EPS = 1e-9;
+
+/**
+ * The allowance for a high-frequency loss, in ms.
+ *
+ * Whole 10 dB steps only: 55 dB HL earns nothing, 60 earns 0.10 ms.
+ * Rounding the other way would widen the limit for a loss that has not
+ * yet reached the next step, and wave V is the measure that most needs
+ * a tight limit.
+ */
+function hearingLossAllowance(hl4kDb) {
+  if (typeof hl4kDb !== "number" || !Number.isFinite(hl4kDb) || hl4kDb <= 50) return 0;
+  return round2(Math.floor((hl4kDb - 50) / 10) * 0.1);
+}
+
+function finding(key, value, low, high, abnormalWhen = "above") {
+  const has = typeof value === "number";
+  const lo = typeof low === "number" ? low : null;
+  const hi = typeof high === "number" ? high : null;
+  let abnormal = false;
+  if (has) {
+    if (abnormalWhen === "above" && hi !== null) abnormal = value > hi + EPS;
+    if (abnormalWhen === "below" && lo !== null) abnormal = value < lo - EPS;
+  }
+  return { key, label: LABELS[key], value: has ? round2(value) : null, low: lo, high: hi, abnormal };
+}
+
+const num = (v) => (typeof v === "number" && Number.isFinite(v) ? v : null);
+
+/** Read one ear's marks into numbers, or nulls where nothing was typed. */
+function readPicks(raw) {
+  const r = raw || {};
+  return {
+    levelDb: num(r.levelDb),
+    i: num(r.i), iii: num(r.iii), v: num(r.v), vFast: num(r.vFast),
+    ampI: num(r.ampI), ampV: num(r.ampV),
+    hl4kDb: num(r.hl4kDb),
+    poorMorphology: Boolean(r.poorMorphology),
+    noResponse: Boolean(r.noResponse),
+    // Optional: the audiologist judged a no-response to be the hearing loss
+    // (the form's "could not be identified due to severe / profound hearing
+    // loss"). Only the wording changes; the pattern stays no_response.
+    severeLoss: Boolean(r.noResponse && r.severeLoss),
+  };
+}
+
+/**
+ * One ear.
+ *
+ * Returns { pattern, levelDb, picks, findings, warnings, allowance },
+ * where pattern is one of normal, equivocal, peripheral, retrocochlear,
+ * no_response, incomplete.
+ */
+function readEar(raw, norms, rates = {}) {
+  const picks = readPicks(raw);
+  const warnings = [];
+  const allowance = hearingLossAllowance(picks.hl4kDb);
+  const level = picks.levelDb;
+
+  if (picks.noResponse) {
+    return {
+      pattern: "no_response", levelDb: level, picks, allowance,
+      findings: Object.keys(LABELS)
+        .filter((k) => k !== "v_i_ratio")
+        .map((k) => finding(k, null, null, null)),
+      warnings: level === null ? ["Level not entered; the report cannot say at what level there was no response."] : [],
+    };
+  }
+
+  for (const [key, name] of [["i", "I"], ["iii", "III"], ["v", "V"], ["vFast", "V (fast rate)"]]) {
+    const v = picks[key];
+    if (v !== null && (v <= 0 || v > 15)) {
+      warnings.push("Wave " + name + " at " + fmt(v) + " ms is outside any plausible latency; check the mark.");
+    }
+  }
+  const order = [["I", picks.i], ["III", picks.iii], ["V", picks.v]].filter(([, v]) => v !== null);
+  for (let k = 1; k < order.length; k += 1) {
+    if (order[k][1] <= order[k - 1][1]) {
+      warnings.push("Wave " + order[k][0] + " is not later than wave " + order[k - 1][0] + "; check the marks.");
+    }
+  }
+
+  if (level !== null) {
+    if (typeof norms.minNeuroLevelDb === "number" && level < norms.minNeuroLevelDb) {
+      warnings.push("Recorded at " + level + " dB nHL, below the " + norms.minNeuroLevelDb +
+        " dB nHL this reference may be used at. Latencies lengthen as the level falls, " +
+        "so a prolonged latency here may be the level and not the ear.");
+    } else if (typeof norms.refLevelDb === "number" && level !== norms.refLevelDb) {
+      warnings.push("Recorded at " + level + " dB nHL; the reference was collected at " +
+        norms.refLevelDb + " dB nHL.");
+    }
+  }
+
+  const vHigh = typeof norms.waveVMax === "number" ? norms.waveVMax + allowance : null;
+  if (allowance > 0) {
+    warnings.push("Wave V limit widened by " + fmt(allowance) + " ms for " + picks.hl4kDb +
+      " dB HL at 4 kHz.");
+  }
+
+  const ipl = (a, b) => (a !== null && b !== null ? b - a : null);
+  const findings = [
+    finding("wave_i", picks.i, norms.waveIMin, norms.waveIMax),
+    finding("wave_iii", picks.iii, norms.waveIiiMin, norms.waveIiiMax),
+    finding("wave_v", picks.v, norms.waveVMin, vHigh),
+    finding("ipl_i_iii", ipl(picks.i, picks.iii), norms.iplIIiiMin, norms.iplIIiiMax),
+    finding("ipl_iii_v", ipl(picks.iii, picks.v), norms.iplIiiVMin, norms.iplIiiVMax),
+    finding("ipl_i_v", ipl(picks.i, picks.v), norms.iplIVMin, norms.iplIVMax),
+    finding("rate_shift", ipl(picks.v, picks.vFast), null, norms.rateShiftMax),
+  ];
+  if (picks.ampI !== null && picks.ampV !== null && picks.ampI > 0) {
+    findings.push(finding("v_i_ratio", picks.ampV / picks.ampI, norms.vIRatioMin, null, "below"));
+  }
+  if (picks.vFast !== null && picks.v === null) {
+    warnings.push("Wave V at the fast rate was entered without wave V at the slow rate; the shift cannot be measured.");
+  }
+  if (picks.vFast !== null && picks.v !== null && picks.vFast < picks.v) {
+    warnings.push("Wave V is earlier at the fast rate than at the slow rate; check the marks.");
+  }
+  if (picks.vFast !== null && typeof rates.fastRate !== "number") {
+    warnings.push("The fast rate was not entered, so the report cannot say which rate the shift was measured at.");
+  }
+
+  const bad = new Set(findings.filter((f) => f.abnormal).map((f) => f.key));
+  const intervalBad = ["ipl_i_iii", "ipl_iii_v", "ipl_i_v"].some((k) => bad.has(k));
+  const absoluteBad = ["wave_i", "wave_iii", "wave_v"].some((k) => bad.has(k));
+
+  let pattern;
+  if (picks.v === null) {
+    pattern = "incomplete";
+    warnings.push("Wave V was not identified.");
+  } else if (intervalBad || bad.has("rate_shift")) {
+    pattern = "retrocochlear";
+  } else if (picks.i === null) {
+    if (absoluteBad) {
+      pattern = "incomplete";
+      warnings.push("Wave I was not identified, so a prolonged wave V cannot be attributed to a " +
+        "peripheral or a retrocochlear cause.");
+    } else {
+      pattern = picks.poorMorphology ? "equivocal" : "normal";
+      warnings.push("Wave I was not identified; the interpeak intervals could not be measured.");
+    }
+  } else if (absoluteBad) {
+    pattern = "peripheral";
+  } else {
+    pattern = picks.poorMorphology ? "equivocal" : "normal";
+  }
+  if (picks.poorMorphology && pattern !== "equivocal") {
+    warnings.push("Waveform morphology was recorded as not clear or not repeatable.");
+  }
+
+  return { pattern, levelDb: level, picks, findings, warnings, allowance };
+}
+
+/**
+ * Right against left.
+ *
+ * The hearing-loss allowance comes off the ear with the later wave V
+ * only: taking it off the earlier ear would widen the difference it is
+ * meant to explain.
+ */
+function compareEars(right, left, norms) {
+  const items = [];
+  const notes = [];
+  if (!right || !left) return { items, notes };
+  if (right.pattern === "no_response" || left.pattern === "no_response") {
+    notes.push("Interaural comparison not made: no response in one ear.");
+    return { items, notes };
+  }
+  const vR = right.picks.v;
+  const vL = left.picks.v;
+  if (vR !== null && vL !== null) {
+    const laterIsRight = vR > vL;
+    const later = laterIsRight ? right : left;
+    const raw = Math.abs(vR - vL);
+    const corrected = Math.max(0, raw - later.allowance);
+    if (later.allowance > 0 && raw > 0) {
+      notes.push("Interaural wave V difference " + fmt(raw) + " ms, less " + fmt(later.allowance) +
+        " ms for hearing loss in the " + (laterIsRight ? "right" : "left") + " ear.");
+    }
+    items.push({
+      key: "ild_v", label: "Interaural wave V (IT5)", value: round2(corrected),
+      limit: norms.ildVMax, abnormal: corrected > norms.ildVMax + EPS,
+      later: raw === 0 ? null : laterIsRight ? "right" : "left",
+    });
+  } else {
+    notes.push("Interaural wave V difference needs wave V in both ears.");
+  }
+  const ivR = right.findings.find((f) => f.key === "ipl_i_v");
+  const ivL = left.findings.find((f) => f.key === "ipl_i_v");
+  if (ivR && ivL && ivR.value !== null && ivL.value !== null && typeof norms.ildIVMax === "number") {
+    const diff = Math.abs(ivR.value - ivL.value);
+    items.push({
+      key: "ild_i_v", label: "Interaural I–V", value: round2(diff),
+      limit: norms.ildIVMax, abnormal: diff > norms.ildIVMax + EPS,
+      later: diff === 0 ? null : ivR.value > ivL.value ? "right" : "left",
+    });
+  }
+  return { items, notes };
+}
+return { LABELS, hearingLossAllowance, readPicks, readEar, compareEars };
+})();
+
+/* ---- src/engine/threshold.js ---- */
+MODS.threshold = (function () {
+/**
+ * Threshold estimation: from the lowest level with a response to an
+ * estimated hearing level.
+ *
+ * RECONSTRUCTED, and switched off on the running installation
+ * (thresholdEnabled was false), so there was nothing to compare it with.
+ * The nHL-to-eHL corrections below are placeholders in the range the
+ * published guidance gives for adults. They must be replaced with the
+ * corrections the clinic uses before the setting is turned on.
+ */
+
+/** dB subtracted from the nHL threshold to estimate eHL, per stimulus. */
+const EHL_CORRECTION = { click: 5, 500: 15, 1000: 10, 2000: 5, 4000: 5 };
+
+const FREQS = ["500", "1000", "2000", "4000"];
+
+/** WHO-style bands on the estimated average. */
+function degreeOf(pta) {
+  if (pta === null) return null;
+  if (pta <= 25) return "normal hearing";
+  if (pta <= 40) return "mild hearing loss";
+  if (pta <= 55) return "moderate hearing loss";
+  if (pta <= 70) return "moderately severe hearing loss";
+  if (pta <= 90) return "severe hearing loss";
+  return "profound hearing loss";
+}
+
+const level = (entry) =>
+  entry && typeof entry.level === "number" && Number.isFinite(entry.level) ? entry.level : null;
+
+/**
+ * One ear's series: { air: {click: {level, present}}, bone: {...} }.
+ *
+ * A level marked NR is the highest level tested with no response: a
+ * floor, not a threshold. It is reported as "no response at" and kept
+ * out of the average, which would otherwise come out better than the ear.
+ */
+function estimateEar(series) {
+  const warnings = [];
+  const airEhl = {};
+  const boneEhl = {};
+  const noResponseAt = {};
+  for (const [route, out] of [["air", airEhl], ["bone", boneEhl]]) {
+    const given = (series && series[route]) || {};
+    for (const [key, entry] of Object.entries(given)) {
+      if (!(key in EHL_CORRECTION)) continue;
+      const db = level(entry);
+      if (db === null) continue;
+      if (db < -10 || db > 130) {
+        warnings.push(route + " " + key + " level " + db + " dB nHL is outside the range a recording reaches.");
+        continue;
+      }
+      if (entry.present === false) {
+        if (route === "air") noResponseAt[key] = db;
+        else warnings.push("No bone-conduction response at " + db + " dB nHL (" + key + ").");
+        continue;
+      }
+      out[key] = db - EHL_CORRECTION[key];
+    }
+  }
+
+  const averaged = FREQS.filter((f) => typeof airEhl[f] === "number");
+  let estimatedPta = null;
+  if (averaged.length >= 2) {
+    estimatedPta = Math.round(averaged.reduce((s, f) => s + airEhl[f], 0) / averaged.length);
+  } else if (typeof airEhl.click === "number" && averaged.length === 0) {
+    estimatedPta = airEhl.click;
+    warnings.push("Estimate from the click alone, which reflects roughly 2–4 kHz and says nothing about the low frequencies.");
+  } else if (averaged.length === 1) {
+    warnings.push("Only one frequency has a threshold; no average is estimated.");
+  }
+  if (Object.keys(noResponseAt).length) {
+    warnings.push("No response at the highest level tested for " +
+      Object.entries(noResponseAt).map(([k, db]) => (k === "click" ? "click" : k + " Hz") + " (" + db + " dB nHL)").join(", ") +
+      "; the hearing level there is at least that, and is not part of the average.");
+  }
+
+  let maxAbg = null;
+  for (const key of Object.keys(EHL_CORRECTION)) {
+    if (typeof airEhl[key] === "number" && typeof boneEhl[key] === "number") {
+      const gap = airEhl[key] - boneEhl[key];
+      maxAbg = maxAbg === null ? gap : Math.max(maxAbg, gap);
+    }
+  }
+
+  let lossType = null;
+  const degree = degreeOf(estimatedPta);
+  if (estimatedPta !== null && estimatedPta > 25) {
+    if (maxAbg === null) {
+      warnings.push("No bone-conduction threshold to compare with, so the type of loss is not stated.");
+    } else {
+      const bones = Object.values(boneEhl);
+      const boneWorst = bones.length ? Math.max(...bones) : null;
+      if (maxAbg >= 15) lossType = boneWorst !== null && boneWorst > 25 ? "mixed" : "conductive";
+      else lossType = "sensorineural";
+    }
+  }
+
+  return { airEhl, boneEhl, noResponseAt, estimatedPta, degree, lossType, maxAbg, warnings };
+}
+return { EHL_CORRECTION, degreeOf, estimateEar };
+})();
+
+/* ---- src/engine/interpret.js ---- */
+MODS.interpret = (function () {
+/**
+ * One study in, one result out.
+ *
+ * The page draws its panel, its print sheet and its phone sheet from
+ * what comes back here, and keeps no copy of the rules: one engine, one
+ * answer. The result carries the structured findings; the report is the
+ * same reading written as text to paste into a chart.
+ *
+ * RECONSTRUCTED: the sentences were written to the page's contract, not
+ * recovered. Since 2026-10-21 the Findings follow the owner's reporting form
+ * ("การรายงานผลตรวจ ABR", Ramathibodi): six topics in the form's order, each
+ * ear in the form's words, one sentence with "(both ear)" when the two ears
+ * read the same. The Impression stays at the end of the report, as the owner
+ * asked on the same day.
+ */
+
+const { readEar, compareEars } = MODS.neuro;
+const { estimateEar } = MODS.threshold;
+
+const EARS = ["right", "left"];
+const SHORT = { right: "Rt.", left: "Lt." };
+const NAME = { right: "right", left: "left" };
+const fmt = (n) => n.toFixed(2);
+
+const get = (ear, key) => ear.findings.find((f) => f.key === key);
+
+/** "the right ear", "the left ear", "both ears". */
+function whichEars(ears) {
+  if (ears.length === 2) return "both ears";
+  return "the " + NAME[ears[0]] + " ear";
+}
+
+/** The one-line summary per ear in the Result list. */
+function earResultLine(ear, side) {
+  const fig = [];
+  const v = get(ear, "wave_v");
+  const iv = get(ear, "ipl_i_v");
+  if (v && v.value !== null) fig.push("V " + fmt(v.value) + " ms");
+  if (iv && iv.value !== null) fig.push("I–V " + fmt(iv.value) + " ms");
+  const word = {
+    normal: "within normal limits",
+    equivocal: "within limits, poor morphology",
+    peripheral: "prolonged absolute latency, normal intervals",
+    retrocochlear: "prolonged interval / rate shift",
+    no_response: "no response",
+    incomplete: "incomplete",
+  }[ear.pattern];
+  return SHORT[side] + " " + (fig.length ? fig.join(", ") + " — " : "") + word;
+}
+
+/**
+ * One ear's impression, for a study whose two ears read differently: the
+ * owner asked (2026-10-21) for the Impression to be written ear by ear then,
+ * "Rt. …" and "Lt. …", rather than grouped by finding. Same wording as the
+ * grouped sentences below, said of one ear.
+ */
+const EAR_IMPRESSION = {
+  retrocochlear: "Abnormal ABR: delayed brainstem conduction, a retrocochlear pattern. " +
+    "Further evaluation, such as MRI of the internal auditory canals, should be considered.",
+  peripheral: "Prolonged absolute latencies with normal interpeak intervals, consistent with a " +
+    "peripheral (conductive or cochlear) component. No evidence of retrocochlear involvement.",
+  equivocal: "Equivocal ABR: latencies within limits but waveform morphology poor or not repeatable. " +
+    "Repeat the recording to confirm.",
+  no_response: "No repeatable ABR at the level tested. Neural integrity cannot be assessed from this " +
+    "recording; correlate with behavioural thresholds.",
+  incomplete: "Interpretation is incomplete: the marks entered are not enough to conclude a pattern.",
+  normal: "Normal ABR. No evidence of retrocochlear involvement.",
+};
+
+function asymmetryLine(asym, retro) {
+  const later = asym.map((i) => i.later).filter(Boolean);
+  return "Interaural asymmetry exceeding the reference limit" +
+    (later.length ? ", later on the " + later[0] : "") +
+    (retro ? "." : ". A retrocochlear cause cannot be excluded; further evaluation should be considered.");
+}
+
+function thresholdLines(thresholds) {
+  const lines = [];
+  for (const side of EARS) {
+    const t = thresholds[side];
+    if (!t || t.estimatedPta === null) continue;
+    lines.push((side === "right" ? "Right" : "Left") + " ear: estimated average " + t.estimatedPta +
+      " dB eHL" + (t.degree ? ", " + t.degree : "") +
+      (t.lossType ? ", " + t.lossType : "") + ".");
+  }
+  return lines;
+}
+
+/** What the study means, in the order a reader wants it. */
+function impressionLines(neuro, interaural, thresholds) {
+  const lines = [];
+  if (neuro.right && neuro.left && neuro.right.pattern !== neuro.left.pattern) {
+    for (const side of EARS) lines.push(SHORT[side] + " " + EAR_IMPRESSION[neuro[side].pattern]);
+    const asym = interaural.filter((i) => i.abnormal);
+    if (asym.length) {
+      lines.push(asymmetryLine(asym, EARS.some((s) => neuro[s].pattern === "retrocochlear")));
+    }
+    return lines.concat(thresholdLines(thresholds));
+  }
+  const by = (p) => EARS.filter((s) => neuro[s] && neuro[s].pattern === p);
+  const retro = by("retrocochlear");
+  const peripheral = by("peripheral");
+  const equivocal = by("equivocal");
+  const none = by("no_response");
+  const incomplete = by("incomplete");
+  const normal = by("normal");
+  const asym = interaural.filter((i) => i.abnormal);
+
+  if (retro.length) {
+    lines.push("Abnormal ABR in " + whichEars(retro) +
+      ": delayed brainstem conduction, a retrocochlear pattern. " +
+      "Further evaluation, such as MRI of the internal auditory canals, should be considered.");
+  }
+  if (asym.length) lines.push(asymmetryLine(asym, retro.length > 0));
+  if (peripheral.length) {
+    lines.push("Prolonged absolute latencies with normal interpeak intervals in " + whichEars(peripheral) +
+      ", consistent with a peripheral (conductive or cochlear) component. " +
+      "No evidence of retrocochlear involvement in " + (peripheral.length === 2 ? "either ear" : "that ear") + ".");
+  }
+  if (equivocal.length) {
+    lines.push("Equivocal ABR in " + whichEars(equivocal) +
+      ": latencies within limits but waveform morphology poor or not repeatable. Repeat the recording to confirm.");
+  }
+  if (none.length) {
+    lines.push("No repeatable ABR in " + whichEars(none) +
+      " at the level tested. Neural integrity cannot be assessed from this recording; " +
+      "correlate with behavioural thresholds.");
+  }
+  if (incomplete.length) {
+    lines.push("Interpretation of " + whichEars(incomplete) +
+      " is incomplete: the marks entered are not enough to conclude a pattern.");
+  }
+  if (normal.length && !retro.length && !asym.length && !peripheral.length &&
+      !equivocal.length && !none.length && !incomplete.length) {
+    lines.push("Normal ABR " + (normal.length === 2 ? "bilaterally" : "in " + whichEars(normal)) +
+      ". No evidence of retrocochlear involvement.");
+  } else if (normal.length) {
+    lines.push("Normal ABR in " + whichEars(normal) + ".");
+  }
+
+  return lines.concat(thresholdLines(thresholds));
+}
+
+function stimulusLine(input, neuro) {
+  const parts = [input.stimulusNote].filter(Boolean);
+  const levels = EARS.filter((s) => neuro[s] && neuro[s].levelDb !== null)
+    .map((s) => [s, neuro[s].levelDb]);
+  if (levels.length && levels.every(([, l]) => l === levels[0][1])) parts.push(levels[0][1] + " dB nHL");
+  else if (levels.length) parts.push(levels.map(([s, l]) => SHORT[s] + " " + l + " dB nHL").join(", "));
+  const rates = [input.slowRate, input.fastRate].filter((r) => typeof r === "number");
+  if (rates.length && levels.length) parts.push(rates.map((r) => r + "/s").join(" and "));
+  return parts.join(" · ");
+}
+
+function measurementTable(neuro) {
+  const keys = ["wave_i", "wave_iii", "wave_v", "ipl_i_iii", "ipl_iii_v", "ipl_i_v", "rate_shift"];
+  const heads = ["", "I", "III", "V", "I–III", "III–V", "I–V", "Shift"];
+  const rows = [heads];
+  for (const side of EARS) {
+    const ear = neuro[side];
+    if (!ear) continue;
+    rows.push([SHORT[side]].concat(keys.map((k) => {
+      const f = get(ear, k);
+      if (!f || f.value === null) return "—";
+      return fmt(f.value) + (f.abnormal ? "*" : "");
+    })));
+  }
+  const width = heads.map((_, c) => Math.max(...rows.map((r) => r[c].length)));
+  return rows.map((r) => r.map((cell, c) => cell.padEnd(width[c])).join("  ").trimEnd());
+}
+
+// ---------------------------------------------------------------
+//  Findings in the words of the reporting form (owner, 2026-10-21)
+// ---------------------------------------------------------------
+// The form writes intervals and ranges with a hyphen (I-III, 1.41-1.87).
+const h2 = (n) => n.toFixed(2);
+const WAVE = { wave_i: "I", wave_iii: "III", wave_v: "V" };
+const IPL = { ipl_i_iii: "I-III", ipl_iii_v: "III-V", ipl_i_v: "I-V" };
+const FINDING_TOPICS = {
+  morphology: "Morphology",
+  absolute: "Absolute latency",
+  interpeak: "Interpeak latencies",
+  interaural_v: "Interaural absolute latency",
+  interaural_iv: "Interaural interpeak latency",
+  rate: "Rate differences",
+};
+
+/** "I", "III and V", "I, III, and V" — the form's own list of waves. */
+function series(names) {
+  if (names.length <= 1) return names.join("");
+  if (names.length === 2) return names[0] + " and " + names[1];
+  return names.slice(0, -1).join(", ") + ", and " + names[names.length - 1];
+}
+
+function rangeOf(f) {
+  if (typeof f.high !== "number") return null;
+  return typeof f.low === "number" ? h2(f.low) + "-" + h2(f.high) : "≤ " + h2(f.high);
+}
+
+/** "(I: 1.41-1.87, III: 3.43-4.14, V: 5.27-6.03 ms)", or "" when no limit is known. */
+function ranges(list, names) {
+  const parts = list.map((f) => [names[f.key], rangeOf(f)]).filter(([, r]) => r);
+  if (!parts.length) return "";
+  if (parts.length === 1) return " (" + parts[0][1] + " ms)";
+  return " (" + parts.map(([n, r]) => n + ": " + r).join(", ") + " ms)";
+}
+
+const measured = (f) => h2(f.value) + " ms";
+
+/**
+ * One ear's sentences for one topic, without the side.
+ * Each returns an array: none when the topic cannot be said for that ear.
+ */
+function morphologyOf(ear) {
+  const at = ear.levelDb !== null ? " at " + ear.levelDb + " dBnHL" : "";
+  if (ear.pattern === "no_response") {
+    return [ear.picks.severeLoss
+      ? "ABR waveform could not be identified due to severe / profound hearing loss"
+      : "ABR waveform could not be identified" + at];
+  }
+  if (ear.picks.poorMorphology) return ["ABR results showed poor waveform morphology" + at];
+  const seen = [["I", ear.picks.i], ["III", ear.picks.iii], ["V", ear.picks.v]]
+    .filter(([, v]) => v !== null).map(([w]) => w);
+  if (seen.length === 3) return ["ABR results showed clear waveform morphology" + at];
+  if (seen.length === 2) return ["ABR results showed wave " + series(seen) + at];
+  if (seen.length === 1) return ["ABR results showed only wave " + seen[0] + at];
+  return ["ABR waveform could not be identified" + at];
+}
+
+function latencyOf(ear, names, plural, singular) {
+  if (ear.pattern === "no_response") return [];
+  const list = ear.findings.filter((f) => f.key in names && f.value !== null);
+  if (!list.length) return [];
+  const bad = list.filter((f) => f.abnormal);
+  const ok = list.filter((f) => !f.abnormal);
+  const out = [];
+  if (bad.length) {
+    out.push((bad.length > 1 ? plural : singular) + " of wave " + series(bad.map((f) => names[f.key])) +
+      (bad.length > 1 ? " were" : " was") + " prolonged (" +
+      bad.map((f) => names[f.key] + " " + measured(f)).join(", ") + ")");
+  }
+  if (ok.length) {
+    out.push((ok.length > 1 ? plural : singular) + " of wave " + series(ok.map((f) => names[f.key])) +
+      (ok.length > 1 ? " were" : " was") + " within normal limits" + ranges(ok, names));
+  }
+  return out;
+}
+
+function rateOf(ear, rates) {
+  const f = get(ear, "rate_shift");
+  if (!f || f.value === null) return [];
+  const at = typeof rates.slowRate === "number" && typeof rates.fastRate === "number"
+    ? "stimulus rate of " + rates.slowRate + "/sec and " + rates.fastRate + "/sec"
+    : "slow and fast stimulus rates";
+  return [f.abnormal
+    ? "There were significant differences in wave V latency while presenting " + at + " (" + measured(f) + ")"
+    : "There were no significant differences in wave V latency while presenting " + at];
+}
+
+/**
+ * One topic for the ears entered: a single sentence with "(both ear)" when
+ * both ears say exactly the same, otherwise "Rt. …" then "Lt. …".
+ */
+function perEar(neuro, say) {
+  const said = EARS.filter((s) => neuro[s]).map((s) => [s, say(neuro[s])]).filter(([, l]) => l.length);
+  if (!said.length) return null;
+  if (said.length === 2 && said[0][1].join("|") === said[1][1].join("|")) {
+    return said[0][1].map((line) => line + " (both ear).").join(" ");
+  }
+  return said.map(([s, lines]) => lines.map((line) => SHORT[s] + " " + line + ".").join(" ")).join(" ");
+}
+
+function formFindings(neuro, interaural, rates) {
+  const out = [];
+  const add = (topic, text) => { if (text) out.push({ topic, text }); };
+  add("morphology", perEar(neuro, morphologyOf));
+  add("absolute", perEar(neuro, (ear) => latencyOf(ear, WAVE, "The absolute latencies", "The absolute latency")));
+  add("interpeak", perEar(neuro, (ear) => latencyOf(ear, IPL, "The interpeak latencies", "The interpeak latency")));
+  const v = interaural.find((i) => i.key === "ild_v");
+  if (v) {
+    add("interaural_v", "There was " + (v.abnormal ? "significant" : "no significant") +
+      " difference in interaural (absolute) latency of wave V (" + h2(v.value) + " ms" +
+      (v.abnormal && v.later ? ", later on the " + v.later : "") + ").");
+  }
+  const iv = interaural.find((i) => i.key === "ild_i_v");
+  if (iv) {
+    const other = iv.later === "right" ? "left" : "right";
+    add("interaural_iv", "The interaural interpeak latency difference of wave I-V " +
+      (iv.abnormal && iv.later
+        ? "was prolonged in the " + iv.later + " ear when compared to the " + other + " ear"
+        : iv.abnormal ? "was prolonged" : "was within normal limits") +
+      " (" + h2(iv.value) + " ms).");
+  }
+  add("rate", perEar(neuro, (ear) => rateOf(ear, rates)));
+  return out;
+}
+
+/** A latency below the lower limit is "early": not abnormal, but worth a note. */
+function earlyNotes(neuro) {
+  const notes = [];
+  for (const side of EARS) {
+    const ear = neuro[side];
+    if (!ear) continue;
+    for (const f of ear.findings) {
+      if (f.value !== null && typeof f.low === "number" && f.value < f.low - 1e-9) {
+        notes.push(SHORT[side] + " " + f.label + " " + h2(f.value) + " ms is earlier than the lower limit " +
+          h2(f.low) + " ms.");
+      }
+    }
+  }
+  return notes;
+}
+
+/**
+ * The whole study.
+ *
+ * input:  the body the page posts (stimulusNote, slowRate, fastRate,
+ *         neuro.{right,left}, thresholds.{right,left})
+ * norms:  the limits it is judged against
+ * mode:   "neuro" or "threshold"
+ */
+function interpret(input, norms, mode) {
+  const rates = {
+    slowRate: typeof input.slowRate === "number" ? input.slowRate : null,
+    fastRate: typeof input.fastRate === "number" ? input.fastRate : null,
+  };
+  const neuro = {};
+  const thresholds = {};
+  const warnings = [];
+
+  if (mode === "neuro") {
+    for (const side of EARS) {
+      if (input.neuro && input.neuro[side]) neuro[side] = readEar(input.neuro[side], norms, rates);
+    }
+    if (!neuro.right && !neuro.left) throw new Error("กรอกค่าคลื่นอย่างน้อยหนึ่งหูก่อนแปลผล");
+  } else {
+    for (const side of EARS) {
+      if (input.thresholds && input.thresholds[side]) thresholds[side] = estimateEar(input.thresholds[side]);
+    }
+    if (!thresholds.right && !thresholds.left) throw new Error("กรอกระดับเสียงอย่างน้อยหนึ่งความถี่ก่อนแปลผล");
+  }
+
+  const { items: interaural, notes: interauralNotes } =
+    neuro.right && neuro.left ? compareEars(neuro.right, neuro.left, norms) : { items: [], notes: [] };
+  if (mode === "neuro" && (neuro.right ? 1 : 0) + (neuro.left ? 1 : 0) === 1) {
+    interauralNotes.push("Only one ear was entered; no interaural comparison.");
+  }
+
+  const findings = mode === "neuro" ? formFindings(neuro, interaural, rates) : [];
+  warnings.push(...earlyNotes(neuro));
+
+  const resultLines = EARS.filter((s) => neuro[s]).map((s) => earResultLine(neuro[s], s));
+  for (const item of interaural) {
+    resultLines.push(item.label + " " + fmt(item.value) + " ms — " + (item.abnormal ? "exceeds limit" : "normal"));
+  }
+
+  const impression = impressionLines(neuro, interaural, thresholds);
+
+  const result = {
+    mode,
+    stimulusNote: input.stimulusNote || "",
+    slowRate: rates.slowRate,
+    fastRate: rates.fastRate,
+    norms: { name: norms.name, source: norms.source, refLevelDb: norms.refLevelDb },
+    neuro,
+    interaural,
+    interauralNotes,
+    thresholds,
+    findings,
+    result: resultLines,
+    impression,
+    warnings,
+  };
+
+  const head = [
+    mode === "neuro" ? "ABR — neurodiagnostic" : "ABR — threshold estimation",
+  ];
+  const stim = stimulusLine(input, neuro);
+  if (stim) head.push("Stimulus: " + stim);
+  if (mode === "neuro") head.push("Reference: " + norms.name);
+
+  const topics = { right: "Right ear", left: "Left ear", ...FINDING_TOPICS };
+  const findingLines = findings.map((f) => topics[f.topic] + ": " + f.text);
+  if (mode === "threshold") {
+    for (const side of EARS) {
+      const t = thresholds[side];
+      if (!t) continue;
+      // A no-response level is the highest nHL tested, not an estimate,
+      // so it is written in nHL beside the eHL thresholds.
+      const name = (k) => (k === "click" ? "click" : k + " Hz");
+      const ehl = Object.entries(t.airEhl).map(([k, v]) => name(k) + " " + v);
+      const nr = Object.entries(t.noResponseAt).map(([k, v]) => name(k) + " at " + v + " dB nHL");
+      findingLines.push(topics[side] + ": air " + (ehl.length ? ehl.join(", ") + " dB eHL" : "—") +
+        (nr.length ? "; no response " + nr.join(", ") : "") +
+        (t.maxAbg !== null ? "; largest air-bone gap " + t.maxAbg + " dB" : "") + ".");
+    }
+  }
+
+  const plain = head.concat(
+    findingLines.length ? ["", "Findings"].concat(findingLines) : [],
+    ["", "Impression"], impression,
+  ).join("\n");
+
+  const notes = [].concat(
+    warnings, interauralNotes,
+    ...EARS.filter((s) => neuro[s]).map((s) => neuro[s].warnings.map((w) => SHORT[s] + " " + w)),
+    ...EARS.filter((s) => thresholds[s]).map((s) => thresholds[s].warnings.map((w) => SHORT[s] + " " + w)),
+  );
+  const detail = head.concat(
+    mode === "neuro" ? ["", "Measurements (ms, * outside limits)"].concat(measurementTable(neuro)) : [],
+    findingLines.length ? ["", "Findings"].concat(findingLines) : [],
+    ["", "Impression"], impression,
+    notes.length ? ["", "Notes"].concat(notes.map((n) => "- " + n)) : [],
+  ).join("\n");
+
+  const patterns = EARS.filter((s) => neuro[s]).map((s) => SHORT[s] + " " + neuro[s].pattern).join(", ");
+  return { result, report: plain, reportDetail: detail, patterns };
+}
+return { FINDING_TOPICS, interpret };
+})();
+return { norms: MODS.norms, neuro: MODS.neuro, threshold: MODS.threshold, interpret: MODS.interpret.interpret, findingTopics: MODS.interpret.FINDING_TOPICS || {}, source: 'e9c9b4b91d3bf845' };
+})();
+/* ABR-ENGINE END */
+</script>
 <script>
 (function(){
 'use strict';
@@ -3065,6 +4132,432 @@ function worksheetInputs(){
   return h;
 }
 
+/* ══════════════ 🧠 ABR — แท็บในหน้า 📈 Audiogram (เพิ่ม 20 ต.ค. 2026) ══════════════
+   แปลผลด้วย window.ABRE = engine ชุดเดียวกับ ABR Interpreter (abr-interpreter/src/engine)
+   ที่ ABR/sync-abr-engine.py คัดลอกมาวางไว้ทั้งไฟล์ ไม่มีการเขียนกฎซ้ำในส่วนนี้ —
+   ส่วนนี้ทำแค่ 3 อย่าง: เก็บค่าที่กรอกไว้ใน S.abr, ประกอบ input ให้ engine แบบเดียวกับ
+   collect() ใน abr-interpreter/public/app.js, แล้ววาดผล (หน้าจอ + ใบรายงาน p-abr)
+   ข้อมูลผู้ป่วย (ชื่อ/HN/อายุ/รพ./ผู้ตรวจ) ใช้ของเคสใน hearform — ไม่ส่งไปที่เว็บ ABR Interpreter
+   S.abr บันทึกลง Google Sheet พร้อมเคส (อยู่ใน JSON คอลัมน์ 15 · merge3 รวมทีละช่องได้เอง)
+   ค่าที่กรอกเก็บเป็นข้อความตามที่พิมพ์ (แบบเดียวกับ S.audTh) แล้วค่อยแปลงเป็นตัวเลขตอนแปลผล */
+const ABR_EARS=[['right','Rt.','Right ear','ขวา'],['left','Lt.','Left ear','ซ้าย']];
+const ABR_STIM=['Click, rarefaction','Click, condensation','Click, alternating',
+  'Tone burst 500 Hz, alternating','Tone burst 1 kHz, alternating','Tone burst 2 kHz, alternating','Tone burst 4 kHz, alternating'];
+const ABR_OTHER='__other__';
+const ABR_THR_STIM=[['click','Click'],['500','500 Hz'],['1000','1 kHz'],['2000','2 kHz'],['4000','4 kHz']];
+/* แถวกรอกค่า — ตรงกับ MEASURES ของ abr-interpreter (ไม่เก็บ amplitude เพราะหน้าเดิมก็ไม่เก็บ) */
+const ABR_MEAS=[['level','Level','ที่ slow rate','int','90','dB nHL'],['i','Wave I','','dec','1.60','ms'],
+  ['iii','Wave III','','dec','3.80','ms'],['v','Wave V','','dec','5.60','ms'],['vFast','Wave V (fast rate)','ที่ fast rate','dec','5.90','ms']];
+const ABR_RANGE={i:['waveIMin','waveIMax'],iii:['waveIiiMin','waveIiiMax'],v:['waveVMin','waveVMax']};
+const ABR_DERIVED=[['ipl_i_iii','I–III',['iplIIiiMin','iplIIiiMax']],['ipl_iii_v','III–V',['iplIiiVMin','iplIiiVMax']],
+  ['ipl_i_v','I–V',['iplIVMin','iplIVMax']],['rate_shift','V shift',[null,'rateShiftMax']]];
+/* none_hl = ไม่เห็นคลื่นเพราะสูญเสียการได้ยินรุนแรง → ประโยค "could not be identified due to severe / profound hearing loss" ตามแบบรายงาน */
+const ABR_MORPH=[['clear','ชัด ทำซ้ำได้'],['poor','ไม่ชัด / ทำซ้ำไม่ได้'],['none','ไม่มี response'],['none_hl','ไม่เห็นคลื่น (HL รุนแรง)']];
+const ABR_PATTERN_TH={normal:'ปกติ',equivocal:'ก้ำกึ่ง',peripheral:'peripheral',
+  retrocochlear:'retrocochlear',no_response:'ไม่มี response',incomplete:'ข้อมูลไม่พอสรุป'};
+const ABR_PROTO_KEY='hf_abr_protocol';
+let _audTab=(function(){ try{ return localStorage.getItem('hf_audTab')==='abr'?'abr':'aud'; }catch(e){ return 'aud'; } })();
+
+function abrH(s){ return String(s===undefined||s===null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function abrF2(n){ return typeof n==='number'&&isFinite(n) ? n.toFixed(2) : '—'; }
+/* เงื่อนไขการตรวจเป็นของห้องตรวจ ไม่ใช่ของผู้ป่วย จึงจำไว้ในเครื่องเป็นค่าตั้งต้นของเคสถัดไป (เหมือน saveSettings ของเว็บเดิม) */
+function abrProto(){
+  const p={mode:'neuro',normSet:'standard',stimulus:'Click, rarefaction',slowRate:'11.1',fastRate:'71.1'};
+  try{ Object.assign(p, JSON.parse(localStorage.getItem(ABR_PROTO_KEY)||'{}')); }catch(e){}
+  return p;
+}
+function abrSaveProto(A){ try{ localStorage.setItem(ABR_PROTO_KEY, JSON.stringify({mode:A.mode,normSet:A.normSet,stimulus:A.stimulus,slowRate:A.slowRate,fastRate:A.fastRate})); }catch(e){} }
+function abrBlankEar(){ return {level:'90',i:'',iii:'',v:'',vFast:'',morph:'clear',hl4k:''}; }
+function abrBlank(){
+  const p=abrProto();
+  return {mode:p.mode==='threshold'?'threshold':'neuro', normSet:p.normSet, stimulus:p.stimulus, stimulusOther:'',
+    slowRate:p.slowRate, fastRate:p.fastRate, compensate:false, printNotes:false,
+    neuro:{right:abrBlankEar(), left:abrBlankEar()},
+    thr:{right:{air:{},bone:{}}, left:{air:{},bone:{}}}};
+}
+/* เติมช่องที่ขาด (เคสที่บันทึกด้วยเวอร์ชันเก่ากว่า) โดยไม่ทับค่าที่มีอยู่ */
+function abrNormalize(a){
+  const b=abrBlank(), A=(a && typeof a==='object') ? a : {};
+  Object.keys(b).forEach(k=>{ if(A[k]===undefined) A[k]=b[k]; });
+  ['neuro','thr'].forEach(g=>{ if(!A[g]||typeof A[g]!=='object') A[g]=b[g]; });
+  ABR_EARS.forEach(([e])=>{
+    A.neuro[e]=Object.assign(abrBlankEar(), A.neuro[e]||{});
+    const t=A.thr[e]=A.thr[e]||{}; t.air=t.air||{}; t.bone=t.bone||{};
+  });
+  return A;
+}
+/* ดูอย่างเดียวไม่สร้าง S.abr — เคสที่ไม่ได้ตรวจ ABR จะไม่มีช่องนี้เลย */
+function abrView(){ return S.abr ? abrNormalize(S.abr) : abrBlank(); }
+function abrEnsure(){
+  const isNew=!S.abr;
+  S.abr=abrNormalize(S.abr);
+  if(isNew && !String(S.abrDate||'').trim()){
+    S.abrDate=todayThai;
+    const d=document.querySelector('#audTabAbr [data-bind="abrDate"]'); if(d && !d.value) d.value=S.abrDate;
+  }
+  return S.abr;
+}
+function abrNum(v){ const t=String(v===undefined||v===null?'':v).trim(); if(t===''||t==='.'||t==='-') return null; const n=Number(t); return isFinite(n)?n:null; }
+function abrStimulusText(A){ return A.stimulus===ABR_OTHER ? String(A.stimulusOther||'').trim() : String(A.stimulus||''); }
+function abrNormSet(A){
+  const P=window.ABRE.norms.PUBLISHED;
+  return P.find(s=>s.key===A.normSet) || P.find(s=>s.key===window.ABRE.norms.DEFAULT_SET);
+}
+/* = collect() ของ abr-interpreter/public/app.js + การตัดค่าของ runInterpret ใน src/routes/user.js */
+function abrCollect(A){
+  const body={stimulusNote:abrStimulusText(A).slice(0,200), slowRate:abrNum(A.slowRate), fastRate:abrNum(A.fastRate), neuro:{}, thresholds:{}};
+  ABR_EARS.forEach(([ear])=>{
+    const n=A.neuro[ear];
+    const picks={levelDb:abrNum(n.level), i:abrNum(n.i), iii:abrNum(n.iii), v:abrNum(n.v), vFast:abrNum(n.vFast),
+      hl4kDb:A.compensate?abrNum(n.hl4k):null, poorMorphology:n.morph==='poor',
+      noResponse:n.morph==='none'||n.morph==='none_hl', severeLoss:n.morph==='none_hl'};
+    const entered=['i','iii','v','vFast'].some(k=>picks[k]!==null);
+    if(A.mode==='neuro' && (entered||picks.noResponse)) body.neuro[ear]=picks;
+    const series={air:{},bone:{}}; let any=false;
+    ['air','bone'].forEach(route=>ABR_THR_STIM.forEach(([k])=>{
+      const c=A.thr[ear][route][k]; const lv=c?abrNum(c.v):null; if(lv===null) return;
+      series[route][k]={level:lv, present:!c.nr}; any=true;
+    }));
+    if(A.mode==='threshold' && any) body.thresholds[ear]=series;
+  });
+  return body;
+}
+function abrCompute(){
+  if(!S.abr) return null;
+  if(!window.ABRE) return {ok:false, error:'โหลดตัวแปลผล ABR ไม่สำเร็จ'};
+  const A=abrNormalize(S.abr), set=abrNormSet(A);
+  try{ return Object.assign({ok:true, A, set}, window.ABRE.interpret(abrCollect(A), set.norms, A.mode)); }
+  catch(e){ return {ok:false, A, set, error:e.message}; }
+}
+function abrHas(){ const r=abrCompute(); return !!(r && r.ok); }
+/* ช่วงปกติแบบที่เว็บเดิมเขียนใต้ชื่อแถว */
+function abrRangeText(norms, pair){
+  if(!norms||!pair) return '';
+  const lo=pair[0]?norms[pair[0]]:null, hi=norms[pair[1]];
+  if(typeof hi!=='number') return '';
+  return (lo===null||lo===undefined) ? '≤ '+hi.toFixed(2) : lo.toFixed(2)+'–'+hi.toFixed(2);
+}
+/* ค่าต่ำกว่าขอบล่าง = "early" แค่เตือน ไม่นับว่าผิดปกติ (ตามกฎใน neuro.js) */
+function abrTone(fd){
+  if(!fd||fd.value===null) return ['', ''];
+  if(fd.abnormal) return ['bad','ผิดปกติ'];
+  if(typeof fd.low==='number' && fd.value<fd.low-1e-9) return ['warn','early'];
+  return ['ok','ปกติ'];
+}
+
+/* ── ส่วนกรอก (อยู่ใน #abrZone · สร้างใหม่ทั้งก้อนเมื่อเปลี่ยนโหมด/ชุดค่าปกติ/กดปุ่มตัวเลือก) ── */
+function abrSectionBody(){
+  return `
+    <div class="abr-hint">🧠 แปลผลด้วยกฎและชุดค่าปกติเดียวกับ <b>ABR Interpreter</b> · ชื่อ HN อายุ ใช้ของเคสนี้ · ค่าที่กรอกบันทึกไปกับเคสเมื่อกด 💾 บันทึก</div>
+    <div class="subhead">เงื่อนไขการตรวจ ABR</div>
+    <div class="row"><div class="fld"><label>วันที่ตรวจ ABR</label>${dateInputHtml('abrDate',{today:true})}</div></div>
+    <div id="abrZone">${abrZoneHtml()}</div>
+    <div class="subhead">ผลการแปลผล</div>
+    <div id="abrResult" class="abr-result"></div>`;
+}
+function abrZoneHtml(){
+  const A=abrView(), set=window.ABRE?abrNormSet(A):null, N=set?set.norms:null;
+  const P=window.ABRE?window.ABRE.norms.PUBLISHED:[];
+  const stimOpts=ABR_STIM.map(s=>`<option value="${abrH(s)}"${A.stimulus===s?' selected':''}>${abrH(s)}</option>`).join('')
+    + `<option value="${ABR_OTHER}"${A.stimulus===ABR_OTHER||ABR_STIM.indexOf(A.stimulus)<0?' selected':''}>อื่น ๆ (พิมพ์เอง)…</option>`;
+  const isOther=A.stimulus===ABR_OTHER||ABR_STIM.indexOf(A.stimulus)<0;
+  let h=`
+    <div class="abr-modes" role="radiogroup">
+      <button type="button" class="abr-chip${A.mode==='neuro'?' on':''}" data-abr-act="mode:neuro"><b>Neurodiagnostic</b><span>ตรวจระบบประสาท</span></button>
+      <button type="button" class="abr-chip${A.mode==='threshold'?' on':''}" data-abr-act="mode:threshold"><b>Threshold estimation</b><span>ประมาณระดับการได้ยิน</span></button>
+    </div>
+    <div class="row">
+      <div class="fld"><label>Stimulus</label><select data-abr="stimulus">${stimOpts}</select>
+        ${isOther?`<input type="text" data-abr="stimulusOther" value="${abrH(A.stimulus===ABR_OTHER?A.stimulusOther:A.stimulus)}" placeholder="เช่น Chirp, alternating" style="margin-top:6px">`:''}</div>
+      ${A.mode==='neuro'?`<div class="fld"><label>Normative values</label><select data-abr="normSet">${P.map(s=>`<option value="${s.key}"${set&&set.key===s.key?' selected':''}>${abrH(s.name)}</option>`).join('')}</select></div>`:''}
+    </div>`;
+  if(A.mode==='neuro'){
+    h+=`<div class="row">
+      <div class="fld abr-unit"><label>Slow rate</label><input type="text" inputmode="decimal" data-abr="slowRate" data-kind="rate" value="${abrH(A.slowRate)}" placeholder="11.1"><i>/sec</i></div>
+      <div class="fld abr-unit"><label>Fast rate</label><input type="text" inputmode="decimal" data-abr="fastRate" data-kind="rate" value="${abrH(A.fastRate)}" placeholder="71.1"><i>/sec</i></div>
+    </div>
+    <div class="abr-grid">
+      <div class="abr-gh"></div>${ABR_EARS.map(([e,s,,th])=>`<div class="abr-gh abr-${e}"><span class="abr-dot"></span>หู${th} (${s})</div>`).join('')}`;
+    ABR_MEAS.forEach(([k,label,sub,kind,ph,unit])=>{
+      const rng=ABR_RANGE[k]?abrRangeText(N,ABR_RANGE[k]):'';
+      h+=`<div class="abr-gl"><b>${label}</b><span>${abrH(sub|| (rng?'ปกติ '+rng+' ms':''))}</span></div>`;
+      ABR_EARS.forEach(([e])=>{
+        h+=`<div class="abr-gc abr-unit"><input type="text" inputmode="${kind==='int'?'numeric':'decimal'}" autocomplete="off" data-abr="neuro.${e}.${k}" data-kind="${kind}" value="${abrH(A.neuro[e][k])}" placeholder="${ph}"><i>${unit}</i></div>`;
+      });
+    });
+    h+=`<div class="abr-gl"><b>Morphology</b><span>เลือกหนึ่งข้อต่อหู</span></div>`;
+    ABR_EARS.forEach(([e])=>{
+      h+=`<div class="abr-gc abr-morph">${ABR_MORPH.map(([v,t])=>`<button type="button" class="abr-mini abr-m-${v}${A.neuro[e].morph===v?' on':''}" data-abr-act="morph:${e}:${v}">${A.neuro[e].morph===v?'✓ ':''}${t}</button>`).join('')}</div>`;
+    });
+    h+=`</div>
+    <div class="abr-comp">
+      <button type="button" class="abr-mini${A.compensate?' on':''}" data-abr-act="comp">${A.compensate?'✓':'＋'} Compensate for hearing loss (4 kHz)</button>
+      ${A.compensate?`<button type="button" class="abr-mini" data-abr-act="fill4k" title="ใช้ค่า Air 4 kHz จากกราฟ Audiogram ของเคสนี้">↻ ใช้ค่าจาก Audiogram</button>`:''}
+    </div>`;
+    if(A.compensate){
+      h+=`<div class="abr-hintsm">เพิ่ม 0.1 ms ทุก 10 dB ที่เกิน 50 dB HL ที่ 4 kHz — ขยายขอบบนของ wave V ในหูนั้น และหักออกจากผลต่าง wave V ระหว่างหูในหูที่ช้ากว่า</div>
+      <div class="abr-grid"><div class="abr-gl"><b>HL ที่ 4 kHz</b><span>จาก Audiogram</span></div>`;
+      ABR_EARS.forEach(([e])=>{ h+=`<div class="abr-gc abr-unit"><input type="text" inputmode="numeric" data-abr="neuro.${e}.hl4k" data-kind="int" value="${abrH(A.neuro[e].hl4k)}" placeholder="60"><i>dB HL</i></div>`; });
+      h+=`</div>`;
+    }
+  } else {
+    const C=window.ABRE?window.ABRE.threshold.EHL_CORRECTION:{};
+    h+=`<div class="abr-warnbox">⚠️ ค่าแก้ nHL→eHL ยังเป็น<b>ค่าตัวอย่าง</b>ของ ABR Interpreter (Click ${C.click} · 500 Hz ${C['500']} · 1 kHz ${C['1000']} · 2 kHz ${C['2000']} · 4 kHz ${C['4000']} dB) — เว็บจริงยังปิดโหมดนี้ไว้ ควรเปลี่ยนเป็นค่าของคลินิกก่อนใช้ผลจริง</div>`;
+    ABR_EARS.forEach(([e,s,,th])=>{
+      h+=`<div class="abr-thr"><div class="abr-thr-h abr-${e}"><span class="abr-dot"></span>หู${th} (${s}) <span class="abr-thr-sum" id="abrThrSum_${e}"></span></div>
+        <div class="abr-thr-row abr-thr-head"><span></span><span>Air (dB nHL)</span><span>Bone (dB nHL)</span><span>dB eHL</span></div>`;
+      ABR_THR_STIM.forEach(([k,name])=>{
+        h+=`<div class="abr-thr-row"><span class="abr-thr-f">${name}</span>`;
+        ['air','bone'].forEach(r=>{
+          const c=A.thr[e][r][k]||{v:'',nr:false};
+          h+=`<span class="abr-pair"><input type="text" inputmode="numeric" data-abr="thr.${e}.${r}.${k}.v" data-kind="int" value="${abrH(c.v)}" placeholder="dB"><button type="button" class="abr-nr${c.nr?' on':''}" data-abr-act="nr:${e}:${r}:${k}" title="No response ที่ระดับนี้">NR</button></span>`;
+        });
+        h+=`<span class="abr-ehl" id="abrEhl_${e}_${k}">—</span></div>`;
+      });
+      h+=`</div>`;
+    });
+  }
+  return h;
+}
+
+/* ── ผลบนหน้าจอ (อัปเดตทุกครั้งที่พิมพ์ ไม่สร้างช่องกรอกใหม่ จึงไม่เสียโฟกัส) ── */
+function abrPaintPanel(){
+  const box=document.getElementById('abrResult'); if(!box) return;
+  const r=abrCompute();
+  if(!r){ box.innerHTML='<div class="abr-empty">ยังไม่ได้กรอกค่า ABR ของเคสนี้</div>'; return; }
+  if(!r.ok){ box.innerHTML=`<div class="abr-empty">${abrH(r.error)}</div>`; abrPaintThrCells(null); return; }
+  const res=r.result; let h='';
+  if(r.A.mode==='neuro'){
+    const ears=ABR_EARS.filter(([e])=>res.neuro[e]);
+    h+=`<div class="abr-tblwrap"><table class="abr-tbl"><thead><tr><th></th>${ABR_DERIVED.map(([,l,p])=>`<th>${l}<small>${abrRangeText(r.set.norms,p)}</small></th>`).join('')}<th>สรุป</th></tr></thead><tbody>`;
+    ears.forEach(([e,s])=>{
+      const ear=res.neuro[e];
+      h+=`<tr><td class="abr-${e}"><span class="abr-dot"></span>${s}</td>`;
+      ABR_DERIVED.forEach(([k])=>{ const fd=ear.findings.find(x=>x.key===k); const [t]=abrTone(fd);
+        h+=`<td class="abr-v ${t}">${fd&&fd.value!==null?abrF2(fd.value):'—'}</td>`; });
+      h+=`<td><span class="abr-pat abr-p-${ear.pattern}">${abrH(ABR_PATTERN_TH[ear.pattern]||ear.pattern)}</span></td></tr>`;
+    });
+    h+=`</tbody></table></div>`;
+    const absBad=[];
+    ears.forEach(([e,s])=>['wave_i','wave_iii','wave_v'].forEach(k=>{ const fd=res.neuro[e].findings.find(x=>x.key===k); const [t,w]=abrTone(fd);
+      if(t==='bad'||t==='warn') absBad.push(`${s} ${fd.label} ${abrF2(fd.value)} ms (${w})`); }));
+    if(absBad.length) h+=`<div class="abr-line"><b>Absolute latency:</b> ${abrH(absBad.join(' · '))}</div>`;
+    (res.interaural||[]).forEach(it=>{ h+=`<div class="abr-line"><b>${abrH(it.label)}:</b> <span class="${it.abnormal?'abr-bad':''}">${abrF2(it.value)} ms</span> (limit ${abrF2(it.limit)})</div>`; });
+  }
+  if(res.findings.length) h+=`<div class="abr-sec">Findings</div>`+res.findings.map(f=>`<div class="abr-line"><b>${abrH(abrTopic(f.topic))}:</b> ${abrSplitEars(f.text).map(abrH).join('<br>')}</div>`).join('');
+  h+=`<div class="abr-imp"><div class="abr-sec">Impression</div>${res.impression.map(x=>`<div>${abrH(x)}</div>`).join('')}</div>`;
+  const notes=abrNotes(r);
+  if(notes.length) h+=`<div class="abr-sec">Notes</div><ul class="abr-notes">${notes.map(n=>`<li>${abrH(n)}</li>`).join('')}</ul>`;
+  h+=`<div class="abr-actions">
+      <button type="button" class="interp-btn" data-abr-act="copy:report">📋 คัดลอกรายงาน</button>
+      <button type="button" class="interp-btn" data-abr-act="copy:detail">📋 คัดลอกแบบละเอียด</button>
+      <label class="abr-ck"><input type="checkbox" data-abr="printNotes"${r.A.printNotes?' checked':''}> พิมพ์ Notes ลงใบรายงาน</label>
+    </div>
+    <div class="abr-hintsm">อ้างอิง: ${abrH(r.set.name)} · ปริ้นใบรายงานได้จากปุ่ม 🖨️ (หัวข้อ "ABR")</div>`;
+  box.innerHTML=h;
+  abrPaintThrCells(r);
+}
+/* ประโยคของ engine รวมสองหูไว้ในย่อหน้าเดียว ("Rt. … Lt. …") — แยกบรรทัดตามหูให้อ่านง่าย ไม่เปลี่ยนข้อความ */
+function abrSplitEars(text){ return String(text||'').split(/(?<=\.) (?=(?:Rt|Lt)\. )/).filter(Boolean); }
+function abrTopic(t){ return Object.assign({right:'Right ear',left:'Left ear'}, (window.ABRE&&window.ABRE.findingTopics)||{})[t]||t; }
+/* Notes ชุดเดียวกับที่เว็บเดิมพิมพ์ในโหมด Detail */
+function abrNotes(r){
+  const res=r.result;
+  const notes=[].concat(res.interauralNotes||[], res.warnings||[]);
+  ABR_EARS.forEach(([e,s])=>{ if(res.neuro[e]) res.neuro[e].warnings.forEach(w=>notes.push(s+' '+w)); });
+  ABR_EARS.forEach(([e,s])=>{ if(res.thresholds[e]) res.thresholds[e].warnings.forEach(w=>notes.push(s+' '+w)); });
+  return notes;
+}
+function abrPaintThrCells(r){
+  ABR_EARS.forEach(([e])=>{
+    const t=r&&r.ok&&r.result.thresholds?r.result.thresholds[e]:null;
+    ABR_THR_STIM.forEach(([k])=>{
+      const el=document.getElementById('abrEhl_'+e+'_'+k); if(!el) return;
+      el.textContent = t&&typeof t.airEhl[k]==='number' ? t.airEhl[k] : (t&&t.noResponseAt[k]!==undefined ? 'NR' : '—');
+    });
+    const sm=document.getElementById('abrThrSum_'+e);
+    if(sm) sm.textContent = t&&t.estimatedPta!==null ? `≈ ${t.estimatedPta} dB eHL${t.degree?' · '+t.degree:''}${t.lossType?' · '+t.lossType:''}` : '';
+  });
+}
+
+/* ── ใบรายงาน (หน้า p-abr) — โครงตาม print-sheet ของ ABR Interpreter แต่ใช้หัวกระดาษ/ผู้ป่วยของ hearform ── */
+function abrPage(){ return `<section class="sheet abr-sheet abr-off" id="p-abr"><div id="abrSheetBody"></div></section>`; }
+function abrPaintSheet(){
+  const sh=document.getElementById('p-abr'), body=document.getElementById('abrSheetBody'); if(!sh||!body) return;
+  const r=abrCompute();
+  sh.classList.toggle('abr-off', !(r&&r.ok));
+  if(!(r&&r.ok)){ body.innerHTML=''; return; }
+  const res=r.result, A=r.A, neuro=A.mode==='neuro';
+  const ln=(v,w)=>`<span class="abr-ln" style="min-width:${w}mm">${abrH(v)}</span>`;
+  let h=`<div class="abr-p-head">
+      <div class="abr-p-hosp"><div class="abr-p-k">โรงพยาบาล</div><div class="abr-p-hn">${abrH(S.hospital||'')}</div><div class="abr-p-dep">กลุ่มงานโสต ศอ นาสิก</div></div>
+      <div class="abr-p-pat">
+        <div>ชื่อ-นามสกุล ${ln(S.name||'',52)}</div>
+        <div>HN ${ln(S.hn||'',24)}&nbsp;&nbsp;อายุ ${ln(S.age||'',10)} ปี</div>
+        <div>วันที่ตรวจ ${ln(S.abrDate||'',30)}</div>
+      </div>
+    </div>
+    <div class="abr-p-title">AUDITORY BRAINSTEM RESPONSE (ABR)<span>${neuro?'Neurodiagnostic':'Threshold estimation'}</span></div>
+    <div class="abr-p-params"><b>Stimulus</b><div>${abrH(abrPrintStimulus(res))||'—'}</div>${neuro?`<b>Reference</b><div>${abrH(res.norms.name)}</div>`:''}</div>`;
+  let sec=1;
+  const head=(t,u)=>`<div class="abr-p-h"><span class="abr-p-n">0${sec++}</span>${t}<span class="abr-p-rule"></span>${u?`<span class="abr-p-u">${u}</span>`:''}</div>`;
+  if(neuro){
+    const ears=ABR_EARS.filter(([e])=>res.neuro[e]);
+    const shift=ears.some(([e])=>{ const fd=res.neuro[e].findings.find(x=>x.key==='rate_shift'); return fd&&fd.value!==null; });
+    const cols=[['wave_i','I'],['wave_iii','III'],['wave_v','V'],null,['ipl_i_iii','I–III'],['ipl_iii_v','III–V'],['ipl_i_v','I–V']].concat(shift?[null,['rate_shift','V shift']]:[]);
+    const lim={wave_i:ABR_RANGE.i,wave_iii:ABR_RANGE.iii,wave_v:ABR_RANGE.v,ipl_i_iii:['iplIIiiMin','iplIIiiMax'],ipl_iii_v:['iplIiiVMin','iplIiiVMax'],ipl_i_v:['iplIVMin','iplIVMax'],rate_shift:[null,'rateShiftMax']};
+    h+=head('Latency measurements','milliseconds')+`<table class="abr-p-tbl"><thead><tr><th class="l" rowspan="2"></th><th colspan="3">Absolute latency</th><th class="g"></th><th colspan="3">Interpeak interval</th>${shift?'<th class="g"></th><th>Rate</th>':''}</tr>
+      <tr>${cols.map(c=>c?`<th>${c[1]}</th>`:'<th class="g"></th>').join('')}</tr></thead><tbody>`;
+    ears.forEach(([e,,name])=>{
+      h+=`<tr><td class="l"><span class="abr-p-mk ${e}"></span>${name}</td>`+cols.map(c=>{ if(!c) return '<td class="g"></td>';
+        const fd=res.neuro[e].findings.find(x=>x.key===c[0]); const v=fd?fd.value:null, bad=!!(fd&&fd.abnormal&&v!==null);
+        return `<td class="${bad?'flag':''}">${abrF2(v)}${bad?' ▲':''}</td>`; }).join('')+`</tr>`;
+    });
+    h+=`<tr class="abr-p-norm"><td class="l">Normal limits</td>`+cols.map(c=>c?`<td>${abrRangeText(r.set.norms,lim[c[0]])||'—'}</td>`:'<td class="g"></td>').join('')+`</tr></tbody></table>
+      <div class="abr-p-under"><div>${(res.interaural||[]).filter(i=>i.value!==null&&i.value!==undefined).map(i=>`${abrH(i.label)} <span class="${i.abnormal?'flag':''}">${abrF2(i.value)}${i.abnormal?' ▲':''}</span> <small>(≤ ${abrF2(i.limit)})</small>`).join('&emsp;')}</div><div>▲ outside normal limits</div></div>`;
+  } else {
+    h+=head('Threshold estimation','dB')+`<table class="abr-p-tbl"><thead><tr><th class="l"></th><th class="l"></th>${ABR_THR_STIM.map(([,n])=>`<th>${n}</th>`).join('')}</tr></thead><tbody>`;
+    ABR_EARS.forEach(([e,,name])=>{
+      const t=res.thresholds[e]; if(!t) return;
+      const raw=(route,k)=>{ const c=A.thr[e][route][k]; const v=c?abrNum(c.v):null; return v===null?'—':(c.nr?'NR '+v:String(v)); };
+      h+=`<tr><td class="l" rowspan="3"><span class="abr-p-mk ${e}"></span>${name}</td><td class="l s">Air, dB nHL</td>${ABR_THR_STIM.map(([k])=>`<td>${raw('air',k)}</td>`).join('')}</tr>
+        <tr><td class="l s">Bone, dB nHL</td>${ABR_THR_STIM.map(([k])=>`<td>${raw('bone',k)}</td>`).join('')}</tr>
+        <tr class="abr-p-ehl"><td class="l s">Air, dB eHL</td>${ABR_THR_STIM.map(([k])=>`<td>${typeof t.airEhl[k]==='number'?t.airEhl[k]:'—'}</td>`).join('')}</tr>`;
+    });
+    h+=`</tbody></table>`;
+  }
+  const findings=res.findings.length ? res.findings : ABR_EARS.map(([e])=>{ const t=res.thresholds[e];
+    if(!t||t.estimatedPta===null) return null; const said=['Estimated average '+t.estimatedPta+' dB eHL']; if(t.degree) said.push(t.degree); if(t.lossType) said.push(t.lossType);
+    return {topic:e, text:said.join(', ')+'.'}; }).filter(Boolean);
+  if(findings.length) h+=head('Findings')+`<div class="abr-p-find">${findings.map(f=>`<div class="abr-p-row"><b class="${f.topic}">${abrTopic(f.topic)}</b><div>${abrSplitEars(f.text).map(t=>`<div class="abr-p-ln">${abrH(t)}</div>`).join('')}</div></div>`).join('')}</div>`;
+  h+=`<div class="abr-p-imp"><div class="abr-p-k">Impression</div><div class="abr-p-imp-t">${res.impression.map(x=>`<div>${abrH(x)}</div>`).join('')}</div></div>`;
+  const notes=abrNotes(r);
+  if(A.printNotes && notes.length) h+=head('Notes')+`<ul class="abr-p-notes">${notes.map(n=>`<li>${abrH(n)}</li>`).join('')}</ul>`;
+  h+=`<div class="abr-p-spacer"></div>
+    <div class="abr-p-sign"><div>
+      <div>ลงชื่อ <span class="abr-ln" style="min-width:55mm"></span></div>
+      <div class="abr-p-signname">${abrH(S.examiner||S.audiologist||'')}</div>
+      <div class="abr-p-signpos">${abrH(S.examinerPosition||S.position||'')}</div>
+    </div></div>
+    <div class="abr-p-foot">${neuro?abrH(r.set.source):'nHL→eHL corrections: '+Object.entries(window.ABRE.threshold.EHL_CORRECTION).map(([k,v])=>(k==='click'?'click':k+' Hz')+' '+v).join(', ')+' dB.'}</div>`;
+  body.innerHTML=h;
+}
+function abrPrintStimulus(res){
+  const parts=[res.stimulusNote].filter(Boolean);
+  const lv=ABR_EARS.map(([e,s])=>res.neuro&&res.neuro[e]?[s,res.neuro[e].levelDb]:null).filter(x=>x&&x[1]!==null);
+  if(lv.length && lv.every(x=>x[1]===lv[0][1])) parts.push(lv[0][1]+' dB nHL');
+  else if(lv.length) parts.push(lv.map(([s,l])=>s+' '+l+' dB nHL').join(', '));
+  const rates=[res.slowRate,res.fastRate].filter(x=>typeof x==='number');
+  if(rates.length && lv.length) parts.push(rates.map(x=>x+'/s').join(' and '));
+  return parts.join(' · ');
+}
+function abrPaint(){ try{ abrPaintPanel(); abrPaintSheet(); }catch(e){ console.warn('abr', e); } }
+
+/* ── แท็บ 📈 / 🧠 ในหน้า Audiogram ── */
+function audTabsHtml(){
+  return `<div class="aud-tabs" role="tablist">
+    <button type="button" role="tab" data-audtab="aud" class="${_audTab==='aud'?'on':''}">📈 Audiogram</button>
+    <button type="button" role="tab" data-audtab="abr" class="${_audTab==='abr'?'on':''}">🧠 ABR</button>
+  </div>`;
+}
+function setAudTab(t){
+  _audTab = t==='abr' ? 'abr' : 'aud';
+  try{ localStorage.setItem('hf_audTab', _audTab); }catch(e){}
+  document.querySelectorAll('#forms .aud-tabs [data-audtab]').forEach(b=>b.classList.toggle('on', b.getAttribute('data-audtab')===_audTab));
+  const a=document.getElementById('audTabAud'), b=document.getElementById('audTabAbr');
+  if(a) a.style.display = _audTab==='aud' ? '' : 'none';
+  if(b) b.style.display = _audTab==='abr' ? '' : 'none';
+  if(_audTab==='abr') abrPaint();
+}
+function abrRebuild(){
+  const z=document.getElementById('abrZone'); if(!z) return;
+  z.innerHTML=abrZoneHtml(); abrPaint();
+}
+/* ค่าที่ engine อ่านเปลี่ยน → เก็บผลที่ได้ตอนนั้นไว้กับเคสด้วย (ถ้าภายหลังแก้กฎ จะยังรู้ว่าตอนกรอกได้ผลอะไร) */
+function abrChanged(){
+  const r=abrCompute();
+  if(S.abr) S.abr.out = r&&r.ok ? {report:r.report, patterns:r.patterns, normSet:r.set.key, engine:window.ABRE.source} : null;
+  onAnyChange();
+}
+function abrSetPath(path, val){
+  const A=abrEnsure(), p=path.split('.');
+  let o=A;
+  for(let i=0;i<p.length-1;i++){ if(!o[p[i]]||typeof o[p[i]]!=='object') o[p[i]]={}; o=o[p[i]]; }
+  o[p[p.length-1]]=val;
+}
+/* ช่อง latency: พิมพ์ 3 หลักแล้วใส่จุดให้เอง (1 5 6 → 1.56) แบบเดียวกับ decimalField ของเว็บเดิม */
+function abrMaskDec(input, raw){
+  const digits=raw.replace(/[^0-9]/g,'').slice(0,4);
+  if(digits===''){ delete input.dataset.dotAt; return ''; }
+  const last=raw.lastIndexOf('.');
+  let at=Number(input.dataset.dotAt||1);
+  if(last!==-1) at=Math.min(Math.max(raw.slice(0,last).replace(/[^0-9]/g,'').length,1),2);
+  input.dataset.dotAt=String(at);
+  return digits.slice(0,at)+'.'+digits.slice(at,at+2);
+}
+(function bindAbr(){
+  document.addEventListener('click', e=>{
+    const tab=e.target.closest && e.target.closest('#forms .aud-tabs [data-audtab]');
+    if(tab){ setAudTab(tab.getAttribute('data-audtab')); return; }
+    const b=e.target.closest && e.target.closest('#audTabAbr [data-abr-act]'); if(!b) return;
+    const [act,a1,a2,a3]=b.getAttribute('data-abr-act').split(':');
+    if(act==='copy'){
+      const r=abrCompute(); if(!(r&&r.ok)) return;
+      const txt=a1==='detail'?r.reportDetail:r.report;
+      (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>flash('📋 คัดลอกรายงาน ABR แล้ว')).catch(()=>{ window.prompt('คัดลอกข้อความนี้', txt); });
+      return;
+    }
+    const A=abrEnsure();
+    if(act==='mode'){ A.mode=a1; abrSaveProto(A); }
+    else if(act==='morph'){ A.neuro[a1].morph=a2; }
+    else if(act==='comp'){ A.compensate=!A.compensate; if(A.compensate) abrFill4k(true); }
+    else if(act==='fill4k'){ abrFill4k(false); }
+    else if(act==='nr'){ const c=A.thr[a1][a2][a3]=A.thr[a1][a2][a3]||{v:'',nr:false}; c.nr=!c.nr; }
+    abrRebuild(); abrChanged();
+  });
+  document.addEventListener('keydown', e=>{
+    const el=e.target; if(!el||!el.matches||!el.matches('#audTabAbr input[data-kind="dec"]')) return;
+    if(e.key!=='Backspace'||e.ctrlKey||e.metaKey||el.selectionStart!==el.selectionEnd) return;
+    e.preventDefault();
+    const d=el.value.replace(/[^0-9]/g,'').slice(0,-1);
+    el.value = d==='' ? '' : abrMaskDec(el, d.slice(0,Number(el.dataset.dotAt||1))+'.'+d.slice(Number(el.dataset.dotAt||1)));
+    abrSetPath(el.getAttribute('data-abr'), el.value); abrChanged();
+  });
+  document.addEventListener('input', e=>{
+    const el=e.target; if(!el||!el.matches||!el.matches('#audTabAbr [data-abr]')) return;
+    const path=el.getAttribute('data-abr'), kind=el.getAttribute('data-kind');
+    if(el.type==='checkbox'){ abrSetPath(path, el.checked); abrChanged(); return; }
+    if(el.tagName==='SELECT') return;   /* select จัดการใน change */
+    let v=el.value;
+    if(kind==='dec'){ v=abrMaskDec(el, v); el.value=v; try{ el.setSelectionRange(v.length,v.length); }catch(_){} }
+    else if(kind==='int'){ v=v.replace(/[^0-9-]/g,''); el.value=v; }
+    else if(kind==='rate'){ v=v.replace(/[^0-9.]/g,''); const i=v.indexOf('.'); if(i!==-1) v=v.slice(0,i+1)+v.slice(i+1).replace(/\./g,''); el.value=v; }
+    abrSetPath(path, v);
+    if(path==='slowRate'||path==='fastRate') abrSaveProto(S.abr);
+    abrChanged();
+  });
+  document.addEventListener('change', e=>{
+    const el=e.target; if(!el||!el.matches) return;
+    if(el.matches('#audTabAbr input[data-kind="dec"]')){ const n=abrNum(el.value); if(el.value!=='' ){ el.value = n===null?'':n.toFixed(2); abrSetPath(el.getAttribute('data-abr'), el.value); abrChanged(); } return; }
+    if(!el.matches('#audTabAbr select[data-abr]')) return;
+    const path=el.getAttribute('data-abr'), A=abrEnsure();
+    A[path]=el.value;
+    if(path==='stimulus' && el.value===ABR_OTHER && !A.stimulusOther) A.stimulusOther='';
+    abrSaveProto(A); abrRebuild(); abrChanged();
+  });
+})();
+/* HL 4 kHz จากกราฟ Audiogram ของเคสนี้ (Air) — onlyEmpty = ไม่ทับค่าที่พิมพ์ไว้แล้ว */
+function abrFill4k(onlyEmpty){
+  const A=abrEnsure(); let n=0;
+  ABR_EARS.forEach(([e])=>{
+    const d=((S.audTh||{})[4000]||{})[(e==='right'?'R':'L')+'AC'];
+    const v=d?abrNum(d.v):null;
+    if(v===null) return;
+    if(onlyEmpty && String(A.neuro[e].hl4k||'').trim()!=='') return;
+    A.neuro[e].hl4k=String(v); n++;
+  });
+  if(!onlyEmpty) flash(n?'↻ ใส่ค่า 4 kHz จาก Audiogram แล้ว':'Audiogram ของเคสนี้ยังไม่มีค่า Air 4 kHz');
+}
 function audiogramSectionBody(){
   return `
       <!-- ตัดบล็อกข้อมูลผู้ป่วยด้านบนออกตามที่ผู้ใช้ขอ — กรอกชื่อ/HN ได้จากหน้าเพิ่มผู้ป่วยอยู่แล้ว -->
@@ -3406,7 +4899,9 @@ function buildSidebar(){
   /* สร้างแถบกรอกใหม่ทุกครั้ง = ออกจากโหมดกราฟเต็มจอเสมอ (กันค้างตอนสลับไปหน้าอื่น) */
   try{ if(document.body.classList.contains('aud-fs')) setAudFullscreen(false); }catch(e){}
   if(_sidebarMode==='audiogram'){
-    document.getElementById('forms').innerHTML = `<div class="section" style="border-bottom:none">${audiogramSectionBody()}</div>`;
+    document.getElementById('forms').innerHTML = audTabsHtml()
+      + `<div class="section" id="audTabAud" style="border-bottom:none${_audTab==='aud'?'':';display:none'}">${audiogramSectionBody()}</div>`
+      + `<div class="section" id="audTabAbr" style="border-bottom:none${_audTab==='abr'?'':';display:none'}">${abrSectionBody()}</div>`;
     return;
   }
   if(_sidebarMode==='hearingaid'){
@@ -3845,6 +5340,7 @@ const HOSP_FORMSETS = [
     insertBefore:{ 'p-ha1,p-ha2': [['p-nkp-doc','p-nkp-eval'], 'ใบประเมินนครพิงค์'] } },
 ];
 function activeFormSet(){ const h=String((S&&S.hospital)||''); return HOSP_FORMSETS.find(fs=>h && h.indexOf(fs.match)>=0) || null; }
+function abrPrintPages(list){ return abrHas() ? list : list.filter(([ids])=>ids.indexOf('p-abr')<0); }
 function formSetPrintPages(base){
   const fs=activeFormSet(); if(!fs) return base;
   const sw=fs.swap||{}, ins=fs.insertBefore||{}, out=[];
@@ -3861,7 +5357,7 @@ function applyFormSet(){
   });
   document.querySelectorAll('.page-jump a[data-jump]').forEach(a=>{
     const t=document.getElementById(a.getAttribute('data-jump'));
-    a.style.display = (t && t.classList.contains('fs-off')) ? 'none' : '';
+    a.style.display = (t && (t.classList.contains('fs-off') || t.classList.contains('abr-off'))) ? 'none' : '';
   });
   /* ข้อความยาวเกินเส้นจุด (.nk-fit) → ย่อตัวอักษรลงทีละนิดจนพอดี (ไม่ตัดข้อความทิ้ง) */
   document.querySelectorAll('#sheets > .sheet[id]:not(.fs-off) .nk-fit').forEach(el=>{
@@ -3985,7 +5481,7 @@ function hospSheetsHtml(){ return nkpDocPage() + nkpEvalPage(); }
 
 function buildSheets(){
   document.getElementById('sheets').innerHTML =
-    earmoldPage() + hospSheetsHtml() + haPage1() + haPage2() + audiogramPage() + haPage3() + haPage4() +
+    earmoldPage() + hospSheetsHtml() + haPage1() + haPage2() + audiogramPage() + abrPage() + haPage3() + haPage4() +
     fuPage(1,'fu1_date','fu1_by') + fuPage(2,'fu2_date','fu2_by') + fuPage(3,'fu3_date','fu3_by');
 }
 
@@ -4197,6 +5693,7 @@ function render(){
   try{ autoVentSize(); }catch(e){ console.warn('autoVent', e); }
   const ventWrap=document.getElementById('ventSizeWrap'); if(ventWrap) ventWrap.style.display = S.aVent ? '' : 'none';
   try{ renderVentRec(); }catch(e){ console.warn('ventRec', e); }
+  abrPaint();
   try{ applyFormSet(); }catch(e){ console.warn('applyFormSet', e); }
 }
 
@@ -6170,6 +7667,7 @@ function init(){
     [['p-earmold'],'พิมพ์หู + บัตรรับประกัน'],
     [['p-ha1','p-ha2'],'ใบประเมิน (สปสช.)'],
     [['p-audio'],'Audiogram'],
+    [['p-abr'],'ABR'],
     [['p-ha3'],'Real Ear Measurement'],
     [['p-ha4'],'Functional Gain'],
     [['p-fu1'],'Follow-up 1'],
@@ -6210,18 +7708,30 @@ function init(){
     if(ensureS7Order()) onAnyChange();
     try{ applyFormSet(); }catch(e){ console.warn('applyFormSet', e); }
     const list = document.getElementById('printCheckList');
-    list.innerHTML = formSetPrintPages(PRINT_PAGES).map(([ids,label])=>{
+    list.innerHTML = `<label class="pm-ck-all"><input type="checkbox" id="printCkAll">เลือกทั้งหมด</label>` + abrPrintPages(formSetPrintPages(PRINT_PAGES)).map(([ids,label])=>{
       const isChecked = _printSelPids ? ids.some(id=>_printSelPids.has(id)) : true;
       return `<label><input type="checkbox" class="print-page-ck" data-pids="${ids.join(',')}"${isChecked?' checked':''}>${label}</label>`;
     }).join('');
-    document.querySelectorAll('.print-page-ck').forEach(c=>c.addEventListener('change', renderPrintPreview));
+    const ckAll = document.getElementById('printCkAll');
+    const syncCkAll = ()=>{
+      const cks = [...document.querySelectorAll('.print-page-ck')];
+      const n = cks.filter(c=>c.checked).length;
+      ckAll.checked = n>0 && n===cks.length;
+      ckAll.indeterminate = n>0 && n<cks.length;
+    };
+    ckAll.addEventListener('change', ()=>{
+      document.querySelectorAll('.print-page-ck').forEach(c=>{ c.checked = ckAll.checked; });
+      syncCkAll(); renderPrintPreview();
+    });
+    document.querySelectorAll('.print-page-ck').forEach(c=>c.addEventListener('change', ()=>{ syncCkAll(); renderPrintPreview(); }));
+    syncCkAll();
     renderPrintPreview();
     document.getElementById('printModal').style.display='flex';
   }
   function closePrintModal(){ document.getElementById('printModal').style.display='none'; }
   const TOTAL_SHEETS = PRINT_PAGES.reduce((n,[ids])=>n+ids.length,0);
   function showPreviewBar(n){
-    document.getElementById('previewInfo').textContent = `แสดงเฉพาะที่เลือกไว้ — ${n} จาก ${formSetPrintPages(PRINT_PAGES).reduce((m,[ids])=>m+ids.length,0)} หน้า`;
+    document.getElementById('previewInfo').textContent = `แสดงเฉพาะที่เลือกไว้ — ${n} จาก ${abrPrintPages(formSetPrintPages(PRINT_PAGES)).reduce((m,[ids])=>m+ids.length,0)} หน้า`;
     document.getElementById('previewBar').style.display='flex';
   }
   function hidePreviewBar(){ document.getElementById('previewBar').style.display='none'; }
