@@ -452,6 +452,27 @@ body.aud-fs{ overflow:hidden; }
 .nkp-sheet .nk-a { position: absolute; left: 7mm; right: 7mm; }
 .nkp-sheet .nk-title { text-align: center; font-weight: 700; font-size: 13.5pt; }
 .nkp-sheet .nk-rsn { font-size: 11.5pt; }
+/* ── รพ.เชียงคำ ── */
+.nkp-sheet .nk-box { display: inline-block; flex: none; width: 3.4mm; height: 3.4mm; border: 1.1px solid #000; text-align: center; line-height: 3.1mm; font-weight: 700; font-size: 9pt; box-sizing: border-box; }
+.sheet.nkp-sheet.ck-doc { font-family: 'Trirong','Sarabun','TH Sarabun New',serif; font-size: 11.5pt; }
+.ck-doc .nk-box { width: 5.6mm; height: 5.6mm; border: 2.2px solid #000; line-height: 5mm; font-size: 12pt; }
+.ck-doc .nk-title { font-size: 13pt; }
+.ck-doc .fill { font-family: 'Sarabun',sans-serif; }
+.nkp-sheet .ck-txt { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; }
+.nkp-sheet .ck-wrap { flex: 1; min-width: 0; line-height: 1.5; }
+.nkp-sheet .ck-line { display: block; white-space: nowrap; overflow: hidden; }
+.nkp-sheet .ck-item { display: flex; align-items: center; gap: 3.5mm; line-height: 1.35; }
+.nkp-sheet .ck-boxed { border: 1.4px solid #000; box-sizing: border-box; padding: 0 2.5mm; }
+.nkp-sheet .ck-labbox { display: flex; flex-direction: column; padding: 2mm 2.5mm 1.5mm; font-size: 11pt; }
+.nkp-sheet .ck-labbox > .nk-row { flex: none; }
+.nkp-sheet .ck-dx { margin-top: 1mm; flex: 1; min-height: 0; display: flex; flex-direction: column; line-height: 1.3; }
+.nkp-sheet .ck-dxv { flex: 1; min-height: 0; overflow: hidden; font-size: 10pt; line-height: 1.2; }
+.nkp-sheet table.ck-au td { border: 1.2px solid #000; text-align: center; vertical-align: middle; height: 7.5mm; padding: 0 .5mm; font-size: 10.5pt; }
+.nkp-sheet table.ck-au td.ck-l { text-align: left; padding-left: 1.5mm; }
+.nkp-sheet table.ck-nh td { border: 1.2px solid #000; vertical-align: top; padding: .8mm 2mm; font-size: 10.5pt; line-height: 1.5; }
+.nkp-sheet table.ck-nh td.yn { text-align: center; vertical-align: middle; padding: 0; font-size: 13pt; font-weight: 700; }
+.nkp-sheet table.ck-nh .nk-row { margin-top: .5mm; }
+.nkp-sheet .ck-bul { padding-left: 7mm; text-indent: -3mm; }
 .nkp-sheet .nk-row { display: flex; align-items: flex-end; white-space: nowrap; gap: 0; }
 .nkp-sheet .nk-dl { border-bottom: 1.3px dotted #000; min-width: 0; padding: 0 1.5mm; overflow: hidden; white-space: nowrap; line-height: 1.25; flex-basis: 0; }
 .nkp-sheet .fill { padding: 0; }
@@ -2068,7 +2089,7 @@ body::before{
   </div>
 </div>
 <script>
-/* ABR-ENGINE BEGIN — สร้างอัตโนมัติจาก abr-interpreter/src/engine ด้วย ABR/sync-abr-engine.py ห้ามแก้ตรงนี้ด้วยมือ · source e9c9b4b91d3bf845 */
+/* ABR-ENGINE BEGIN — สร้างอัตโนมัติจาก abr-interpreter/src/engine ด้วย ABR/sync-abr-engine.py ห้ามแก้ตรงนี้ด้วยมือ · source 102658cf9502b6c9 */
 window.ABRE = (function () {
 'use strict';
 const MODS = {};
@@ -2595,7 +2616,8 @@ MODS.interpret = (function () {
  * ("การรายงานผลตรวจ ABR", Ramathibodi): six topics in the form's order, each
  * ear in the form's words, one sentence with "(both ear)" when the two ears
  * read the same. The Impression stays at the end of the report, as the owner
- * asked on the same day.
+ * asked on the same day; it recommends "further evaluation" without naming a
+ * test (owner, 2026-10-22).
  */
 
 const { readEar, compareEars } = MODS.neuro;
@@ -2640,7 +2662,7 @@ function earResultLine(ear, side) {
  */
 const EAR_IMPRESSION = {
   retrocochlear: "Abnormal ABR: delayed brainstem conduction, a retrocochlear pattern. " +
-    "Further evaluation, such as MRI of the internal auditory canals, should be considered.",
+    "Further evaluation should be considered.",
   peripheral: "Prolonged absolute latencies with normal interpeak intervals, consistent with a " +
     "peripheral (conductive or cochlear) component. No evidence of retrocochlear involvement.",
   equivocal: "Equivocal ABR: latencies within limits but waveform morphology poor or not repeatable. " +
@@ -2693,7 +2715,7 @@ function impressionLines(neuro, interaural, thresholds) {
   if (retro.length) {
     lines.push("Abnormal ABR in " + whichEars(retro) +
       ": delayed brainstem conduction, a retrocochlear pattern. " +
-      "Further evaluation, such as MRI of the internal auditory canals, should be considered.");
+      "Further evaluation should be considered.");
   }
   if (asym.length) lines.push(asymmetryLine(asym, retro.length > 0));
   if (peripheral.length) {
@@ -3002,7 +3024,7 @@ function interpret(input, norms, mode) {
 }
 return { FINDING_TOPICS, interpret };
 })();
-return { norms: MODS.norms, neuro: MODS.neuro, threshold: MODS.threshold, interpret: MODS.interpret.interpret, findingTopics: MODS.interpret.FINDING_TOPICS || {}, source: 'e9c9b4b91d3bf845' };
+return { norms: MODS.norms, neuro: MODS.neuro, threshold: MODS.threshold, interpret: MODS.interpret.interpret, findingTopics: MODS.interpret.FINDING_TOPICS || {}, source: '102658cf9502b6c9' };
 })();
 /* ABR-ENGINE END */
 </script>
@@ -4042,6 +4064,582 @@ function buildAudTable(){
   }));
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   📷 อ่านใบผล Audiogram ที่ปริ้นจาก GSI Suite จากรูปถ่าย — ไม่ใช้ AI / ไม่ใช้เน็ต
+   ขั้นตอน: หากรอบกราฟ (เส้นสีเทา) → ดัดภาพให้ตรง (homography) → เทียบเส้นความถี่/เส้น dB
+            → หาสัญลักษณ์สีแดง (ขวา) / น้ำเงิน (ซ้าย) ตามแต่ละความถี่ด้วยแม่แบบรูปทรง
+            → อ่านตาราง Speech (SRT/SRS) ด้านขวาด้วยการเทียบรูปตัวเลข
+   จูนจากใบของ รพ.เชียงคำ (GSI Pello + GSI Suite) — ฟอร์มอื่นอาจต้องปรับค่าคงที่
+   ══════════════════════════════════════════════════════════════════ */
+const GSIR = (function(){
+  'use strict';
+  /* พิกัดมาตรฐานของกรอบกราฟหลังดัดตรง: กว้าง 600 สูง 640
+     x = X0 + OCT·log2(f/125)   y = (dB+20)·DBY   (ขอบบน = -20 dB, ขอบล่าง ≈ 130 dB) */
+  const CW=600, CHH=640, OCT0=83.17, X00=33, DBY0=CHH/150;
+  const FR=[125,250,500,750,1000,1500,2000,3000,4000,6000,8000];
+  const SOLID=[125,250,500,1000,2000,4000,8000];
+  const BF=[500,1000,2000,4000];
+
+  /* ── เครื่องมือภาพพื้นฐาน ── */
+  function boxBlur(src,w,h,r){ // separable box blur (Float32)
+    const tmp=new Float32Array(w*h), out=new Float32Array(w*h), k=2*r+1;
+    for(let y=0;y<h;y++){ let s=0; const o=y*w;
+      for(let x=-r;x<=r;x++) s+=src[o+Math.min(w-1,Math.max(0,x))];
+      for(let x=0;x<w;x++){ tmp[o+x]=s/k; s+=src[o+Math.min(w-1,x+r+1)]-src[o+Math.max(0,x-r)]; } }
+    for(let x=0;x<w;x++){ let s=0;
+      for(let y=-r;y<=r;y++) s+=tmp[Math.min(h-1,Math.max(0,y))*w+x];
+      for(let y=0;y<h;y++){ out[y*w+x]=s/k; s+=tmp[Math.min(h-1,y+r+1)*w+x]-tmp[Math.max(0,y-r)*w+x]; } }
+    return out;
+  }
+  function maxFilter(src,w,h,r){
+    const tmp=new Float32Array(w*h), out=new Float32Array(w*h);
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++){ let m=-1e9; for(let i=Math.max(0,x-r);i<=Math.min(w-1,x+r);i++){ const v=src[y*w+i]; if(v>m) m=v; } tmp[y*w+x]=m; }
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++){ let m=-1e9; for(let j=Math.max(0,y-r);j<=Math.min(h-1,y+r);j++){ const v=tmp[j*w+x]; if(v>m) m=v; } out[y*w+x]=m; }
+    return out;
+  }
+  /* ── homography จาก 4 จุด (แก้สมการ 8x8) ── */
+  function solve(A,b){ const n=b.length; for(let i=0;i<n;i++){ let p=i; for(let r=i+1;r<n;r++) if(Math.abs(A[r][i])>Math.abs(A[p][i])) p=r;
+      [A[i],A[p]]=[A[p],A[i]]; [b[i],b[p]]=[b[p],b[i]]; const d=A[i][i]; if(Math.abs(d)<1e-12) return null;
+      for(let r=0;r<n;r++){ if(r===i) continue; const f=A[r][i]/d; if(!f) continue; for(let c=i;c<n;c++) A[r][c]-=f*A[i][c]; b[r]-=f*b[i]; } }
+    return b.map((v,i)=>v/A[i][i]); }
+  function homography(src,dst){ // maps src[i] -> dst[i]
+    const A=[],b=[];
+    for(let i=0;i<4;i++){ const [x,y]=src[i],[u,v]=dst[i];
+      A.push([x,y,1,0,0,0,-u*x,-u*y]); b.push(u); A.push([0,0,0,x,y,1,-v*x,-v*y]); b.push(v); }
+    const h=solve(A,b); if(!h) return null; h.push(1); return h; }
+  function hApply(H,x,y){ const d=H[6]*x+H[7]*y+H[8]; return [(H[0]*x+H[1]*y+H[2])/d,(H[3]*x+H[4]*y+H[5])/d]; }
+
+  /* ภาพต้นฉบับ → RGBA (ย่อด้านยาวไม่เกิน maxSide) */
+  function toImageData(img,maxSide){
+    const iw=img.naturalWidth||img.width, ih=img.naturalHeight||img.height;
+    const sc=Math.min(1,maxSide/Math.max(iw,ih));
+    const w=Math.round(iw*sc), h=Math.round(ih*sc);
+    const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+    const cx=cv.getContext('2d',{willReadFrequently:true}); cx.drawImage(img,0,0,w,h);
+    return {w,h,data:cx.getImageData(0,0,w,h).data,canvas:cv};
+  }
+  /* ดึงภาพบริเวณหนึ่งในพิกัดมาตรฐาน (x0..x0+w, y0..y0+h) ด้วย H (มาตรฐาน→ภาพ) — ใช้ค่าเฉลี่ย 2x2 จุดย่อย */
+  function warp(src,Hinv,x0,y0,w,h){
+    const out=new Float32Array(w*h*3), d=src.data, W=src.w, Hh=src.h;
+    const sub=[[0.25,0.25],[0.75,0.25],[0.25,0.75],[0.75,0.75]];
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+      let r=0,g=0,b=0,n=0;
+      for(const [sx,sy] of sub){
+        const p=hApply(Hinv,x0+x+sx-0.5,y0+y+sy-0.5); const px=p[0], py=p[1];
+        const ix=Math.floor(px), iy=Math.floor(py); if(ix<0||iy<0||ix>=W-1||iy>=Hh-1) continue;
+        const fx=px-ix, fy=py-iy, i00=(iy*W+ix)*4, i10=i00+4, i01=i00+W*4, i11=i01+4;
+        const w00=(1-fx)*(1-fy), w10=fx*(1-fy), w01=(1-fx)*fy, w11=fx*fy;
+        r+=d[i00]*w00+d[i10]*w10+d[i01]*w01+d[i11]*w11;
+        g+=d[i00+1]*w00+d[i10+1]*w10+d[i01+1]*w01+d[i11+1]*w11;
+        b+=d[i00+2]*w00+d[i10+2]*w10+d[i01+2]*w01+d[i11+2]*w11; n++;
+      }
+      const o=(y*w+x)*3; if(n){ out[o]=r/n; out[o+1]=g/n; out[o+2]=b/n; } else { out[o]=out[o+1]=out[o+2]=255; }
+    }
+    return {w,h,rgb:out};
+  }
+  /* สะท้อนแสงเทียบกับกระดาษรอบๆ (แก้แสงเหลือง/เงา) → R,G,B,L ช่วง 0..1 */
+  function normalize(wp){
+    const {w,h,rgb}=wp, ch=[0,1,2].map(c=>{ const a=new Float32Array(w*h); for(let i=0;i<w*h;i++) a[i]=rgb[i*3+c]; return boxBlur(a,w,h,1); });
+    const R=new Float32Array(w*h),G=new Float32Array(w*h),B=new Float32Array(w*h),L=new Float32Array(w*h);
+    const bg=ch.map(a=>boxBlur(maxFilter(a,w,h,7),w,h,15));
+    for(let i=0;i<w*h;i++){ R[i]=ch[0][i]/Math.max(1,bg[0][i]); G[i]=ch[1][i]/Math.max(1,bg[1][i]); B[i]=ch[2][i]/Math.max(1,bg[2][i]); L[i]=(R[i]+G[i]+B[i])/3; }
+    return {w,h,R,G,B,L};
+  }
+
+  /* ── 1) หากรอบกราฟในภาพ ── */
+  function findGraph(src){
+    const {w,h,data}=src, n=w*h, gray=new Float32Array(n), sat=new Uint8Array(n);
+    for(let i=0;i<n;i++){ const r=data[i*4],g=data[i*4+1],b=data[i*4+2]; gray[i]=(r+g+b)/3; sat[i]=Math.max(r,g,b)-Math.min(r,g,b); }
+    const rad=Math.max(6,Math.round(Math.max(w,h)/130));
+    const bl=boxBlur(gray,w,h,rad);
+    const mask=new Uint8Array(n); for(let i=0;i<n;i++) mask[i]=(gray[i]<bl[i]-22 && sat[i]<70)?1:0;
+    /* connected components (8 ทิศ) */
+    const lab=new Int32Array(n), stack=new Int32Array(n); let nl=0; const comps=[];
+    for(let s=0;s<n;s++){ if(!mask[s]||lab[s]) continue; nl++; let sp=0; stack[sp++]=s; lab[s]=nl;
+      let x0=w,y0=h,x1=0,y1=0,cnt=0;
+      while(sp){ const p=stack[--sp], px=p%w, py=(p-px)/w; cnt++;
+        if(px<x0)x0=px; if(px>x1)x1=px; if(py<y0)y0=py; if(py>y1)y1=py;
+        for(let dy=-1;dy<=1;dy++){ const yy=py+dy; if(yy<0||yy>=h) continue;
+          for(let dx=-1;dx<=1;dx++){ const xx=px+dx; if(xx<0||xx>=w) continue; const q=yy*w+xx; if(mask[q]&&!lab[q]){ lab[q]=nl; stack[sp++]=q; } } } }
+      comps.push({id:nl,x0,y0,x1,y1,cnt,bw:x1-x0+1,bh:y1-y0+1});
+    }
+    const cand=comps.filter(c=>c.bw>w*0.15 && c.bh>h*0.1 && c.bw/c.bh>0.6 && c.bw/c.bh<1.6 && c.cnt>c.bw*8 && c.cnt/(c.bw*c.bh)<0.25 && !(c.x0<=1&&c.y0<=1) && !(c.x1>=w-2&&c.y1>=h-2))
+                    .sort((a,b)=>b.bw*b.bh-a.bw*a.bh);
+    /* กราฟต้องมีเส้นกริดด้านใน (ตัดเงาขอบกระดาษ/กรอบโล่งๆ ออก) */
+    const inner=c=>{ const mx=c.bw*0.2, my=c.bh*0.2; let k=0;
+      for(let y=Math.round(c.y0+my);y<=c.y1-my;y++) for(let x=Math.round(c.x0+mx);x<=c.x1-mx;x++) if(lab[y*w+x]===c.id) k++;
+      return k/c.cnt; };
+    const good=cand.slice(0,6).filter(c=>inner(c)>0.25);
+    if(!good.length) return null;
+    const c=good[0]; let tl=[0,0,1e9],tr=[0,0,-1e9],br=[0,0,-1e9],bl2=[0,0,-1e9];
+    for(let y=c.y0;y<=c.y1;y++) for(let x=c.x0;x<=c.x1;x++){ if(lab[y*w+x]!==c.id) continue;
+      const s=x+y, d=x-y; if(s<tl[2]) tl=[x,y,s]; if(s>br[2]) br=[x,y,s]; if(d>tr[2]) tr=[x,y,d]; if(-d>bl2[2]) bl2=[x,y,-d]; }
+    return {corners:[[tl[0],tl[1]],[tr[0],tr[1]],[br[0],br[1]],[bl2[0],bl2[1]]], comp:c};
+  }
+
+  /* ── 2) เทียบเส้นกริด: หาเส้นความถี่ทึบ 7 เส้น + เส้น dB แล้ว fit เชิงเส้น ── */
+  function darkMap(N,thr){ const {w,h,R,G,B,L}=N, m=new Float32Array(w*h), t=thr||0.78;
+    for(let i=0;i<w*h;i++){ const chroma=Math.max(R[i],G[i],B[i])-Math.min(R[i],G[i],B[i]); m[i]=(L[i]<t && chroma<0.07)?1:0; } return m; }
+  function peakNear(prof,c,win){ let best=-1,bv=-1; for(let i=Math.max(0,Math.round(c-win));i<=Math.min(prof.length-1,Math.round(c+win));i++) if(prof[i]>bv){bv=prof[i];best=i;}
+    if(best<0) return null; // จุดกึ่งกลางยอด (sub-pixel)
+    const a=prof[best-1]||0, b=prof[best+1]||0, den=a-2*bv+b; const off=den<0?0.5*(a-b)/den:0; return {pos:best+off,val:bv}; }
+  function linfit(xs,ys,ws){ let sw=0,sx=0,sy=0,sxx=0,sxy=0; for(let i=0;i<xs.length;i++){ const w=ws[i]; sw+=w; sx+=w*xs[i]; sy+=w*ys[i]; sxx+=w*xs[i]*xs[i]; sxy+=w*xs[i]*ys[i]; }
+    const d=sw*sxx-sx*sx; if(Math.abs(d)<1e-9) return null; const b=(sw*sxy-sx*sy)/d; return {a:(sy-b*sx)/sw,b}; }
+  function calibrate(N){
+    const {w,h}=N, dm=darkMap(N), col=new Float32Array(w), row=new Float32Array(h);
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const v=dm[y*w+x]; col[x]+=v; row[y]+=v; }
+    for(let i=0;i<w;i++) col[i]/=h; for(let i=0;i<h;i++) row[i]/=w;
+    const ox=[],px=[],wx=[]; let solid=0, gap=0;
+    SOLID.forEach(f=>{ const o=Math.log2(f/125), p=peakNear(col,X00+OCT0*o,14); if(p&&p.val>0.3){ ox.push(o); px.push(p.pos); wx.push(p.val); } if(p) solid+=p.val; });
+    /* เส้นประครึ่ง octave ต้องจางกว่าเส้นทึบ — ใช้ตรวจว่าภาพไม่กลับด้าน */
+    [750,1500,3000,6000].forEach(f=>{ const p=peakNear(col,X00+OCT0*Math.log2(f/125),14); if(p) gap+=p.val; });
+    const fx=ox.length>=4 ? linfit(ox,px,wx) : null;
+    const od=[],pd=[],wd=[];
+    for(let d=-10;d<=120;d+=10){ const p=peakNear(row,(d+20)*DBY0,12); if(p&&p.val>0.2){ od.push(d); pd.push(p.pos); wd.push(p.val); } }
+    const fy=od.length>=6 ? linfit(od,pd,wd) : null;
+    const X = fx && fx.b>OCT0*0.9 && fx.b<OCT0*1.1 ? fx : {a:X00,b:OCT0};
+    const Y = fy && fy.b>DBY0*0.9 && fy.b<DBY0*1.1 ? fy : {a:20*DBY0,b:DBY0};
+    return {X,Y,quality:solid/7 - gap/4*0.5, nSolid:ox.length, nDb:od.length};
+  }
+
+  /* ── 3) แม่แบบสัญลักษณ์ (หน่วย = พิกเซลมาตรฐาน, จุดกึ่งกลางที่เส้นความถี่ / ระดับ dB) ── */
+  function seg(a,b){ const L=Math.hypot(b[0]-a[0],b[1]-a[1]), k=Math.max(2,Math.ceil(L/0.8)), o=[]; for(let i=0;i<=k;i++) o.push([a[0]+(b[0]-a[0])*i/k,a[1]+(b[1]-a[1])*i/k]); return o; }
+  function poly(p,closed){ let o=[]; for(let i=0;i<p.length-1+(closed?1:0);i++) o=o.concat(seg(p[i],p[(i+1)%p.length])); return o; }
+  const mir=t=>t.map(([x,y])=>[-x,y]);
+  const TPL={};
+  TPL.O=[]; for(let i=0;i<90;i++){ const t=i/90*2*Math.PI; TPL.O.push([13.5*Math.cos(t),13.5*Math.sin(t)]); }
+  TPL.TRI=poly([[0,-15],[-14,11],[14,11]],true);
+  TPL.X=seg([-12,-12],[12,12]).concat(seg([-12,12],[12,-12]));
+  TPL.SQ=poly([[-11,-11],[11,-11],[11,11],[-11,11]],true);
+  TPL.CR=poly([[-4.5,-13],[-15.5,-0.5],[-5,10.5]]); TPL.CL=mir(TPL.CR);                 // < >  (Bone unmasked)
+  TPL.AR=poly([[-6,10.5],[-17,16]]).concat(poly([[-17.5,7],[-17.5,16.5],[-7,16.5]])); TPL.AL=mir(TPL.AR);
+  TPL.HR=poly([[-17.5,7],[-17.5,16.5],[-7,16.5]]); TPL.HL=mir(TPL.HR);   // หัวลูกศร (รูปตัว L) อย่างเดียว // ลูกศร NR ของ Bone
+  TPL.BR=poly([[-6,-13],[-16,-13],[-16,13],[-6,13]]); TPL.BL=mir(TPL.BR);               // [ ]  (Bone masked)
+  function negs(A,B){ return B.filter(p=>A.every(q=>Math.hypot(p[0]-q[0],p[1]-q[1])>4)); }
+
+  function sampler(m,w,h){ return (x,y)=>{ const ix=Math.floor(x), iy=Math.floor(y); if(ix<0||iy<0||ix>=w-1||iy>=h-1) return 0;
+    const fx=x-ix, fy=y-iy, i=iy*w+ix; return m[i]*(1-fx)*(1-fy)+m[i+1]*fx*(1-fy)+m[i+w]*(1-fx)*fy+m[i+w+1]*fx*fy; }; }
+  function score(S,t,cx,cy,sc){ let s=0; for(const p of t) s+=S(cx+p[0]*sc,cy+p[1]*sc); return s/t.length; }
+
+  /* ── 4) อ่านสัญลักษณ์บนกราฟ ── */
+  function readGraph(N,cal){
+    const {w,h,R,G,B}=N;
+    const red=new Float32Array(w*h), blu=new Float32Array(w*h);
+    for(let i=0;i<w*h;i++){ red[i]=Math.max(0,R[i]-Math.max(G[i],B[i])-0.02); blu[i]=Math.max(0,B[i]-Math.max(R[i],G[i])-0.01); }
+    const xf=f=>cal.X.a+cal.X.b*Math.log2(f/125), yd=d=>cal.Y.a+cal.Y.b*d, dOf=y=>(y-cal.Y.a)/cal.Y.b;
+    const sc=cal.X.b/OCT0;
+    const ys=[]; for(let y=yd(-10)-6;y<=yd(120)+6;y+=0.5) ys.push(y);
+    const out={R:{},L:{}}, dbg=[];
+    [['R',red,'O','TRI','CR','AR','BR'],['L',blu,'X','SQ','CL','AL','BL']].forEach(([ear,m0,ac,acm,ch,ar,bk])=>{
+      const mp=maxFilter(m0,w,h,1); const S=sampler(mp,w,h);
+      const acRes={};
+      FR.forEach(f=>{ const cx=xf(f); let best=-1,by=0;
+        ys.forEach(y=>{ const s=Math.max(score(S,TPL[ac],cx,y,sc),score(S,TPL[acm],cx,y,sc)); if(s>best){best=s;by=y;} });
+        const nU=negs(TPL[ac],TPL[acm]), nM=negs(TPL[acm],TPL[ac]);
+        const dU=score(S,TPL[ac],cx,by,sc)-0.5*score(S,nU,cx,by,sc), dM=score(S,TPL[acm],cx,by,sc)-0.5*score(S,nM,cx,by,sc);
+        const tt=TPL[dM>dU+0.015?acm:ac]; const vals=tt.map(p=>S(cx+p[0]*sc,by+p[1]*sc));
+        acRes[f]={s:best,y:by,d:dOf(by),m:dM>dU+0.015,vals};
+      });
+      const strong=FR.map(f=>acRes[f].s).sort((a,b)=>b-a).slice(0,4);
+      const ref=strong.length?strong[Math.min(strong.length-1,1)]:0.05;
+      /* ความหนาเส้นของสัญลักษณ์จริง (จากตัวที่ชัดที่สุด) → สัญลักษณ์ต้องมีหมึกรอบรูปทรงเกินครึ่ง (กันเส้นเชื่อมที่ลากผ่าน) */
+      const top=FR.map(f=>acRes[f]).sort((a,b)=>b.s-a.s)[0]; const sv=top.vals.slice().sort((a,b)=>a-b), ink=sv[Math.floor(sv.length*0.6)]||0.05;
+      FR.forEach(f=>{ const r=acRes[f]; r.cov=r.vals.filter(v=>v>0.3*ink).length/r.vals.length;
+        const half=[750,1500,3000,6000].includes(f);
+        if(window.GSIR_DEBUG) console.log('cov',ear,f,r.s.toFixed(3),r.cov.toFixed(2));
+        const present=r.s>=Math.max(0.008,(half?0.5:0.38)*ref) && r.cov>=(half?0.7:0.35);
+        out[ear][f]={AC:present?mk(r.d,r.m,false,r.s/ref):null};
+        if(present) dbg.push({ear,type:'AC',f,x:xf(f),y:r.y,m:r.m});
+      });
+      /* Bone: ลบหมึกของสัญลักษณ์ Air ออกก่อน ไม่ให้วงกลม/กากบาทถูกอ่านเป็น < > */
+      BF.forEach(f=>{ const cx=xf(f), r=acRes[f]; let m=m0;
+        if(out[ear][f].AC){ m=m0.slice(); const t=TPL[r.m?acm:ac];
+          for(const p of t){ const x=Math.round(cx+p[0]*sc), y=Math.round(r.y+p[1]*sc); for(let dy=-3;dy<=3;dy++) for(let dx=-3;dx<=3;dx++){ const xx=x+dx, yy=y+dy; if(xx>=0&&yy>=0&&xx<w&&yy<h) m[yy*w+xx]=0; } } }
+        const S=sampler(maxFilter(m,w,h,1),w,h);
+        const nc=TPL[ch].length, na=TPL[ar].length, sg=ear==='R'?1:-1;
+        /* GSI ขยับ < ] ออกไปด้านนอกเมื่อชนกับ O/X ระดับเดียวกัน → ค้นทั้งแนวนอน (dx) และแนวตั้ง (y) */
+        let C1={v:-1},C2={v:-1},K1={v:-1};
+        for(let dx=-19;dx<=9;dx+=1){ const xx=cx+sg*dx*sc;
+          ys.forEach(y=>{ const c=score(S,TPL[ch],xx,y,sc), a=score(S,TPL[ar],xx,y,sc), k=score(S,TPL[bk],xx,y,sc), n=(nc*c+na*a)/(nc+na);
+            if(c>C1.v) C1={v:c,x:xx,y}; if(n>C2.v) C2={v:n,x:xx,y}; if(k>K1.v) K1={v:k,x:xx,y}; }); }
+        const sa=score(S,TPL[ar],C2.x,C2.y,sc), sc2=score(S,TPL[ch],C2.x,C2.y,sc);
+        const HEAD=ear==='R'?TPL.HR:TPL.HL, sh=score(S,HEAD,C2.x,C2.y,sc), shc=score(S,HEAD,C1.x,C1.y,sc);
+        if(window.GSIR_DEBUG) console.log('nr',ear,f,'sa',sa.toFixed(3),'sc2',sc2.toFixed(3),'head',sh.toFixed(3),'C1head',shc.toFixed(3),'C2',C2.v.toFixed(3),'C1',C1.v.toFixed(3));
+        let nr = sh>0.5*sc2 && C2.v>0.7*C1.v && sc2>0.5*C1.v;   // ต้องเห็นหัวลูกศรรูปตัว L จริง (เส้นเชื่อมจุดที่ลากผ่านไม่นับ)
+        const CS = nr ? C2 : C1;
+        /* Masked ([ ]) หรือไม่ — เทียบรูปทรงครึ่งบน (ครึ่งล่างอาจมีลูกศร NR ทับ) */
+        const nCh=negs(TPL[ch],TPL[bk]), nBk=negs(TPL[bk],TPL[ch]);
+        const upper=t=>t.filter(p=>p[1]<4);
+        const dC=score(S,upper(TPL[ch]),CS.x,CS.y,sc)-0.6*score(S,upper(nCh),CS.x,CS.y,sc);
+        const dB=score(S,upper(TPL[bk]),K1.x,K1.y,sc)-0.6*score(S,upper(nBk),K1.x,K1.y,sc);
+        const masked = dB>dC+0.01 || K1.v>1.02*C1.v;
+        const SP = masked ? K1 : CS; const y=SP.y, sx=SP.x;
+        if(masked){ const au=negs(TPL[bk],TPL[ar]); const sa2=score(S,au,sx,y,sc), sb2=score(S,TPL[bk],sx,y,sc); nr = au.length>4 && sa2>0.55*sb2; }
+        const best = masked ? K1.v : Math.max(C1.v,C2.v);
+        const tt=TPL[masked?bk:ch], cov=tt.filter(p=>S(sx+p[0]*sc,y+p[1]*sc)>0.3*ink).length/tt.length;
+        if(window.GSIR_DEBUG) console.log('bc',ear,f,'C1',C1.v.toFixed(3),'K1',K1.v.toFixed(3),'dC',dC.toFixed(3),'dB',dB.toFixed(3),'cov',cov.toFixed(2),'dx',((sx-cx)/sc*sg).toFixed(0),'d',dOf(y).toFixed(1));
+        const present = best>=Math.max(0.008,0.4*ref) && cov>=0.5;
+        if(!present){ out[ear][f].BC=null; return; }
+        const d=dOf(y), dr=Math.round(d/5)*5, bmax=(f===500?65:70);
+        out[ear][f].BC=mk(d,masked,nr,best/ref);
+        dbg.push({ear,type:'BC',f,x:sx,y,m:masked,nr});
+      });
+    });
+    return {th:out,dbg};
+  }
+  function mk(d,m,nr,rel){ const v=Math.round(d/5)*5; const off=Math.abs(d-v);
+    return {v:Math.max(-10,Math.min(120,v)), m:!!m, nr:!!nr, unsure: off>1.9 || rel<0.6, raw:Math.round(d*10)/10}; }
+
+  /* ── 5) ตาราง Speech (SRT / SRS) ทางขวา ── */
+  let DIG=null;
+  function digitTemplates(){
+    if(DIG) return DIG; DIG=[];
+    const fonts=['"Segoe UI"','Arial','Helvetica','Roboto','"Noto Sans"','sans-serif'];
+    const cv=document.createElement('canvas'); cv.width=60; cv.height=70; const cx=cv.getContext('2d',{willReadFrequently:true});
+    fonts.forEach(fn=>{ for(let d=0;d<=9;d++){
+      cx.fillStyle='#fff'; cx.fillRect(0,0,60,70); cx.fillStyle='#000'; cx.font='48px '+fn; cx.textBaseline='middle'; cx.fillText(String(d),8,36);
+      const im=cx.getImageData(0,0,60,70).data, g=new Float32Array(60*70); for(let i=0;i<60*70;i++) g[i]=1-im[i*4]/255;
+      const v=normGlyph(g,60,70); if(v) DIG.push({d,v:v.v,ar:v.ar});
+    } });
+    return DIG;
+  }
+  function normGlyph(g,w,h,box){ // crop bbox (ink>0.3) → 12x18 + aspect
+    let x0=w,y0=h,x1=-1,y1=-1;
+    const bx=box||[0,0,w,h];
+    for(let y=bx[1];y<bx[3];y++) for(let x=bx[0];x<bx[2];x++) if(g[y*w+x]>0.3){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; }
+    if(x1<0) return null;
+    const GW=12, GH=18, bw=x1-x0+1, bh=y1-y0+1, v=new Float32Array(GW*GH);
+    for(let j=0;j<GH;j++) for(let i=0;i<GW;i++){
+      let s=0,n=0; const xa=x0+i*bw/GW, xb=x0+(i+1)*bw/GW, ya=y0+j*bh/GH, yb=y0+(j+1)*bh/GH;
+      for(let y=Math.floor(ya);y<Math.ceil(yb);y++) for(let x=Math.floor(xa);x<Math.ceil(xb);x++){ s+=g[y*w+x]||0; n++; }
+      v[j*GW+i]=n?s/n:0; }
+    let mu=0; for(const a of v) mu+=a; mu/=v.length; let sd=0; for(let i=0;i<v.length;i++){ v[i]-=mu; sd+=v[i]*v[i]; } sd=Math.sqrt(sd)||1; for(let i=0;i<v.length;i++) v[i]/=sd;
+    return {v,ar:bw/bh};
+  }
+  function classify(g,w,h,box){
+    const q=normGlyph(g,w,h,box); if(!q) return null; let best=null;
+    digitTemplates().forEach(t=>{ let c=0; for(let i=0;i<q.v.length;i++) c+=q.v[i]*t.v[i]; c-=Math.abs(Math.log(q.ar/t.ar))*0.6;
+      if(!best||c>best.c) best={d:t.d,c}; });
+    return best;
+  }
+  /* อ่านตัวเลขในช่องหนึ่ง (ink = หมึกเข้มเทียบพื้น) */
+  function readCell(N,x0,y0,x1,y1){
+    const {w,L}=N, ox=Math.round(x0), oy=Math.round(y0), cw=Math.round(x1-x0), chh=Math.round(y1-y0); if(cw<6||chh<6) return null;
+    const v=new Float32Array(cw*chh); for(let y=0;y<chh;y++) for(let x=0;x<cw;x++) v[y*cw+x]=1-L[(oy+y)*w+ox+x];
+    const srt=[...v].sort((a,b)=>a-b), lo=srt[Math.floor(srt.length*0.3)], hi=srt[Math.floor(srt.length*0.995)];
+    if(hi-lo<0.12) return null;                       // ช่องว่าง
+    const g=new Float32Array(cw*chh), bin=new Uint8Array(cw*chh);
+    for(let i=0;i<v.length;i++){ g[i]=Math.max(0,Math.min(1,(v[i]-lo)/(hi-lo))); bin[i]=g[i]>0.38?1:0; }
+    /* แยกตัวเลขด้วย connected components แล้วรวมชิ้นที่ซ้อนกันแนวตั้ง */
+    const lab=new Int32Array(cw*chh), st=[]; let comps=[];
+    for(let s0=0;s0<bin.length;s0++){ if(!bin[s0]||lab[s0]) continue; const id=comps.length+1; lab[s0]=id; st.push(s0);
+      let a=cw,b=-1,t=chh,u=-1,n=0;
+      while(st.length){ const p=st.pop(), px=p%cw, py=(p-px)/cw; n++; if(px<a)a=px; if(px>b)b=px; if(py<t)t=py; if(py>u)u=py;
+        for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ const xx=px+dx, yy=py+dy; if(xx<0||yy<0||xx>=cw||yy>=chh) continue; const q=yy*cw+xx; if(bin[q]&&!lab[q]){ lab[q]=id; st.push(q); } } }
+      comps.push({a,b,t,u,n}); }
+    /* ตัดเศษเส้นขอบตาราง: ชิ้นผอมที่ชิดขอบซ้าย/ขวา หรือชิ้นที่แตะขอบบน/ล่าง */
+    comps=comps.filter(c=>c.n>=4 && !((c.a<=1||c.b>=cw-2) && c.b-c.a<=3) && !(c.t<=0||c.u>=chh-1) && !(c.b-c.a>cw*0.7));
+    if(!comps.length) return null;
+    comps.sort((p,q)=>p.a-q.a);
+    const m=[]; comps.forEach(c=>{ const l=m[m.length-1];
+      if(l){ const ov=Math.min(l.b,c.b)-Math.max(l.a,c.a)+1; if(ov>0.5*Math.min(l.b-l.a+1,c.b-c.a+1)){ l.a=Math.min(l.a,c.a); l.b=Math.max(l.b,c.b); l.t=Math.min(l.t,c.t); l.u=Math.max(l.u,c.u); l.n+=c.n; return; } }
+      m.push(Object.assign({},c)); });
+    const H=Math.max(0,...m.map(c=>c.u-c.t+1));
+    const keep=m.filter(c=>c.u-c.t+1>=H*0.6); if(!keep.length) return null;
+    const box=[Math.min(...keep.map(c=>c.a)),Math.min(...keep.map(c=>c.t)),Math.max(...keep.map(c=>c.b))+1,Math.max(...keep.map(c=>c.u))+1];
+    return {g,cw,chh,box};
+  }
+  /* เทียบทั้งคำกับชุดค่าที่เป็นไปได้ (เช่น dB = 0,5,…,120) — ทนต่อตัวเลขติดกัน/ขาดตอน */
+  const STR_CACHE={};
+  const SG_W=36, SG_H=14;
+  function strVec(g,w,h,box){
+    const [x0,y0,x1,y1]=box, bw=x1-x0, bh=y1-y0, v=new Float32Array(SG_W*SG_H);
+    for(let j=0;j<SG_H;j++) for(let i=0;i<SG_W;i++){ let s2=0,n=0; const xa=x0+i*bw/SG_W, xb=x0+(i+1)*bw/SG_W, ya=y0+j*bh/SG_H, yb=y0+(j+1)*bh/SG_H;
+      for(let y=Math.floor(ya);y<Math.max(Math.floor(ya)+1,Math.ceil(yb));y++) for(let x=Math.floor(xa);x<Math.max(Math.floor(xa)+1,Math.ceil(xb));x++){ s2+=g[y*w+x]||0; n++; }
+      v[j*SG_W+i]=n?s2/n:0; }
+    let mu=0; for(const a of v) mu+=a; mu/=v.length; let sd=0; for(let i=0;i<v.length;i++){ v[i]-=mu; sd+=v[i]*v[i]; } sd=Math.sqrt(sd)||1; for(let i=0;i<v.length;i++) v[i]/=sd;
+    return {v,ar:bw/bh};
+  }
+  function candVecs(list){
+    const key=list.join(','); if(STR_CACHE[key]) return STR_CACHE[key];
+    const fonts=['"Segoe UI"','Arial','Helvetica','Roboto','"Noto Sans"','sans-serif'];
+    const cv=document.createElement('canvas'); cv.width=200; cv.height=70; const cx=cv.getContext('2d',{willReadFrequently:true}); const out=[];
+    fonts.forEach(fn=>list.forEach(str=>{ cx.fillStyle='#fff'; cx.fillRect(0,0,200,70); cx.fillStyle='#000'; cx.font='40px '+fn; cx.textBaseline='middle'; cx.fillText(str,10,36);
+      const im=cx.getImageData(0,0,200,70).data, g=new Float32Array(200*70); let x0=200,y0=70,x1=-1,y1=-1;
+      for(let y=0;y<70;y++) for(let x=0;x<200;x++){ const k=1-im[(y*200+x)*4]/255; g[y*200+x]=k; if(k>0.4){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; } }
+      if(x1>=0) out.push(Object.assign({s:str},strVec(g,200,70,[x0,y0,x1+1,y1+1]))); }));
+    return STR_CACHE[key]=out;
+  }
+  function readValue(N,x0,y0,x1,y1,list){
+    const c=readCell(N,x0,y0,x1,y1); if(window.GSIR_DEBUG) console.log('rc',Math.round(x0),Math.round(y0),c?JSON.stringify(c.box):'null'); if(!c) return null;
+    const q=strVec(c.g,c.cw,c.chh,c.box); let best=null, second=null;
+    candVecs(list).forEach(t=>{ let d=0; for(let i=0;i<q.v.length;i++) d+=q.v[i]*t.v[i]; d-=Math.abs(Math.log(q.ar/t.ar))*0.8;
+      if(!best||d>best.c){ if(best&&best.s!==t.s) second=best; best={s:t.s,c:d}; } else if(t.s!==best.s&&(!second||d>second.c)) second={s:t.s,c:d}; });
+    if(window.GSIR_DEBUG>1){ const all=candVecs(list).map(t=>{ let d=0; for(let i=0;i<q.v.length;i++) d+=q.v[i]*t.v[i]; return [t.s,+d.toFixed(3),+(t.ar).toFixed(2)]; }).sort((a,b)=>b[1]-a[1]).slice(0,6); console.log('cell ar',q.ar.toFixed(2),JSON.stringify(all)); }
+    return best?{txt:best.s,conf:best.c,margin:best.c-(second?second.c:0)}:null;
+  }
+
+  const DB_LIST=Array.from({length:27},(_,i)=>String(i*5-10)), PCT_LIST=Array.from({length:101},(_,i)=>String(i));
+  /* ดึงภาพจาก map ที่ normalize แล้ว ผ่าน homography (พิกัดปลายทาง → พิกัดต้นทาง) */
+  function warpMaps(N,H,w,h){
+    const o={w,h,R:new Float32Array(w*h),G:new Float32Array(w*h),B:new Float32Array(w*h),L:new Float32Array(w*h)};
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const [px,py]=hApply(H,x,y); const ix=Math.floor(px), iy=Math.floor(py), i=y*w+x;
+      if(ix<0||iy<0||ix>=N.w-1||iy>=N.h-1){ o.R[i]=o.G[i]=o.B[i]=o.L[i]=1; continue; }
+      const fx=px-ix, fy=py-iy, a=iy*N.w+ix, w00=(1-fx)*(1-fy), w10=fx*(1-fy), w01=(1-fx)*fy, w11=fx*fy;
+      for(const k of ['R','G','B','L']){ const m=N[k]; o[k][i]=m[a]*w00+m[a+1]*w10+m[a+N.w]*w01+m[a+N.w+1]*w11; } }
+    return o;
+  }
+  function readSpeech(src,Hinv){
+    /* บริเวณตารางในพิกัดมาตรฐานต่อจากกราฟ (จากใบ รพ.เชียงคำ: x≈685–1305, y≈445–1020) */
+    const X0=620, Y0=360, W=780, H=780;
+    const N0=normalize(warp(src,Hinv,X0,Y0,W,H));
+    const dm0=maxFilter(darkMap(N0,0.86),N0.w,N0.h,1);
+    if(window.GSIR_DEBUG){ window.__spN=N0; window.__spdm=dm0; }
+    /* หากรอบตารางแต่ละอัน (ก้อนเส้นสีเทาขนาดใหญ่) แล้วดัดให้ตรงทีละตาราง — กันตารางเอียงจากการต่อพิกัดยาวๆ จากกราฟ */
+    const lab=new Int32Array(W*H), stk=[]; const comps=[];
+    for(let s0=0;s0<W*H;s0++){ if(!dm0[s0]||lab[s0]) continue; const id=comps.length+1; lab[s0]=id; stk.push(s0);
+      let x0=W,y0=H,x1=0,y1=0,n=0;
+      while(stk.length){ const q=stk.pop(), qx=q%W, qy=(q-qx)/W; n++; if(qx<x0)x0=qx; if(qx>x1)x1=qx; if(qy<y0)y0=qy; if(qy>y1)y1=qy;
+        for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ const xx=qx+dx, yy=qy+dy; if(xx<0||yy<0||xx>=W||yy>=H) continue; const r=yy*W+xx; if(dm0[r]&&!lab[r]){ lab[r]=id; stk.push(r); } } }
+      comps.push({id,x0,y0,x1,y1,n,bw:x1-x0+1,bh:y1-y0+1}); }
+    const tbls=comps.filter(c=>c.bw>W*0.45 && c.bh>W*0.12 && c.bh<c.bw*0.8).sort((a,b)=>a.y0-b.y0);
+    if(window.GSIR_DEBUG) console.log('tbls',JSON.stringify(tbls.map(c=>[c.x0,c.y0,c.bw,c.bh])));
+    const res={};
+    const tables=[];
+    tbls.forEach(c=>{
+      let tl=[0,0,1e9],tr=[0,0,-1e9],br=[0,0,-1e9],bl=[0,0,-1e9];
+      for(let y=c.y0;y<=c.y1;y++) for(let x=c.x0;x<=c.x1;x++){ if(lab[y*W+x]!==c.id) continue; const sm=x+y, df=x-y;
+        if(sm<tl[2]) tl=[x,y,sm]; if(sm>br[2]) br=[x,y,sm]; if(df>tr[2]) tr=[x,y,df]; if(-df>bl[2]) bl=[x,y,-df]; }
+      const TW=620, TH=Math.round(TW*Math.hypot(bl[0]-tl[0],bl[1]-tl[1])/Math.max(1,Math.hypot(tr[0]-tl[0],tr[1]-tl[1])));
+      const Ht=homography([[0,0],[TW,0],[TW,TH],[0,TH]],[[tl[0],tl[1]],[tr[0],tr[1]],[br[0],br[1]],[bl[0],bl[1]]]); if(!Ht) return;
+      const N=warpMaps(N0,Ht,TW,TH), w=TW, h=TH, dm=maxFilter(darkMap(N,0.86),w,h,1);
+      const rowv=new Float32Array(h); for(let y=0;y<h;y++){ let s2=0; for(let x=0;x<w;x++) s2+=dm[y*w+x]; rowv[y]=s2; }
+      const hl=[]; for(let y=0;y<h;y++) if(rowv[y]>w*0.6 && (y===0||rowv[y]>=rowv[y-1]) && (y===h-1||rowv[y]>=rowv[y+1])){ if(!hl.length||y-hl[hl.length-1]>4) hl.push(y); }
+      /* หัวตาราง = ช่องแรกที่สูง · แถวข้อมูล = ช่องเตี้ยถัดมา · จบเมื่อเจอช่องสูง (พื้นที่ว่างท้ายตาราง) */
+      let t=null;
+      for(let k=0;k<hl.length-1;k++){ const gap=hl[k+1]-hl[k];
+        if(!t){ if(gap>w*0.1 && gap<w*0.22) t={top:hl[k],hdr:hl[k+1],rows:[]}; continue; }
+        if(gap>=w*0.035 && gap<=w*0.085) t.rows.push([hl[k],hl[k+1]]); else if(gap>w*0.09) break; }
+      if(window.GSIR_DEBUG) console.log('hl',JSON.stringify(hl),JSON.stringify(t));
+      if(t && t.rows.length) tables.push(Object.assign(t,{N,dm,w,h}));
+    });
+    tables.forEach(t=>{ const {N,dm,w}=t;
+      /* เส้นตั้งในแถวหัวตาราง → ช่อง % และ dB HL คือ 2 ช่องขวาสุด */
+      const colv=new Float32Array(w); for(let x=0;x<w;x++){ let s=0; for(let y=t.top+2;y<t.hdr-1;y++) s+=dm[y*w+x]; colv[x]=s/(t.hdr-t.top-3); }
+      const vl=[]; for(let x=1;x<w-1;x++) if(colv[x]>0.7 && colv[x]>=colv[x-1] && colv[x]>=colv[x+1]){ if(!vl.length||x-vl[vl.length-1]>10) vl.push(x); }
+      if(window.GSIR_DEBUG) console.log('vl',JSON.stringify(vl));
+      if(vl.length<4) return;
+      const xr=vl[vl.length-1], xm=vl[vl.length-2], xp=vl[vl.length-3];
+      /* ข้างของตาราง: ดูสีตัวอักษรในแถวข้อมูล */
+      let rs=0,bs=0; t.rows.forEach(([a,b])=>{ for(let y=a+3;y<b-2;y++) for(let x=vl[0]+3;x<xr-3;x++){ const i=y*w+x; if(N.L[i]<0.75){ rs+=Math.max(0,N.R[i]-Math.max(N.G[i],N.B[i])); bs+=Math.max(0,N.B[i]-Math.max(N.R[i],N.G[i])); } } });
+      const ear = rs>bs ? 'R' : 'L';
+      if(res[ear]) return;
+      const rows=t.rows.map(([a,b])=>({pct:readValue(N,xp+3,a+4,xm-2,b-3,PCT_LIST), db:readValue(N,xm+4,a+4,xr-3,b-3,DB_LIST)}));
+      if(window.GSIR_DEBUG) console.log('rows',ear,JSON.stringify(rows));
+      const o={srt:null,srs:null,pct:null,unsure:false};
+      /* แถวที่มี % = SRS (ระดับที่ใช้ตรวจ) · แถวที่ไม่มี % = SRT · ถ้าอ่าน % ไม่ได้เลย ใช้ลำดับแถว (SRT ก่อน SRS) */
+      const rr=rows.filter(r=>r.db), withP=rr.filter(r=>r.pct), noP=rr.filter(r=>!r.pct);
+      let srtR=noP[0]||null, srsR=withP[0]||null;
+      if(!srsR && noP.length>=2){ srtR=noP[0]; srsR=noP[1]; o.unsure=true; }
+      if(srtR){ o.srt=parseInt(srtR.db.txt,10); if(srtR.db.conf<0.6||srtR.db.margin<0.04) o.unsure=true; }
+      if(srsR){ o.srs=parseInt(srsR.db.txt,10); if(srsR.db.conf<0.6||srsR.db.margin<0.04) o.unsure=true;
+        if(srsR.pct){ o.pct=parseInt(srsR.pct.txt,10); if(srsR.pct.conf<0.6||srsR.pct.margin<0.04) o.unsure=true; } }
+      res[ear]=o;
+    });
+    return res;
+  }
+
+  /* ── รวมทุกขั้น ── */
+  async function analyze(img){
+    const src=toImageData(img,2400);
+    const g=findGraph(src);
+    if(!g) return {ok:false,err:'หากรอบกราฟ Audiogram ในรูปไม่เจอ — ถ่ายให้เห็นกราฟทั้งกรอบ ไม่เอียงมาก และแสงสว่างพอ'};
+    /* ลองหมุน 4 แบบ (กันถ่ายแนวนอน/กลับหัว) เลือกแบบที่เส้นกริดตรงที่สุด */
+    let best=null;
+    for(let rot=0;rot<4;rot++){
+      const c=[0,1,2,3].map(i=>g.corners[(i+rot)%4]);
+      const Hinv=homography([[0,0],[CW,0],[CW,CHH],[0,CHH]],c); if(!Hinv) continue;
+      const N=normalize(warp(src,Hinv,0,0,CW,CHH)), cal=calibrate(N);
+      if(!best||cal.quality>best.cal.quality) best={rot,Hinv,N,cal};
+      if(rot===0 && cal.nSolid===7 && cal.nDb>=10 && cal.quality>0.35) break;   // ภาพตั้งตรงแล้ว ไม่ต้องลองหมุน
+    }
+    if(window.GSIR_DEBUG) console.log('graph',JSON.stringify(g.corners),JSON.stringify(g.comp),JSON.stringify(best&&best.cal));
+    if(!best||best.cal.nSolid<4) return {ok:false,err:'เจอกรอบแต่เส้นกริดไม่ชัด — ลองถ่ายใหม่ให้ชัดขึ้น'};
+    const gr=readGraph(best.N,best.cal);
+    let speech={}; try{ speech=readSpeech(src,best.Hinv); }catch(e){ console.warn('speech',e); }
+    return {ok:true,th:gr.th,speech,dbg:gr.dbg,N:best.N,cal:best.cal,small:g.comp.bw<380};
+  }
+  /* ภาพกราฟที่ดัดตรงแล้ว + วงกำกับจุดที่อ่านได้ (ไว้ให้ผู้ใช้ตรวจ) */
+  function previewCanvas(res){
+    const N=res.N, cv=document.createElement('canvas'); cv.width=N.w; cv.height=N.h; const cx=cv.getContext('2d');
+    const id=cx.createImageData(N.w,N.h);
+    for(let i=0;i<N.w*N.h;i++){ id.data[i*4]=Math.min(255,N.R[i]*235); id.data[i*4+1]=Math.min(255,N.G[i]*235); id.data[i*4+2]=Math.min(255,N.B[i]*235); id.data[i*4+3]=255; }
+    cx.putImageData(id,0,0);
+    res.dbg.forEach(p=>{ cx.strokeStyle=p.ear==='R'?'rgba(220,0,0,.9)':'rgba(0,70,220,.9)'; cx.lineWidth=2;
+      cx.beginPath(); if(p.type==='AC') cx.arc(p.x,p.y,19,0,7); else { const dx=p.ear==='R'?-11:11; cx.rect(p.x+dx-10,p.y-16,20,32); } cx.stroke(); });
+    return cv;
+  }
+  return {analyze,previewCanvas,FR,BF};
+})();
+
+/* ══ 📷 ปุ่ม "ถ่ายรูปใบผล" ในหน้า Audiogram → อ่านด้วย GSIR → กล่องตรวจค่า → ใส่ลงกราฟ + Speech ══ */
+(function(){ const st=document.createElement('style'); st.textContent=`
+.gsi-photo-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 10px}
+.gsi-photo-btn{appearance:none;border:0;border-radius:12px;padding:11px 16px;font-size:15px;font-weight:700;cursor:pointer;
+  background:linear-gradient(135deg,#0f766e,#0e9f8f);color:#fff;box-shadow:0 3px 10px rgba(15,118,110,.28)}
+.gsi-photo-btn:active{transform:translateY(1px)}
+.gsi-photo-alt{font-size:13px;color:#475569;cursor:pointer}
+#gsiModal{position:fixed;inset:0;z-index:100001;display:none;align-items:center;justify-content:center;background:rgba(15,23,42,.6);padding:12px;backdrop-filter:blur(2px)}
+#gsiModal.show{display:flex}
+#gsiModal .gm-box{width:min(96vw,760px);max-height:92vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden}
+#gsiModal .gm-head{padding:14px 18px;border-bottom:1px solid #e2e8f0;font-weight:800;font-size:17px;color:#0f172a;display:flex;justify-content:space-between;align-items:center;gap:8px}
+#gsiModal .gm-body{padding:14px 18px;overflow:auto;-webkit-overflow-scrolling:touch}
+#gsiModal .gm-foot{padding:12px 18px;border-top:1px solid #e2e8f0;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;background:#f8fafc}
+#gsiModal .gm-btn{appearance:none;border:1px solid #cbd5e1;background:#fff;color:#0f172a;border-radius:10px;padding:10px 16px;font-size:15px;font-weight:600;cursor:pointer}
+#gsiModal .gm-btn.pri{background:#0f766e;border-color:#0f766e;color:#fff}
+#gsiModal .gm-wait{padding:36px 10px;text-align:center;font-size:16px;color:#334155}
+#gsiModal .gm-spin{width:34px;height:34px;border:4px solid #cbd5e1;border-top-color:#0f766e;border-radius:50%;margin:0 auto 14px;animation:gmspin .8s linear infinite}
+@keyframes gmspin{to{transform:rotate(360deg)}}
+#gsiModal .gm-prev{display:block;width:100%;max-width:360px;margin:0 auto 10px;border:1px solid #e2e8f0;border-radius:8px}
+#gsiModal .gm-note{font-size:13px;color:#475569;margin:0 0 10px;line-height:1.5}
+#gsiModal .gm-note b.y{background:#fef08a;padding:0 4px;border-radius:3px}
+#gsiModal .gm-pta{font-size:14px;margin:0 0 10px;padding:8px 10px;border-radius:8px;background:#f1f5f9;color:#0f172a}
+#gsiModal table.gm-t{border-collapse:collapse;width:100%;min-width:520px;font-size:13px}
+#gsiModal table.gm-t th,#gsiModal table.gm-t td{border:1px solid #e2e8f0;padding:4px;text-align:center}
+#gsiModal table.gm-t th.r{color:#c8102e} #gsiModal table.gm-t th.l{color:#1452c4}
+#gsiModal table.gm-t td.na{background:#f1f5f9}
+#gsiModal table.gm-t td.uns{background:#fef9c3}
+#gsiModal table.gm-t input.v{width:52px;font-size:16px;text-align:center;padding:4px 2px;border:1px solid #cbd5e1;border-radius:6px}
+#gsiModal table.gm-t label{font-size:11px;color:#475569;margin:0 2px;white-space:nowrap}
+#gsiModal .gm-sp{display:grid;grid-template-columns:auto repeat(4,1fr);gap:6px 8px;align-items:center;font-size:13px;margin-top:12px}
+#gsiModal .gm-sp input{width:100%;max-width:70px;font-size:16px;text-align:center;padding:4px;border:1px solid #cbd5e1;border-radius:6px}
+#gsiModal .gm-sp .uns input{background:#fef9c3}
+#gsiModal .gm-sub{font-weight:700;margin:14px 0 6px;color:#0f172a}
+@media (max-width:560px){ #gsiModal table.gm-t{min-width:0} #gsiModal table.gm-t input.v{width:44px} #gsiModal table.gm-t label{font-size:10px;margin:0 1px} #gsiModal table.gm-t th,#gsiModal table.gm-t td{padding:3px 1px} #gsiModal .gm-body{padding:12px} }
+#gsiModal .gm-err{padding:22px 6px;font-size:15px;color:#b91c1c;line-height:1.6;text-align:center}
+`; document.head.appendChild(st); })();
+
+let _gsiLast=null;
+function gsiModalEl(){
+  let m=document.getElementById('gsiModal');
+  if(!m){ m=document.createElement('div'); m.id='gsiModal';
+    m.innerHTML='<div class="gm-box"><div class="gm-head"><span id="gsiTitle">📷 อ่านค่าจากรูปใบผล</span><button type="button" class="gm-btn" id="gsiX" style="padding:4px 10px">✕</button></div><div class="gm-body" id="gsiBody"></div><div class="gm-foot" id="gsiFoot"></div></div>';
+    document.body.appendChild(m);
+    m.querySelector('#gsiX').addEventListener('click',gsiClose);
+    m.addEventListener('click',e=>{ if(e.target===m) gsiClose(); });
+  }
+  return m;
+}
+function gsiClose(){ const m=document.getElementById('gsiModal'); if(m) m.classList.remove('show'); }
+async function gsiHandleFile(file){
+  if(!file) return;
+  const m=gsiModalEl(); m.classList.add('show');
+  document.getElementById('gsiBody').innerHTML='<div class="gm-wait"><div class="gm-spin"></div>กำลังอ่านกราฟจากรูป…<br><span style="font-size:13px;color:#64748b">ใช้เวลาไม่กี่วินาที · ประมวลผลในเครื่องนี้ ไม่ส่งรูปออกไปที่ไหน</span></div>';
+  document.getElementById('gsiFoot').innerHTML='';
+  const url=URL.createObjectURL(file);
+  try{
+    const img=new Image(); img.src=url; await img.decode();
+    await new Promise(r=>setTimeout(r,60));            // ให้หน้าจอวาดวงหมุนก่อนเริ่มคำนวณหนัก
+    const res=await GSIR.analyze(img);
+    if(!res.ok){ gsiShowError(res.err); return; }
+    _gsiLast=res; gsiRenderReview(res);
+  }catch(e){ console.error(e); gsiShowError('อ่านรูปไม่สำเร็จ ('+(e&&e.message||e)+')'); }
+  finally{ setTimeout(()=>URL.revokeObjectURL(url),2000); }
+}
+function gsiShowError(msg){
+  document.getElementById('gsiBody').innerHTML=`<div class="gm-err">⚠️ ${msg}</div>
+    <div class="gm-note">เคล็ดลับ: วางใบผลบนโต๊ะสีเข้ม ถ่ายตรงจากด้านบนให้เห็นทั้งแผ่น แสงสว่างไม่มีเงาทับกราฟ และไม่เปิดแฟลชจนแสงสะท้อน</div>`;
+  document.getElementById('gsiFoot').innerHTML='<button type="button" class="gm-btn" onclick="gsiClose()">ปิด</button><button type="button" class="gm-btn pri" onclick="gsiPick(true)">📷 ถ่ายใหม่</button>';
+}
+function gsiPick(cam){ const el=document.getElementById(cam?'inpGsiPhotoCam':'inpGsiPhotoFile'); if(el){ el.value=''; el.click(); } }
+function gsiCellHtml(id,c,isBone){
+  const v=c?c.v:'', uns=c&&c.unsure;
+  return `<td class="${uns?'uns':''}"><input class="v" id="${id}_v" inputmode="numeric" value="${v}"><br>
+    <label><input type="checkbox" id="${id}_m"${c&&c.m?' checked':''}>M</label><label><input type="checkbox" id="${id}_nr"${c&&c.nr?' checked':''}>NR</label></td>`;
+}
+function gsiRenderReview(res){
+  const body=document.getElementById('gsiBody');
+  const has=FREQ_ALL.some(fr=>EARTYPES.some(c=>{ const d=S.audTh[fr][c.k]; return d&&d.v!==''; }));
+  let h='';
+  h+='<canvas class="gm-prev" id="gsiPrev"></canvas>';
+  h+=`<p class="gm-note">วงสีแดง/น้ำเงินบนภาพ = จุดที่โปรแกรมอ่านได้ · ช่อง <b class="y">สีเหลือง</b> = ไม่แน่ใจ ให้ดูกับใบจริง · แก้ตัวเลขในตารางได้ก่อนกดใส่ลงกราฟ</p>`;
+  if(res.small) h+='<p class="gm-note" style="color:#b45309">⚠️ กราฟในรูปเล็กไป (ถ่ายไกล) อาจอ่านตกบางจุด — ถ่ายใกล้ขึ้นให้กราฟกว้างอย่างน้อยครึ่งหนึ่งของจอจะแม่นกว่า</p>';
+  h+='<div class="gm-pta" id="gsiPta"></div>';
+  h+='<div style="overflow-x:auto"><table class="gm-t"><thead><tr><th>Hz</th><th class="r">ขวา · Air</th><th class="r">ขวา · Bone</th><th class="l">ซ้าย · Air</th><th class="l">ซ้าย · Bone</th></tr></thead><tbody>';
+  FREQ_ALL.forEach(fr=>{
+    h+=`<tr><td><b>${fr}</b></td>`;
+    [['R','AC'],['R','BC'],['L','AC'],['L','BC']].forEach(([e,t])=>{
+      if(t==='BC' && !BONE_FREQS.includes(fr)){ h+='<td class="na"></td>'; return; }
+      const c=(res.th[e][fr]||{})[t]; h+=gsiCellHtml(`gsi_${e}${t}_${fr}`,c,t==='BC');
+    });
+    h+='</tr>';
+  });
+  h+='</tbody></table></div>';
+  const sp=res.speech||{};
+  const spv=(e,k)=>{ const o=sp[e]; return o&&o[k]!=null?o[k]:''; };
+  h+='<div class="gm-sub">Speech (จากตารางขวามือของใบ)</div>';
+  h+='<div class="gm-sp"><span></span><b>SRT (dB)</b><b>SRS ระดับที่ตรวจ (dB)</b><b>SRS %</b><b>SL = SRS − SRT</b>';
+  ['R','L'].forEach(e=>{ const uns=sp[e]&&sp[e].unsure?' uns':'';
+    h+=`<b style="color:${e==='R'?'#c8102e':'#1452c4'}">${e==='R'?'ขวา':'ซ้าย'}</b>
+      <span class="${uns}"><input id="gsi_srt_${e}" inputmode="numeric" value="${spv(e,'srt')}"></span>
+      <span class="${uns}"><input id="gsi_srs_${e}" inputmode="numeric" value="${spv(e,'srs')}"></span>
+      <span class="${uns}"><input id="gsi_pct_${e}" inputmode="numeric" value="${spv(e,'pct')}"></span>
+      <span id="gsi_sl_${e}" style="font-weight:700;text-align:center"></span>`; });
+  h+='</div>';
+  if(has) h+='<p class="gm-note" style="margin-top:12px;color:#b45309">⚠️ เคสนี้มีค่า Audiogram อยู่แล้ว — กดใส่ลงกราฟจะ<b>แทนที่ค่าเดิมทั้งหมด</b> (กด ↶ ย้อนกลับได้)</p>';
+  h+='<p class="gm-note" style="margin-top:8px">อ่านจากสีและตำแหน่งของสัญลักษณ์บนใบของ GSI Suite (ไม่ใช้ AI) · ตอนนี้ยังจูนจากใบตัวอย่างใบเดียว — สัญลักษณ์ Masked ([ ] △ □) และ NR ให้ตรวจทุกครั้ง</p>';
+  body.innerHTML=h;
+  try{ const pc=GSIR.previewCanvas(res), cv=document.getElementById('gsiPrev'); cv.width=pc.width; cv.height=pc.height; cv.getContext('2d').drawImage(pc,0,0); }catch(e){}
+  body.querySelectorAll('input').forEach(el=>el.addEventListener('input',gsiUpdateSummary));
+  body.querySelectorAll('input[type=checkbox]').forEach(el=>el.addEventListener('change',gsiUpdateSummary));
+  gsiUpdateSummary();
+  document.getElementById('gsiFoot').innerHTML='<button type="button" class="gm-btn" onclick="gsiPick(true)">📷 ถ่ายใหม่</button><button type="button" class="gm-btn" onclick="gsiClose()">ยกเลิก</button><button type="button" class="gm-btn pri" onclick="gsiApply()">✓ ใส่ลงกราฟ</button>';
+}
+function gsiRead(){
+  const th=freshAudTh();
+  FREQ_ALL.forEach(fr=>EARTYPES.forEach(c=>{
+    if(c.type==='BC' && !BONE_FREQS.includes(fr)) return;
+    const id=`gsi_${c.k}_${fr}`, ve=document.getElementById(id+'_v'); if(!ve) return;
+    const v=ve.value.trim(), n=num(v);
+    th[fr][c.k]={ v: n===null?'':String(Math.round(n)), m:!!document.getElementById(id+'_m').checked, nr:!!document.getElementById(id+'_nr').checked };
+    if(n===null){ th[fr][c.k].m=false; th[fr][c.k].nr=false; }
+  }));
+  const sp={}; ['R','L'].forEach(e=>{ const g=k=>num((document.getElementById(`gsi_${k}_${e}`)||{}).value); sp[e]={srt:g('srt'),srs:g('srs'),pct:g('pct')}; });
+  return {th,sp};
+}
+function gsiUpdateSummary(){
+  const {th,sp}=gsiRead();
+  const avg3=e=>{ let s=0,c=0; PTA_FREQS.forEach(fr=>{ const n=num(th[fr][e+'AC'].v); if(n!==null){ s+=n; c++; } }); return c?Math.round(s/c):'–'; };
+  const pe=document.getElementById('gsiPta');
+  if(pe) pe.innerHTML=`เทียบกับใบจริงก่อนกด: <b style="color:#c8102e">AC PTA ขวา ${avg3('R')} dB</b> · <b style="color:#1452c4">ซ้าย ${avg3('L')} dB</b> <span style="color:#64748b">(ใบของ GSI พิมพ์ไว้ใต้กราฟ — ถ้าไม่ตรง แปลว่ามีจุดอ่านผิด)</span>`;
+  ['R','L'].forEach(e=>{ const el=document.getElementById('gsi_sl_'+e); if(!el) return; const o=sp[e];
+    el.textContent = (o.srt!==null&&o.srs!==null) ? ((o.srs-o.srt>=0?'+':'')+(o.srs-o.srt)) : '–'; });
+}
+function gsiApply(){
+  const {th,sp}=gsiRead();
+  let nBoneMax=0;
+  ['R','L'].forEach(e=>BONE_FREQS.forEach(fr=>{ if(clampBoneCell(fr,th[fr][e+'BC'])) nBoneMax++; }));
+  S.audTh=mergeAudTh(th);
+  const nFix=enforceBoneNotWorseThanAir();
+  let spN=0;
+  ['R','L'].forEach(e=>{ const o=sp[e];
+    if(o.srt!==null){ S['srt_'+e]=String(o.srt); spN++; }
+    if(o.srt!==null && o.srs!==null && o.srs>=o.srt){ S['sl_'+e]=String(o.srs-o.srt); }
+    if(o.pct!==null){ S['pbpct_'+e]=String(o.pct); spN++; }
+  });
+  buildAudTable(); renderAudAll(); try{ spReflect(); }catch(e){}
+  updateDerived(); render(); syncComputedFields(); autosave(); pushAudHistory();
+  gsiClose();
+  boneAirToast(nFix);
+  if(!nFix) hcsToast('✓ ใส่ค่าจากรูปลงกราฟแล้ว'+(spN?' พร้อม Speech':'')+' — ตรวจกับใบจริงอีกครั้งก่อนบันทึก',3500);
+}
+function gsiBindButtons(){
+  const b=document.getElementById('btnGsiPhoto'); if(b && !b._gsi){ b._gsi=1; b.addEventListener('click',()=>gsiPick(true)); }
+  ['inpGsiPhotoCam','inpGsiPhotoFile'].forEach(id=>{ const el=document.getElementById(id); if(el && !el._gsi){ el._gsi=1; el.addEventListener('change',()=>{ const f=el.files&&el.files[0]; if(f) gsiHandleFile(f); }); } });
+}
+/* ฟังก์ชันที่ปุ่มในกล่องเรียกผ่าน onclick ต้องอยู่บน window (โค้ดหลักห่อไว้ใน closure) */
+window.gsiClose=gsiClose; window.gsiPick=gsiPick; window.gsiApply=gsiApply;
+
 /* ── sidebar builder helpers ─────────────────────────────────── */
 let _stepTitles=[];
 function sec(title,open,body){ const idx=_stepTitles.length; _stepTitles.push(title); return `<div class="section" data-step="${idx}"><h3 class="sec-title">${title}</h3><div class="sec-body">${body}</div></div>`; }
@@ -4570,6 +5168,11 @@ function audiogramSectionBody(){
       <div class="row"><div class="fld"><label>ประวัติสัมผัสเสียงดัง</label><input type="text" data-bind="audio_noisehx"></div><div class="fld"><label>ครอบครัวสูญเสียการได้ยิน</label><input type="text" data-bind="audio_famhx"></div></div>
 
       <div class="subhead">กราฟ Audiogram</div>
+      <div class="gsi-photo-bar">
+        <button type="button" class="gsi-photo-btn" id="btnGsiPhoto" title="ถ่ายรูปใบผลที่ปริ้นจาก GSI Suite แล้วอ่านค่าลงกราฟ + Speech ให้อัตโนมัติ">📷 ถ่ายรูปใบผล GSI</button>
+        <label class="gsi-photo-alt">หรือ <u>เลือกรูปจากเครื่อง</u><input type="file" accept="image/*" id="inpGsiPhotoFile" hidden></label>
+        <input type="file" accept="image/*" capture="environment" id="inpGsiPhotoCam" hidden>
+      </div>
       <div id="audChartZone">
       <div class="toolhint">กำลังใช้: <b id="audToolNow"></b> — เลือกสัญลักษณ์ด้านบนแล้วคลิกบนกราฟเพื่อลงจุด (คลิกซ้ำที่จุดเดิมเพื่อลบ, คลิกที่ความถี่เดิม dB ต่างกันเพื่อย้าย)</div>
       <div id="audTools" class="tools tools-top">
@@ -5338,6 +5941,14 @@ function ensureS7Order(){
 const HOSP_FORMSETS = [
   { key:'nkp', match:'นครพิงค์',
     insertBefore:{ 'p-ha1,p-ha2': [['p-nkp-doc','p-nkp-eval'], 'ใบประเมินนครพิงค์'] } },
+  /* เชียงคำ: เอกสารใส่เครื่อง + เอกสารสปสช.ของตัวเอง แทนใบประเมิน (สปสช.) ของโพธาราม (Beer สั่ง 4 พ.ย. 69) */
+  { key:'ck', match:'เชียงคำ',
+    insertBefore:{ 'p-ha1,p-ha2': [['p-ck-doc'], 'เอกสารใส่เครื่อง (เชียงคำ)'] },
+    swap:{ 'p-ha1,p-ha2': [['p-ck-nhso'], 'เอกสารสปสช. (เชียงคำ)'] } },
+  /* ศูนย์การแพทย์ มหาวิทยาลัยแม่ฟ้าหลวง ใช้ 2 ใบเดียวกับเชียงคำ (key เดียวกัน = ใช้หน้าชุดเดียวกัน) */
+  { key:'ck', match:'แม่ฟ้าหลวง',
+    insertBefore:{ 'p-ha1,p-ha2': [['p-ck-doc'], 'เอกสารใส่เครื่อง (แม่ฟ้าหลวง)'] },
+    swap:{ 'p-ha1,p-ha2': [['p-ck-nhso'], 'เอกสารสปสช. (แม่ฟ้าหลวง)'] } },
 ];
 function activeFormSet(){ const h=String((S&&S.hospital)||''); return HOSP_FORMSETS.find(fs=>h && h.indexOf(fs.match)>=0) || null; }
 function abrPrintPages(list){ return abrHas() ? list : list.filter(([ids])=>ids.indexOf('p-abr')<0); }
@@ -5360,10 +5971,29 @@ function applyFormSet(){
     a.style.display = (t && (t.classList.contains('fs-off') || t.classList.contains('abr-off'))) ? 'none' : '';
   });
   /* ข้อความยาวเกินเส้นจุด (.nk-fit) → ย่อตัวอักษรลงทีละนิดจนพอดี (ไม่ตัดข้อความทิ้ง) */
-  document.querySelectorAll('#sheets > .sheet[id]:not(.fs-off) .nk-fit').forEach(el=>{
-    el.style.fontSize='';
-    let pt=parseFloat(getComputedStyle(el).fontSize)*0.75;
-    while(el.clientWidth && el.scrollWidth>el.clientWidth+1 && pt>6.5){ pt-=0.25; el.style.fontSize=pt+'pt'; }
+  fitSheetText();
+}
+/* วัดขนาดบน "สำเนา" ของหน้าที่วางไว้นอกจอเสมอ — ใช้ได้แม้หน้าจริงถูกซ่อนอยู่ (เช่นตอนอยู่หน้ารายชื่อ/หน้ากรอก)
+   แล้วค่อยใส่ขนาดตัวอักษรที่ได้กลับลงหน้าจริง → ทั้งพรีวิว ปริ้น และเปิดแท็บใหม่ได้ขนาดที่ย่อแล้ว */
+function fitSheetText(){
+  const FIT='.nk-fit, .nk-dl';   /* ทุกช่องคำตอบบนเส้นจุด + ข้อความที่กำหนดให้ย่อ */
+  const sheets=[...document.querySelectorAll('#sheets > .sheet[id]:not(.fs-off)')].filter(sh=>sh.querySelector(FIT));
+  if(!sheets.length) return;
+  let host=document.getElementById('fitMeasureHost');
+  if(!host){ host=document.createElement('div'); host.id='fitMeasureHost';
+    host.style.cssText='position:absolute;left:-99999px;top:0;visibility:hidden;pointer-events:none;';
+    document.body.appendChild(host); }
+  sheets.forEach(sh=>{
+    const orig=[...sh.querySelectorAll(FIT)];
+    orig.forEach(el=>{ el.style.fontSize=''; });
+    const c=sh.cloneNode(true); c.removeAttribute('id'); c.classList.remove('pg-hidden','fs-off'); c.style.zoom='';
+    host.appendChild(c);
+    c.querySelectorAll(FIT).forEach((el,i)=>{
+      let pt=parseFloat(getComputedStyle(el).fontSize)*0.75, n=0;
+      while(el.clientWidth && (el.scrollWidth>el.clientWidth+1 || (el.classList.contains('nk-fith') && el.scrollHeight>el.clientHeight+1)) && pt>5.5 && n++<100){ pt-=0.25; el.style.fontSize=pt+'pt'; }
+      if(el.style.fontSize && orig[i]) orig[i].style.fontSize=el.style.fontSize;
+    });
+    host.removeChild(c);
   });
 }
 /* ค่าที่ฟอร์มของรพ.อื่นใช้ (คำนวณจากข้อมูลเดิม ไม่ต้องกรอกเพิ่ม) — เรียกทุกครั้งก่อน render เติมค่า */
@@ -5391,6 +6021,52 @@ function deriveFormSetFields(){
     S['nkp_q'+n]=sp.q; S['nkp_n'+n]=sp.n;
     S['nkp_note'+n] = (b||m) ? 'เครื่องที่ '+n : '';
   });
+  try{ deriveCkFields(); }catch(e){ console.warn('ck', e); }
+}
+/* ── รพ.เชียงคำ: ค่าที่ใช้ในใบ "เอกสารใส่เครื่องช่วยฟัง" + ใบสปสช.ของเชียงคำ ── */
+function deriveCkFields(){
+  const R = S.ear==='right'||S.ear==='both', L = S.ear==='left'||S.ear==='both';
+  S.ck_first = ((S.namePrefix||'')+(S.nameFirst||'')).trim();
+  /* ตาราง Audiometry: ค่า Air ต่อความถี่ (NR = ↓) · SRT · PB% · PB dB (= SRT + SL) */
+  [250,500,1000,2000,4000,8000].forEach(fr=>['R','L'].forEach(e=>{
+    const c=S.audTh&&S.audTh[fr]&&S.audTh[fr][e+'AC'];
+    let v=c?String(c.v==null?'':c.v).trim():'';
+    if(v && c.nr) v+='↓';
+    S['ck_th_'+e+'_'+fr]=v;
+  }));
+  ['R','L'].forEach(e=>{
+    const srt=String(S['srt_'+e]||'').trim(), sl=String(S['sl_'+e]||'').trim(), pb=String(S['pbpct_'+e]||'').trim();
+    S['ck_srt_'+e]=srt; S['ck_pb_'+e]=pb;
+    const a=parseFloat(srt), b=parseFloat(sl);
+    S['ck_pbdb_'+e] = (isFinite(a) && isFinite(b) && /^-?\d/.test(srt) && /^[+-]?\d/.test(sl)) ? String(a+b) : '';
+  });
+  const oto=(v,n)=>v==='normal'?'Normal':v==='abnormal'?('Abnormal'+(String(n||'').trim()?' ('+String(n).trim()+')':'')):'';
+  S.ck_oto=[['Rt',oto(S.oto_r,S.oto_r_note)],['Lt',oto(S.oto_l,S.oto_l_note)]].filter(x=>x[1]).map(x=>x[0]+': '+x[1]).join(' , ');
+  S.ck_rinne=[['Rt',S.rinne_r],['Lt',S.rinne_l]].filter(x=>String(x[1]||'').trim()).map(x=>x[0]+': '+String(x[1]).trim()).join(' / ');
+  S.ck_diag=String(S.diag1||'').split(/\n+/).map(x=>x.trim()).filter(Boolean).join(' / ');
+  /* ขั้นตอนการเลือก/แนะนำวิธีใช้ = ทำทุกเคส → ติ๊กให้ · เกณฑ์ของแพทย์ + พรบ.พิการ → เว้นให้แพทย์ */
+  S.ck_on = true;
+  /* เครื่องที่ลอง + (ผลการทดลอง) ต่อท้ายเป็นเหตุผล */
+  [1,2].forEach(n=>{ const it=S['nkp_item'+n]||'', r=String(S['s7_p'+n+'_result']||'').trim();
+    S['ck_dev'+n] = it ? ((S.nkp_ear?S.nkp_ear+' ':'') + it + (r?' ('+r+')':'')) : ''; });   /* ข้าง (Right/Left/Both) นำหน้ายี่ห้อ */
+  /* วิธีประเมิน: ติ๊ก Objective (Beer สั่ง 4 พ.ย. 69) */
+  S.ck_subj = false; S.ck_obj = true;
+  S.ck_rel_pt = true;
+  S.ck_sn  = S.ear==='both' ? 'R: '+(S.snR||'-') : (S.sn||S.snR||S.snL||'');
+  S.ck_sn2 = S.ear==='both' ? 'L: '+(S.snL||'-') : '';   /* ใส่สองข้าง → บรรทัดที่ 2 */
+  /* ใบสปสช.เชียงคำ: ช่อง "ใช่" ติ๊กทุกข้อ ยกเว้นข้อ 6 (ใส่ข้างเดียวก่อน) ดูตามข้างที่ใส่จริง */
+  S.ck_y = true;
+  S.ck_y6 = true;   /* ข้อ 6 ติ๊ก "ใช่" เสมอ แล้วติ๊ก RE/LE ตามข้างที่ใส่จริง */
+  S.ck_n6 = false;
+  S.ck_aR = String(S.air_rt||'').trim()!==''; S.ck_aL = String(S.air_lt||'').trim()!=='';
+  S.ck_e6R = R; S.ck_e6L = L;
+  S.ck_tPocket = S.dtype==='body'; S.ck_tBTE = S.dtype==='bte';
+  S.ck_tOther = !!S.dtype && !S.ck_tPocket && !S.ck_tBTE;
+  S.ck_tOtherTxt = S.ck_tOther ? (({ric:'RIC', ite:'ITE (ในช่องหู)'})[S.dtype]||S.dtype) : '';
+  S.ck_fitR = R; S.ck_fitL = L;
+  S.ck_msR = R ? [S.modelR,S.snR].filter(Boolean).join(' / ') : '';
+  S.ck_msL = L ? [S.modelL,S.snL].filter(Boolean).join(' / ') : '';
+  S.ck_priceR = R ? (S.price||'') : ''; S.ck_priceL = L ? (S.price||'') : '';
 }
 
 /* ── รพ.นครพิงค์ หน้า 1: แบบบันทึกเพื่อพิจารณาใส่เครื่องช่วยฟัง (เฉพาะแพทย์) ── */
@@ -5477,7 +6153,104 @@ function nkpEvalPage(){
     <div class="nk-a nk-row" style="top:229.5mm;left:136mm;right:5mm"><span>ตำแหน่ง</span>${dl('position',1,'font-size:10.5pt')}</div>
   </section>`;
 }
-function hospSheetsHtml(){ return nkpDocPage() + nkpEvalPage(); }
+/* ── รพ.เชียงคำ หน้า 1: เอกสารใส่เครื่องช่วยฟัง ── */
+function ckDocPage(){
+  const dl = (k,flex,st,cls)=>`<span class="nk-dl${cls?' '+cls:''}" style="flex-grow:${flex}${st?';'+st:''}">${k?f(k):''}</span>`;
+  const box = k=>`<span class="nk-box"${k?` data-paren="${k}"`:''}></span>`;
+  const at = (top,left,inner,extra)=>`<div class="nk-a nk-row" style="top:${top}mm;left:${left}mm${extra?';'+extra:''}">${inner}</div>`;
+  const item = (top,left,k,txt,st,wrap)=>`<div class="nk-a ck-item" style="top:${top}mm;left:${left}mm;right:6mm${st?';'+st:''}">${box(k)}<span class="${wrap?'ck-wrap':'ck-txt nk-fit'}">${txt}</span></div>`;
+  const FQ=[250,500,1000,2000,4000,8000];
+  const thRow=(e,lbl)=>`<tr><td class="ck-l">${lbl}</td>${FQ.map(fr=>`<td>${f('ck_th_'+e+'_'+fr)}</td>`).join('')}<td>${f('ck_srt_'+e)}</td><td>${f('ck_pb_'+e)}</td><td>${f('ck_pbdb_'+e)}</td></tr>`;
+  return `<section class="sheet nkp-sheet ck-doc" id="p-ck-doc" data-hosp="ck">
+    <div class="nk-a nk-title" style="top:11mm">เอกสารใส่เครื่องช่วยฟัง</div>
+    ${at(21,9,`<span>ชื่อ</span>${dl('ck_first',5)}<span>นามสกุล</span>${dl('nameLast',6)}<span>อายุ</span>${dl('age',1.6,'text-align:center')}<span>ปี HN</span>${dl('hn',3.2)}`,'right:13mm')}
+    ${at(28,9,`<span>ที่อยู่</span>${dl('address',9,'','nk-fit')}<span>เบอร์โทรติดต่อ</span>${dl('phone',3.2)}`,'right:13mm')}
+    ${at(35,9,`<span>การตรวจการได้ยิน Audiometry</span>`,'right:auto')}
+    ${at(34.5,75,`<span>ผลตรวจ Otoscopy</span>${dl('ck_oto',5,'','nk-fit')}<span>วันที่</span>${dl('fitDate',2.6)}`,'right:13mm')}
+    <div class="nk-a" style="top:42mm;left:7mm;right:auto;width:119mm">
+      <table class="nk-tbl ck-au">
+        <colgroup><col style="width:15mm">${FQ.map(fr=>`<col style="width:${fr>=1000?12.2:10.5}mm">`).join('')}<col style="width:15.7mm"><col style="width:8.3mm"><col></colgroup>
+        <tr style="height:10.5mm"><td rowspan="2" class="ck-l" style="vertical-align:top;padding-top:1.5mm;line-height:1.9">ความถี่<br>Hz</td>${FQ.map(fr=>`<td rowspan="2" style="vertical-align:top;padding-top:1.5mm">${fr}</td>`).join('')}<td rowspan="2" style="vertical-align:top;padding-top:1.5mm">SRT(db)</td><td colspan="2">Pb score</td></tr>
+        <tr style="height:8.5mm"><td>%</td><td>db</td></tr>
+        ${thRow('R','หูขวา')}${thRow('L','หูซ้าย')}
+      </table>
+    </div>
+    <div class="nk-a ck-boxed ck-labbox" style="top:42.5mm;left:129mm;right:auto;width:53mm;height:31mm">
+      <div class="nk-row"><span>ผลการตรวจ WABER</span>${dl('weber',1,'','nk-fit')}</div>
+      <div class="nk-row" style="margin-top:1mm"><span>Rinne</span>${dl('ck_rinne',1,'','nk-fit')}</div>
+      <div class="ck-dx"><span>การวินิจฉัย</span><div class="ck-dxv nk-fit nk-fith">${f('ck_diag')}</div></div>
+    </div>
+    ${item(84.5,8.5,'','ไม่สามารถรักษาหายขาดได้ด้วยยาหรือการผ่าตัดหรือปฏิเสธการผ่าตัด')}
+    ${item(92.5,8.5,'','สูญเสียการได้ยินแบบประสาทหูเสื่อมเฉียบพลันหลังการรักษาด้วยยาต่อเนื่องมากกว่า 100 วัน')}
+    ${item(100.5,8.5,'ck_on','สูญเสียการได้ยินเป็นอุปสรรคต่อการสื่อความหมายและการดำรงชีพทำให้คุณภาพชีวิตลดลง')}
+    ${item(108.5,8.5,'','สูญเสียการได้ยินเป็นอุปสรรคต่อการพัฒนาการทางภาษาหรือมีความพิการซ้ำซ้อน')}
+    ${at(116.5,17,`<span>พรบ. พิการ</span><span style="width:6mm"></span>${box('')}<span style="margin-left:2mm">ได้รับ</span><span style="width:20mm"></span>${box('')}<span style="margin-left:2mm">ไม่ได้รับ</span>`,'right:auto')}
+    ${at(124,11,'<b class="ck-txt nk-fit">ขั้นตอนการเลือกเครื่องช่วยฟัง</b>','right:6mm')}
+    ${item(131.5,8.5,'ck_on','ทำความเข้าใจกับผู้สูญเสียการได้ยินและหรือผู้ปกครองถึงผลกระทบจากการสูญเสีที่มีต่อการสือความหมาย คุณภาพชีวิตลดลง')}
+    ${item(139.5,8.5,'ck_on','อธิบายวิธีการเลือกเครื่องช่วยฟังให้แก่ผู้สูญเสียการได้ยินและ หรือผู้ปกครอง')}
+    ${item(147.5,8.5,'ck_on','<span class="ck-line nk-fit">แนะนำเครื่องช่วยฟังแบบต่างๆที่เหมาะกับผู้สูญเสียและให้รายละเอียดเกี่ยวกับเครื่องแต่ละแบบทั้งข้อดีแลพข้อเสียเพื่อให้ผู้พิการมีส่วนร่วมในการ</span><span class="ck-line nk-fit">เลือกเครื่องช่วยฟังที่เหมาะสมกับตัวเอง</span>','font-size:10pt;align-items:center','wrap')}
+    ${item(159,8.5,'ck_on','เลือกเครื่องช่วยฟังที่มีกำลังขยายพอเหมาะการสูญเสียการได้ยินอย่างน้อย 2-3 เครื่องเพื่อเปรียบเทียบคุณภาพเสียง')}
+    ${at(167.5,17,`<span>ระบุ 1.</span>${dl('ck_dev1',1,'','nk-fit')}`,'right:14mm')}
+    ${at(176,24.5,`<span>2.</span>${dl('ck_dev2',1,'','nk-fit')}`,'right:14mm')}
+    ${at(185,12,'<b class="ck-txt nk-fit">ขั้นตอนแนะนำวิธีใช้เครื่องช่วยฟัง</b>','right:142mm')}
+    ${item(185,69,'ck_on','แนะนำวิธีใช้เครื่องช่วยฟัง การใส่ การดูแลรักษาและการแก้ปัญหาเมื่อเครื่องขัดข้อง')}
+    ${item(192.5,69,'ck_on','แจกเอกสารวิธีการดูแลเครื่องช่วยฟัง')}
+    ${at(200.5,12,'<b class="ck-txt nk-fit">วิธีประเมิณเครื่องช่วยฟัง เพื่อให้ผู้สูญเสียการได้ยินใส่เครื่องช่วยฟังที่เหมาะสม ประเมินการทำงานของเครื่องโดย</b>','right:6mm')}
+    ${item(210,9,'ck_subj','วิธี SUBJECTIVE METHOD','right:auto')}
+    ${item(210,81,'ck_obj','วิธี OBJECTIVE METHOD','right:auto')}
+    ${at(225,12,`<span>ลงชื่อ</span>${dl('',1)}<span>แพทย์ โสต ศอ นาสิก</span>`,'right:112mm')}
+    ${at(225,105,`<span>ลงชื่อ</span>${dl('',1)}<span>ผู้รับเครื่องช่วยฟัง</span>`,'right:13mm')}
+    ${at(233,16,`<span>(</span>${dl('',1)}<span>)</span>`,'right:120mm')}
+    ${at(233,110,`<span>(</span>${dl('name',1,'text-align:center')}<span>)</span>`,'right:44mm')}
+    ${at(241.5,108,`${box('ck_rel_pt')}<span style="margin:0 3mm 0 2mm">ผู้ป่วย</span>${box('')}<span style="margin:0 3mm 0 2mm">ญาติ</span>${box('')}<span style="margin-left:2mm">อื่น</span>${dl('',1)}`,'right:28mm')}
+    <div class="nk-a ck-boxed" style="top:251mm;left:59mm;right:auto;width:68mm;height:23mm;display:flex;align-items:center;padding:0 5mm">
+      <div style="width:100%"><div class="nk-row"><span>S/N</span>${dl('ck_sn',1,'','nk-fit')}</div><div class="nk-row" data-showif="ck_sn2" style="margin-top:2.5mm"><span style="visibility:hidden">S/N</span>${dl('ck_sn2',1,'','nk-fit')}</div></div>
+    </div>
+  </section>`;
+}
+
+/* ── รพ.เชียงคำ หน้า 2: แบบประเมินการให้บริการด้านสุขภาพ (สปสช.) ── */
+function ckNhsoPage(){
+  const dl = (k,flex,st,cls)=>`<span class="nk-dl${cls?' '+cls:''}" style="flex-grow:${flex}${st?';'+st:''}">${k?f(k):''}</span>`;
+  const box = k=>`<span class="nk-box"${k?` data-paren="${k}"`:''}></span>`;
+  const yn = (y,n)=>`<td class="yn"><span data-paren="${y||''}"></span></td><td class="yn"><span data-paren="${n||''}"></span></td>`;
+  const row = (h,body,y,n)=>`<tr style="height:${h}mm"><td>${body}</td>${yn(y,n)}</tr>`;
+  const ln = (inner,st)=>`<div class="nk-row"${st?` style="${st}"`:''}>${inner}</div>`;
+  const B = t=>`<div class="ck-bul">•&nbsp;&nbsp;${t}</div>`;
+  return `<section class="sheet nkp-sheet ck-nhso" id="p-ck-nhso" data-hosp="ck">
+    <div class="nk-a nk-title" style="top:10mm;font-size:13pt">แบบประเมินการให้บริการด้านสุขภาพ กรณีการใช้อุปกรณ์เครื่องช่วยฟัง สำหรับผู้สูญเสียการได้ยิน</div>
+    <div class="nk-a nk-row" style="top:19mm;left:118mm;right:12mm"><span>โรงพยาบาล</span>${dl('hospital',1,'','nk-fit')}</div>
+    <div class="nk-a nk-row" style="top:26mm;left:20mm;right:12mm"><span>ชื่อผู้ป่วย</span>${dl('name',6)}<span>HN</span>${dl('hn',3.6)}<span>วันที่</span>${dl('fitDate',3.6)}</div>
+    <div class="nk-a" style="top:34mm;left:20mm;right:12mm">
+      <table class="nk-tbl ck-nh">
+        <colgroup><col><col style="width:12.5mm"><col style="width:15mm"></colgroup>
+        <tr style="height:9mm"><td style="text-align:center;font-weight:700;vertical-align:middle">ขั้นตอนการใส่เครื่องช่วยฟัง</td><td class="yn" style="font-size:11.5pt">ใช่</td><td class="yn" style="font-size:11.5pt">ไม่ใช่</td></tr>
+        ${row(8.5,'1.&nbsp; มีการทำ Otoscopy เพื่อแยกโรคที่สามารถรักษาได้ ก่อนใช้เครื่องช่วยฟัง','ck_y')}
+        ${row(32.5,`2.&nbsp; มีการทำ Audiogram ใน Sound proof room พบว่ามีการสูญเสียการได้ยินทั้งสองข้าง โดยข้างที่ดีกว่าจะต้องมีค่าเฉลี่ยของระดับการได้ยินทางอากาศ (Air Conduction Threshold) ของความถี่ 500, 1,000 และ 2,000 เฮิรตซ์ (Hz) เท่ากับหรือมากกว่า 40 เดซิเบล (dB) ทั้งนี้ ต้องตรวจวัดโดยใช้วิธีการตรวจการได้ยินตามมาตรฐานวิชาชีพ
+          ${ln(`<span style="width:6mm"></span><span>ผลตรวจการได้ยินเฉลี่ย (Air Conduction Threshold)</span>&nbsp;${box('ck_aR')}<span>&nbsp;RE</span>${dl('air_rt',1,'text-align:center')}<span>dB</span>&nbsp;${box('ck_aL')}<span>&nbsp;LE</span>${dl('air_lt',1,'text-align:center')}<span>dB</span>`)}`,'ck_y')}
+        ${row(52.5,`3.&nbsp; แพทย์หู คอ จมูก ได้ประเมินว่าเป็นผู้สูญเสียการได้ยิน ตามเกณฑ์ดังต่อไปนี้
+          ${B('ไม่สามารถรักษาให้หายขาดได้ด้วยยาหรือการผ่าตัด')}${B('มีข้อห้ามในการผ่าตัดหรือปฏิเสธการผ่าตัด')}${B('การสูญเสียการได้ยินที่เป็นอุปสรรคต่อการสื่อความหมายและการดำรงชีวิตประจำวันทำให้คุณภาพชีวิตลดลง')}${B('การสูญเสียการได้ยินแบบประสาทหูเสื่อมอย่างเฉียบพลันหลังการรักษาด้วยยาอย่างต่อเนื่องมากกว่า 100 วัน')}${B('การสูญเสียการได้ยินเป็นอุปสรรคต่อการพัฒนาทางภาษาและการพูดในเด็กหรือมีความพิการซ้ำซ้อน')}`,'ck_y')}
+        ${row(13,`4.&nbsp; ผู้พิจารณาใส่เครื่องช่วยฟังเป็นแพทย์หู คอ จมูก
+          ${ln(`<span style="width:6mm"></span><span>ระบุ นพ./พญ.</span>${dl('doc_name',5)}<span>RCOT เลขที่</span>${dl('rcot',2.4)}`,'margin-right:6mm')}`,'ck_y')}
+        ${row(24.5,`5.&nbsp; ผู้เลือกและประเมินเครื่องช่วยฟังเป็นแพทย์หู คอ จมูก, นักเวชศาสตร์การสื่อความหมาย หรือเจ้าหน้าที่วิทยาศาสตร์การแพทย์ ที่ปฏิบัติงานภายใต้การกำกับดูแลของแพทย์หู คอ จมูก หรือนักเวชศาสตร์การสื่อความหมาย
+          ${ln(`<span style="width:6mm"></span><span>ระบุ ชื่อ-สกุล</span>${dl('audiologist',4.4)}<span>ตำแหน่ง</span>${dl('position',3.4,'','nk-fit')}`,'margin-right:6mm')}`,'ck_y')}
+        ${row(7.8,ln(`<span>6.&nbsp; เลือกใส่เครื่องช่วยฟัง ในหูที่เหมาะสมเพียงข้างเดียวก่อน&nbsp;&nbsp; ระบุ&nbsp;</span>${box('ck_e6R')}<span>&nbsp;RE</span><span style="width:8mm"></span>${box('ck_e6L')}<span>&nbsp;LE</span>`),'ck_y6','ck_n6')}
+        ${row(7.8,'7.&nbsp; มีการประเมินการทำงานของเครื่องช่วยฟัง โดย Subjective Method หรือ <u style="text-underline-offset:1.2mm">Objective Method</u>','ck_y')}
+        ${row(8.3,'8.&nbsp; มีการเซ็นต์รับเครื่องช่วยฟัง','ck_y')}
+        ${row(26.5,`9.&nbsp; มีการระบุ ชนิดเครื่องช่วยฟัง / ชื่อทางการค้า / รุ่นและเลขเครื่อง / ราคา
+          ${ln(`<span style="width:5mm"></span><span>ชนิดเครื่องช่วยฟัง&nbsp;</span>${box('ck_tPocket')}<span>&nbsp;Pocket hearing aid&nbsp;&nbsp;</span>${box('ck_tBTE')}<span>&nbsp;BET&nbsp;&nbsp;</span>${box('ck_tOther')}<span>&nbsp;อื่นๆ(ระบุ)</span>${dl('ck_tOtherTxt',1)}`,'margin-right:2mm')}
+          ${ln(`<span style="width:4mm"></span>${box('ck_fitR')}<span>&nbsp;RE ชื่อทางการค้า(ยี่ห้อ)</span>${dl('brandR',1.5)}<span>รุ่น/เลขเครื่อง</span>${dl('ck_msR',5.2,'','nk-fit')}<span>ราคา</span>${dl('ck_priceR',1)}`,'margin-right:2mm')}
+          ${ln(`<span style="width:4mm"></span>${box('ck_fitL')}<span>&nbsp;LE ชื่อทางการค้า(ยี่ห้อ)</span>${dl('brandL',1.5)}<span>รุ่น/เลขเครื่อง</span>${dl('ck_msL',5.2,'','nk-fit')}<span>ราคา</span>${dl('ck_priceL',1)}`,'margin-right:2mm')}`,'ck_y')}
+        ${row(26.5,`10. มีกำหนดติดตามผลการใช้เครื่องช่วยฟัง ในระยะ1 – 3 เดือน, 6 เดือน, 1 ปี
+          ${[['1','ช่วง1-3 เดือน','followup1'],['2','ช่วง 6 เดือน','followup2'],['3','ช่วง 1 ปี','followup3']].map(([n,t,k])=>ln(`<span style="width:9mm"></span><span style="width:46mm">ครั้งที่ ${n} : (${t})</span><span>วันที่</span>${dl(k,1)}`,'margin-right:52mm')).join('')}`,'ck_y')}
+      </table>
+    </div>
+    <div class="nk-a nk-row" style="top:257mm;left:124mm;right:12mm"><span>ผู้บันทึก</span>${dl('audiologist',1,'text-align:center')}</div>
+    <div class="nk-a nk-row" style="top:264mm;left:124mm;right:12mm"><span>ตำแหน่ง</span>${dl('position',1,'text-align:center')}</div>
+    <div class="nk-a nk-row" style="top:271mm;left:124mm;right:12mm"><span>วันที่</span>${dl('fitDate',1,'text-align:center')}</div>
+  </section>`;
+}
+function hospSheetsHtml(){ return nkpDocPage() + nkpEvalPage() + ckDocPage() + ckNhsoPage(); }
 
 function buildSheets(){
   document.getElementById('sheets').innerHTML =
@@ -5676,6 +6449,7 @@ function render(){
     el.textContent = u==='pre' ? (v && !cnt ? '+' : '') : (cnt ? '' : (u==='dB' ? ' dB' : ' %'));
   });
   document.querySelectorAll('[data-cb]').forEach(el=>{ el.textContent = S[el.getAttribute('data-cb')] ? '☑' : '☐'; });
+  document.querySelectorAll('[data-showif]').forEach(el=>{ el.style.display = String(S[el.getAttribute('data-showif')]||'').trim() ? '' : 'none'; });
   document.querySelectorAll('[data-paren]').forEach(el=>{ el.textContent = S[el.getAttribute('data-paren')] ? '✓' : ''; });
   document.querySelectorAll('[data-cbv]').forEach(el=>{ const [k,v]=el.getAttribute('data-cbv').split(':'); el.textContent = (String(S[k])===v) ? '☑' : '☐'; });
   document.querySelectorAll('[data-cbv-either]').forEach(el=>{
@@ -6482,6 +7256,7 @@ function bindInputs(){
   const copyAirBtn=document.getElementById('aud-tb-copyAir'); if(copyAirBtn) copyAirBtn.addEventListener('click', ()=>copyEarDataSmart('AC'));
   const copyBoneBtn=document.getElementById('aud-tb-copyBone'); if(copyBoneBtn) copyBoneBtn.addEventListener('click', ()=>copyEarDataSmart('BC'));
   const airBoneBtn=document.getElementById('aud-tb-airbone'); if(airBoneBtn) airBoneBtn.addEventListener('click', airEqualsBone);
+  try{ gsiBindButtons(); }catch(e){ console.warn('gsi',e); }
   /* ถ้าผู้ใช้พิมพ์แก้ช่องผู้ตรวจเอง → จำไว้ ไม่ให้ระบบเติมทับอีก */
   const _exManualInp = document.getElementById('inpExaminer');
   if(_exManualInp) _exManualInp.addEventListener('input', ()=>{ S._examinerManual = true; });
