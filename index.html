@@ -10447,11 +10447,13 @@ function init(){
     try{
       const role = localStorage.getItem('hcs_role');
       const act = hcsActiveHosp();
-      if(role==='admin') return (act && act!==HCS_ALL_HOSP) ? [act] : [];
+      /* ยังไม่ได้เลือกรพ. → ไม่แสดงคนไข้เลย จนกว่าจะเลือก (เพิ่ม 7 พ.ย. 69) */
+      if(role==='admin'){ if(act===HCS_ALL_HOSP) return []; return act ? [act] : [HOSP_DENY_ALL]; }
       const scope = hcsHospScope() || [];
       if(!scope.length) return [HOSP_DENY_ALL];
       if(act && scope.includes(act)) return [act];
-      return scope;
+      if(scope.length === 1) return scope;   // มีสิทธิ์รพ.เดียว ไม่ต้องเลือก
+      return [HOSP_DENY_ALL];
     }catch(e){ return [HOSP_DENY_ALL]; }
   }
   function renderList(){
@@ -10466,7 +10468,9 @@ function init(){
     const pageList = list.slice(startIdx, startIdx+pageSize);
 
     const body = document.getElementById('lstBody');
-    if(!list.length){ body.innerHTML = '<tr><td colspan="10" class="list-empty">ยังไม่มีรายการผู้ป่วย — กด "+ เพิ่มผู้ป่วยใหม่" เพื่อเริ่ม</td></tr>'; }
+    if(!list.length){ body.innerHTML = (effectiveAllowedHospitals()[0] === HOSP_DENY_ALL && hcsActiveHosp() === '')
+      ? '<tr><td colspan="10" class="list-empty">🏥 กรุณาเลือกโรงพยาบาลก่อน (ปุ่ม "เลือกรพ." มุมขวาบน) จึงจะแสดงรายชื่อผู้ป่วย</td></tr>'
+      : '<tr><td colspan="10" class="list-empty">ยังไม่มีรายการผู้ป่วย — กด "+ เพิ่มผู้ป่วยใหม่" เพื่อเริ่ม</td></tr>'; }
     else body.innerHTML = pageList.map((r,i)=>{
       const qToday = r.queueNo && r.queueDate===todayKey();
       const qBadge = `<button class="lst-btn lst-queue" data-act="queue" data-id="${r._id}" title="คลิกเพื่อแก้ไขหมายเลขคิว">${r.queueNo ? `<span class="queue-pill${qToday?' today':''}">คิว ${r.queueNo}</span> ✎` : '+ ใส่คิว'}</button>`;
