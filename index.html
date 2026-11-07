@@ -3,7 +3,65 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<script>(function(){try{var t=localStorage.getItem('hcs_token');if(!t){document.documentElement.className+=' locked';}}catch(e){document.documentElement.className+=' locked';}})();</script>
+<style>html.auth-check body{visibility:hidden !important;}</style>
+<script>
+/* ══ ออกจากระบบอัตโนมัติเมื่อปิดเบราว์เซอร์ (เพิ่ม 7 พ.ย. 69) ══
+   - ทุกแท็บที่เปิด Hearform อยู่ เขียนเวลา "ยังเปิดอยู่" ลง hcs_alive_at ทุก 5 วินาที
+   - sessionStorage 'hcs_tab_session' = แท็บนี้ผ่านการตรวจแล้ว → กดรีเฟรช/ระบบโหลดหน้าใหม่เอง ไม่ต้องล็อกอินซ้ำ
+   - เปิดหน้าใหม่ (เปิดเบราว์เซอร์ใหม่ / แท็บใหม่) → ถามแท็บ Hearform อื่นผ่าน BroadcastChannel ว่ายังเปิดอยู่ไหม
+     ถ้าไม่มีแท็บไหนตอบ = เบราว์เซอร์ถูกปิดไปแล้ว → ล้างการล็อกอินในเครื่อง + สั่งเซิร์ฟเวอร์ยกเลิก token เดิม
+   - ระหว่างตรวจ เอาข้อมูลล็อกอินออกก่อน แอปจึงเริ่มแบบ "ยังไม่ล็อกอิน" เสมอ (ไม่โหลดข้อมูลคนไข้ก่อนรู้ผล) */
+(function(){
+  var AUTH_KEYS=['hcs_token','hcs_role','hcs_username','hcs_allowed_hospitals','hcs_display_name','hcs_license_no','hcs_hosp_options','hcs_active_hospital','hcs_must_change'];
+  var ALIVE='hcs_alive_at', MARK='hcs_tab_session', STALE='hcs_stale_token';
+  var RELOAD_GRACE=10*60*1000, PEER_FRESH=8000, PING_WAIT=700;
+  var de=document.documentElement, state='ok', authed=false, bc=null, stash=null;
+  function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+  function beat(){ if(state!=='ok') return; try{ localStorage.setItem(ALIVE,String(Date.now())); sessionStorage.setItem(MARK,'1'); }catch(e){} }
+  function takeAuth(){ var o={}; AUTH_KEYS.forEach(function(k){ var v=lsGet(k); if(v!==null) o[k]=v; try{ localStorage.removeItem(k); }catch(e){} }); return o; }
+  function putBack(o){ for(var k in (o||{})){ try{ localStorage.setItem(k,o[k]); }catch(e){} } }
+  function revoke(t){
+    if(!t) return;
+    if(typeof window.hcsRevokeToken==='function'){ try{ window.hcsRevokeToken(t); }catch(e){} }
+    else { try{ sessionStorage.setItem(STALE,t); }catch(e){} }   /* ส่วนล็อกอินท้ายไฟล์จะมาหยิบไปส่งให้เซิร์ฟเวอร์ */
+  }
+  try{
+    if(lsGet('hcs_token')){
+      var mine=false; try{ mine=sessionStorage.getItem(MARK)==='1'; }catch(e){}
+      var age=Date.now()-(+lsGet(ALIVE)||0);
+      if((mine && age<RELOAD_GRACE) || age<PEER_FRESH){ authed=true; }   /* รีเฟรชแท็บเดิม หรือมีแท็บ Hearform อื่นเปิดอยู่ */
+      else {
+        stash=takeAuth();
+        if(typeof BroadcastChannel==='function'){ state='checking'; de.className+=' auth-check'; }
+        else { revoke(stash.hcs_token); stash=null; }   /* เบราว์เซอร์เก่าไม่มี BroadcastChannel → ออกจากระบบเลย */
+      }
+    }
+  }catch(e){}
+  if(!lsGet('hcs_token')) de.className+=' locked';
+  try{ bc=new BroadcastChannel('hcs_session'); }catch(e){ bc=null; }
+  function finish(peerAlive){
+    if(state!=='checking') return;
+    if(peerAlive){ putBack(stash); stash=null; state='ok'; beat(); location.reload(); return; }
+    state='ok'; revoke(stash && stash.hcs_token); stash=null;
+    de.className=de.className.replace(/\s*auth-check\b/g,''); beat();
+  }
+  if(bc) bc.onmessage=function(ev){
+    var m=ev && ev.data;
+    if(m==='hcs-ping' && state==='ok' && authed){ try{ bc.postMessage('hcs-pong'); }catch(e){} }
+    else if(m==='hcs-pong') finish(true);
+  };
+  if(state==='checking'){
+    if(bc){ try{ bc.postMessage('hcs-ping'); }catch(e){} }
+    setTimeout(function(){ finish(false); }, PING_WAIT);
+    /* ปิดแท็บนี้ระหว่างกำลังตรวจ → คืนข้อมูลล็อกอินไว้ก่อน (เผื่อมีแท็บอื่นใช้อยู่) เปิดครั้งหน้าจะตรวจใหม่ */
+    window.addEventListener('pagehide', function(){ if(state==='checking' && stash) putBack(stash); });
+  }
+  beat(); setInterval(beat,5000);
+  document.addEventListener('visibilitychange',beat);
+  window.addEventListener('pagehide',beat);
+  window.addEventListener('pageshow',beat);
+})();
+</script>
 <title>Hearform (รวม) • กลุ่มงานโสต ศอ นาสิก</title>
 <!-- ══ โลโก้โปรแกรม + ตั้งค่า "เพิ่มไปยังหน้าจอโฮม" บนมือถือ (PWA) — ฝังรูปไว้ในไฟล์เดียว ไม่ต้องอัปไฟล์รูปแยก ══ -->
 <meta name="theme-color" content="#3958ff">
@@ -4450,6 +4508,247 @@ const GSIR = (function(){
   }
 
   /* ── รวมทุกขั้น ── */
+  /* ═══════════ ใบเขียนมือ: ฟอร์ม AUDIOGRAM รพ.ศูนย์การแพทย์ มฟล. (FM-MD-ENT-001) ═══════════
+     กราฟมี 10 คอลัมน์ระยะเท่ากัน 125·250·500·1000·1500·2000·3000·4000·6000·8000 (ไม่มี 750)
+     แนวตั้ง -20 (ขอบบน) … 120 (ขอบล่าง) ทุก 10 dB · เส้นคู่ที่ 0 และ 110
+     ปากกาแดง = หูขวา · น้ำเงิน = หูซ้าย  →  หาก้อนหมึกรอบแต่ละคอลัมน์ แล้วแยกรูปทรง
+       ปิดเป็นวง (มีรู) = Air (O / □) · มีกากบาทกลาง = X · วงเล็บ/บั้ง = Bone ([ ] < >) */
+  const HW_FR=[125,250,500,1000,1500,2000,3000,4000,6000,8000];
+  const HSTEP=80, VSTEP=40, HWW=HSTEP*9, HWH=VSTEP*14;
+  function box1(src,w,h,r,horiz){ // ค่าเฉลี่ยตามแนวเดียว
+    const out=new Float32Array(w*h), k=2*r+1;
+    if(horiz){ for(let y=0;y<h;y++){ const o=y*w; let s=0; for(let x=-r;x<=r;x++) s+=src[o+Math.min(w-1,Math.max(0,x))];
+        for(let x=0;x<w;x++){ out[o+x]=s/k; s+=src[o+Math.min(w-1,x+r+1)]-src[o+Math.max(0,x-r)]; } } }
+    else { for(let x=0;x<w;x++){ let s=0; for(let y=-r;y<=r;y++) s+=src[Math.min(h-1,Math.max(0,y))*w+x];
+        for(let y=0;y<h;y++){ out[y*w+x]=s/k; s+=src[Math.min(h-1,y+r+1)*w+x]-src[Math.max(0,y-r)*w+x]; } } }
+    return out;
+  }
+  function lineOpen(M,w,h,r,horiz,frac,thick){ frac=frac||0.999; // เก็บเฉพาะเส้นตรงยาว (opening ด้วย kernel เส้น) — หนาขวางเส้น 3px กันเส้นเอียง
+    const th=box1(M,w,h,thick||1,!horiz); for(let i=0;i<th.length;i++) th[i]=th[i]>0?1:0;
+    const er=box1(th,w,h,r,horiz); for(let i=0;i<er.length;i++) er[i]=er[i]>=frac?1:0;
+    const di=box1(er,w,h,r,horiz); for(let i=0;i<di.length;i++) di[i]=di[i]>0?1:0; return di;
+  }
+  function findHWGraph(src){
+    const {w,h,data}=src, n=w*h, gray=new Float32Array(n), sat=new Float32Array(n);
+    for(let i=0;i<n;i++){ const r=data[i*4],g=data[i*4+1],b=data[i*4+2]; gray[i]=(r+g+b)/3; sat[i]=Math.max(r,g,b)-Math.min(r,g,b); }
+    const bl=boxBlur(gray,w,h,Math.max(6,Math.round(Math.max(w,h)/130)));
+    const M=new Float32Array(n); for(let i=0;i<n;i++) M[i]=(gray[i]<bl[i]-16 && sat[i]<75)?1:0;
+    const Hm=lineOpen(M,w,h,Math.round(w*0.012),true,0.999,3);   // หนาขวาง 7px → ทนภาพเอียงได้ ~7°
+    /* เส้นนอนยาว → stats + fit y=a+bx */
+    const lab=new Int32Array(n), st=[]; const segs=[];
+    for(let s0=0;s0<n;s0++){ if(!Hm[s0]||lab[s0]) continue; const id=segs.length+1; lab[s0]=id; st.push(s0);
+      let c=0,sx=0,sy=0,sxx=0,sxy=0,x0=w,x1=0;
+      while(st.length){ const p=st.pop(), px=p%w, py=(p-px)/w; c++; sx+=px; sy+=py; sxx+=px*px; sxy+=px*py; if(px<x0)x0=px; if(px>x1)x1=px;
+        for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ const xx=px+dx, yy=py+dy; if(xx<0||yy<0||xx>=w||yy>=h) continue; const q=yy*w+xx; if(Hm[q]&&!lab[q]){ lab[q]=id; st.push(q); } } }
+      const d=c*sxx-sx*sx, b=d?(c*sxy-sx*sy)/d:0, a=(sy-b*sx)/c;
+      segs.push({x0,x1,len:x1-x0,a,b,yc:a+b*(x0+x1)/2}); }
+    const long=segs.filter(s=>s.len>w*0.22);
+    /* กลุ่มเส้นกราฟ: ขอบซ้ายตรงกัน ความยาวใกล้กัน มีหลายเส้นที่สุด */
+    let best=null;
+    long.forEach(s=>{ const mem=long.filter(t=>Math.abs(t.x0-s.x0)<w*0.025 && Math.abs(t.len-s.len)<s.len*0.15);
+      if(!best||mem.length>best.length) best=mem; });
+    if(!best||best.length<8) return null;
+    best.sort((p,q)=>p.yc-q.yc);
+    const top=best[0], bot=best[best.length-1];
+    const xl=Math.min(...best.map(s=>s.x0)), xr=Math.max(...best.map(s=>s.x1));
+    const lt=Math.min(...best.slice(0,3).map(s=>s.x0)), rt=Math.max(...best.slice(0,3).map(s=>s.x1));
+    const lb=Math.min(...best.slice(-3).map(s=>s.x0)), rb=Math.max(...best.slice(-3).map(s=>s.x1));
+    const P=(s,x)=>[x,s.a+s.b*x];
+    return {corners:[P(top,lt),P(top,rt),P(bot,rb),P(bot,lb)], nLines:best.length, xl, xr};
+  }
+  /* ในพิกัดที่ดัดแล้ว: หาเส้นกริดจริง (ความถี่ 10 เส้น, dB 15 เส้น) → mapping แบบเส้นต่อเส้น */
+  /* เลือกยอด k อันที่ระยะห่างสม่ำเสมอที่สุดจากยอดทั้งหมด (กันเส้นแปลกปลอม/ตัวหนังสือ) */
+  function pickRegular(peaks,k,span){
+    if(peaks.length<k) return null;
+    let best=null;
+    const P=peaks.map(p=>p.pos);
+    /* ลองทุกคู่ (ตัวแรก, ตัวสุดท้าย) แล้วไล่หาตัวที่ใกล้ตำแหน่งที่ควรอยู่ */
+    for(let a=0;a<P.length;a++) for(let b=a+k-1;b<P.length;b++){
+      const L=P[b]-P[a]; if(L<span*0.7) continue; const st=L/(k-1); let err=0; const sel=[];
+      for(let t=0;t<k;t++){ const e=P[a]+st*t; let bi=-1,bd=1e9; for(let q=a;q<=b;q++){ const d=Math.abs(P[q]-e); if(d<bd){bd=d;bi=q;} } sel.push(P[bi]); err+=Math.min(bd,st*0.45)**2; }
+      const sc=err/(st*st) - L/span*0.02;
+      if(!best||sc<best.sc) best={sc,sel};
+    }
+    return best&&best.sel;
+  }
+  function allPeaks(prof,thr,minSep){ const out=[];
+    for(let i=1;i<prof.length-1;i++) if(prof[i]>thr && prof[i]>=prof[i-1] && prof[i]>=prof[i+1]){
+      if(out.length && i-out[out.length-1].pos<minSep){ if(prof[i]>out[out.length-1].val) out[out.length-1]={pos:i,val:prof[i]}; } else out.push({pos:i,val:prof[i]}); }
+    return out; }
+  function hwCalibrate(N){
+    const {w,h}=N, dm=darkMap(N,0.82), col=new Float32Array(w), row=new Float32Array(h);
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const v=dm[y*w+x]; col[x]+=v; row[y]+=v; }
+    for(let i=0;i<w;i++) col[i]/=h; for(let i=0;i<h;i++) row[i]/=w;
+    const cm=Math.max(...col), rm=Math.max(...row);
+    const xs=pickRegular(allPeaks(col,cm*0.35,HSTEP*0.55),10,HWW);
+    const ys=pickRegular(allPeaks(row,rm*0.3,VSTEP*0.6),15,HWH);
+    return {xs, ys, ok:!!(xs&&ys)};   // xs = 125…8000 · ys[k] = ระดับ (k*10-20) dB
+  }
+  function hwMapX(cal,f){ return cal.xs[HW_FR.indexOf(f)]; }
+  function hwDb(cal,y){ const ys=cal.ys; let k=0; while(k<ys.length-2 && y>ys[k+1]) k++; return (k*10-20)+10*(y-ys[k])/(ys[k+1]-ys[k]); }
+  function hwYof(cal,d){ const k=Math.max(0,Math.min(13,Math.floor((d+20)/10))); return cal.ys[k]+(cal.ys[k+1]-cal.ys[k])*((d+20)/10-k); }
+
+  function readHW(N,cal){
+    const {w,h,R,G,B,L}=N;
+    /* หมึกแดง/น้ำเงิน — ตัดพิกเซลบนเส้นกริดที่พิมพ์ (ฟอร์มนี้เส้นพิมพ์ออกโทนฟ้า) */
+    const red=new Float32Array(w*h), blu=new Float32Array(w*h);
+    const onGrid=new Uint8Array(w*h);
+    cal.xs.forEach(x=>{ for(let y=0;y<h;y++) for(let dx=-2;dx<=2;dx++){ const xx=Math.round(x)+dx; if(xx>=0&&xx<w) onGrid[y*w+xx]=1; } });
+    cal.ys.forEach(y0=>{ for(let dy=-3;dy<=3;dy++){ const yy=Math.round(y0)+dy; if(yy<0||yy>=h) continue; for(let x=0;x<w;x++) onGrid[yy*w+x]=1; } });
+    for(let i=0;i<w*h;i++){
+      const rr=R[i]-Math.max(G[i],B[i]), bb=B[i]-Math.max(R[i],G[i]);
+      red[i]= (L[i]<0.9 && rr>0.05) ? Math.min(1,(rr-0.03)/0.12) : 0;
+      /* หมึกน้ำเงินในรูปจริงมักออกเทา → นับ "หมึกเข้มที่ไม่ใช่เส้นฟอร์มและไม่แดง" และอมฟ้าเล็กน้อย */
+      const dk=1-L[i], br=B[i]-R[i];
+      if(red[i]>0) blu[i]=0;
+      else if(onGrid[i]) blu[i]= (bb>0.07&&L[i]<0.8) ? 1 : 0;
+      else blu[i]= (dk>0.12 && br>-0.005) ? Math.min(1,(dk-0.08)/0.2) : 0;
+    }
+    /* ตัดเส้นตรงยาวแนวตั้ง/แนวนอนที่เหลือ (เส้นฟอร์มที่โค้งตามกระดาษ) ออกจากหมึกน้ำเงิน */
+    { const bin=new Float32Array(w*h); for(let i=0;i<w*h;i++) bin[i]=blu[i]>0.2?1:0;
+      const lv=lineOpen(bin,w,h,30,false,0.55), lh=lineOpen(bin,w,h,40,true,0.6);
+      for(let i=0;i<w*h;i++) if((lv[i]||lh[i])&&bin[i]) blu[i]=0; }
+    if(window.GSIR_DEBUG) window.__hwm={red,blu,w,h};
+    const out={R:{},L:{}}, dbg=[];
+    const RAD=14;
+    [['R',red],['L',blu]].forEach(([ear,m])=>{
+      /* integral image สำหรับรวมหมึกในกรอบเร็วๆ */
+      const I=new Float64Array((w+1)*(h+1));
+      for(let y=0;y<h;y++){ let s=0; for(let x=0;x<w;x++){ s+=m[y*w+x]; I[(y+1)*(w+1)+x+1]=I[y*(w+1)+x+1]+s; } }
+      const boxS=(x0,y0,x1,y1)=>{ x0=Math.max(0,Math.min(w,x0|0)); x1=Math.max(0,Math.min(w,x1|0)); y0=Math.max(0,Math.min(h,y0|0)); y1=Math.max(0,Math.min(h,y1|0));
+        return I[y1*(w+1)+x1]-I[y0*(w+1)+x1]-I[y1*(w+1)+x0]+I[y0*(w+1)+x0]; };
+      const sectors=(cx,cy)=>{ const S=new Float32Array(8); for(let dy=-RAD-1;dy<=RAD+1;dy++) for(let dx=-RAD-1;dx<=RAD+1;dx++){ const r=Math.hypot(dx,dy); if(r<4||r>RAD+1) continue;
+          const x=Math.round(cx+dx), y=Math.round(cy+dy); if(x<0||y<0||x>=w||y>=h) continue; const v=m[y*w+x]; if(!v) continue;
+          S[((Math.round(Math.atan2(dy,dx)/(Math.PI/4))%8)+8)%8]+=v; } return S; };
+      /* รูปร่างของหมึกในกรอบ: ความกลม (iso: 0=เส้นตรง 1=กลม) + ทิศแกนหลัก */
+      const pca=(cx,cy,rx,ry)=>{ let n=0,sx=0,sy=0,sxx=0,syy=0,sxy=0;
+        for(let y=Math.round(cy-ry);y<=Math.round(cy+ry);y++) for(let x=Math.round(cx-rx);x<=Math.round(cx+rx);x++){ if(x<0||y<0||x>=w||y>=h) continue; const v=m[y*w+x]; if(v<0.25) continue;
+          n+=v; sx+=v*x; sy+=v*y; sxx+=v*x*x; syy+=v*y*y; sxy+=v*x*y; }
+        if(n<4) return {n:0,iso:0,vert:0,mx:cx,my:cy};
+        const mx=sx/n, my=sy/n, a=sxx/n-mx*mx, c=syy/n-my*my, b=sxy/n-mx*my, t=Math.sqrt(((a-c)/2)**2+b*b), l1=(a+c)/2+t, l2=(a+c)/2-t;
+        const th=0.5*Math.atan2(2*b,a-c);   // มุมแกนหลัก (0 = แนวนอน)
+        return {n,iso:l1>0?Math.max(0,l2)/l1:0,vert:Math.abs(Math.sin(th)),mx,my,sd:Math.sqrt(Math.max(c,0))}; };
+      const peaksIn=(xa,xb,ya,yb,rx,ry,minS)=>{ const cand=[];
+        for(let y=Math.round(ya);y<=Math.round(yb);y+=2) for(let x=Math.round(xa);x<=Math.round(xb);x+=2){ const s2=boxS(x-rx,y-ry,x+rx+1,y+ry+1); if(s2>=minS) cand.push({x,y,s:s2}); }
+        cand.sort((a,b)=>b.s-a.s); const pk=[];
+        for(const c of cand){ if(pk.some(p=>Math.abs(p.x-c.x)<rx*2&&Math.abs(p.y-c.y)<ry*1.6)) continue; pk.push(c); if(pk.length>=8) break; }
+        return pk; };
+      /* ความเข้มอ้างอิงของหูนี้ = มัธยฐานของก้อนกลมที่แรงที่สุด 3 อันดับ */
+      const colPk={}; const strong=[];
+      HW_FR.forEach(f=>{ const xf=hwMapX(cal,f);
+        const pk=peaksIn(xf-18,xf+18,hwYof(cal,-12),hwYof(cal,122),RAD,RAD,12).map(p=>Object.assign(p,pca(p.x,p.y,RAD,RAD)));
+        colPk[f]=pk; const b=pk.filter(p=>p.iso>=0.35).sort((a,b)=>b.s-a.s)[0]; if(b) strong.push(b.s); });
+      strong.sort((a,b)=>b-a); const ref=strong.length?strong[Math.min(1,strong.length-1)]:100;
+      /* จุดศูนย์กลางจริงของ O/X: วง = กลางรู · กากบาท = จุดที่หมึกหนาแน่นที่สุด (จุดไขว้) */
+      /* ค้นเฉพาะในแถบคอลัมน์ (Air วาดคร่อมเส้นความถี่) ไม่ให้ไปจับวงเล็บ Bone ที่อยู่ข้างๆ */
+      const refine=(p,xf)=>{ const cx0=Math.max(xf-8,Math.min(xf+8,p.mx));
+        const sh=hwShape(m,w,h,cx0,p.my,RAD);
+        if(sh.kind==='ring' && Math.abs(sh.cx-xf)<=13) return {x:sh.cx,y:sh.cy,sh};
+        let bx=cx0,by=p.my,bv=-1; for(let y=Math.round(p.my)-10;y<=Math.round(p.my)+10;y++) for(let x=Math.round(xf)-10;x<=Math.round(xf)+10;x++){ const v=boxS(x-3,y-3,x+4,y+4); if(v>bv){bv=v;bx=x;by=y;} }
+        return {x:bx,y:by,sh:hwShape(m,w,h,bx,by,RAD)}; };
+      const side=ear==='R'?-1:1;
+      HW_FR.forEach(f=>{ const xf=hwMapX(cal,f); out[ear][f]={};
+        let ac=null;
+        /* เลือกก้อนที่อยู่บนเส้นความถี่ก่อน แล้วค่อยลองก้อนที่เยื้อง (O ติดกับวงเล็บ) */
+        const okPk=colPk[f].filter(p=>p.iso>=0.3 && p.s>=(p.iso>=0.4?0.2:0.25)*ref).sort((a,b)=>(Math.abs(a.mx-xf)<=12?0:1)-(Math.abs(b.mx-xf)<=12?0:1) || b.s-a.s);
+        for(const p of okPk){ const r=refine(p,xf); if(Math.abs(r.x-xf)>13) continue;
+          const q=pca(r.x,r.y,RAD,RAD), s2=boxS(r.x-RAD,r.y-RAD,r.x+RAD+1,r.y+RAD+1);
+          if(q.iso<0.3 || s2<0.2*ref) continue;
+          ac=Object.assign({},p,{cx:r.x,cy:r.y,sh:r.sh}); break; }
+        /* ทางสำรอง: ก้อนเล็ก/จางบนเส้นความถี่ (เช่น O กับ X ซ้อนกันเป็น ⊗) — รับถ้ารูปทรงชัดว่าเป็นวง (ขวา) หรือกากบาท (ซ้าย) */
+        if(!ac) for(const p of colPk[f].filter(p=>Math.abs(p.mx-xf)<=14 && p.s>=0.12*ref).sort((a,b)=>b.s-a.s)){
+          const sh=hwShape(m,w,h,Math.max(xf-6,Math.min(xf+6,p.mx)),p.my,RAD);
+          if(window.GSIR_DEBUG) console.log('hwfb',ear,f,sh.hole,+sh.ctr.toFixed(2),Math.round(sh.cx-xf),+hwDb(cal,sh.cy).toFixed(1));
+          /* กากบาทจริงแขนสั้น: วงนอก (รัศมี 15–21) มีหมึกแค่เส้นเชื่อม ≤3 ทิศ · เส้นยาวสองเส้นตัดกันจะมี 4 ทิศขึ้นไป */
+          let outer=0; if(ear==='L'){ const S=new Float32Array(8); for(let dy=-21;dy<=21;dy++) for(let dx=-21;dx<=21;dx++){ const r=Math.hypot(dx,dy); if(r<15||r>21) continue; const x=Math.round(sh.cx+dx), y=Math.round(sh.cy+dy); if(x<0||y<0||x>=w||y>=h) continue; if(m[y*w+x]>0.25) S[((Math.round(Math.atan2(dy,dx)/(Math.PI/4))%8)+8)%8]++; } outer=[...S].filter(v=>v>=2).length;
+            const T=new Float32Array(8); for(let dy=-12;dy<=12;dy++) for(let dx=-12;dx<=12;dx++){ const r=Math.hypot(dx,dy); if(r<5||r>12) continue; const x=Math.round(sh.cx+dx), y=Math.round(sh.cy+dy); if(x<0||y<0||x>=w||y>=h) continue; if(m[y*w+x]>0.25) T[((Math.round(Math.atan2(dy,dx)/(Math.PI/4))%8)+8)%8]++; }
+            const inner=[...T].filter(v=>v>=3).length; if(inner<4) outer=99; }
+          if((ear==='R'&&sh.kind==='ring'&&Math.abs(sh.cx-xf)<=12) || (ear==='L'&&sh.kind==='x'&&Math.abs(sh.cx-xf)<=12&&outer<=3)){ ac=Object.assign({},p,{cx:sh.cx,cy:sh.cy,sh,weak:true}); break; } }
+        let acD=null;
+        if(ac){ acD=hwDb(cal,ac.cy);
+          const masked = false;   // △ □ ลายมือแยกจาก O X ไม่ได้แน่นอน → ให้ติ๊ก M เองในหน้าตรวจ
+          out[ear][f].AC=hwMk(acD,masked,false,{kind:ac.sh.kind}); out[ear][f].AC.unsure = out[ear][f].AC.unsure || ac.s<0.45*ref || !!ac.weak;
+          dbg.push({ear,type:'AC',f,x:ac.cx,y:hwYof(cal,acD),m:masked}); }
+        /* Bone: เส้นตั้ง (วงเล็บ/บั้ง) ด้านนอกของ O/X — ขวาอยู่ซ้าย, ซ้ายอยู่ขวา */
+        if(HW_BF.includes(f)){
+          const c0 = ac ? ac.cx : xf;
+          const xa= side<0 ? c0-34 : c0+7, xb= side<0 ? c0-7 : c0+34;
+          const bk=peaksIn(xa,xb,hwYof(cal,-12),hwYof(cal,122),4,13,8).map(p=>Object.assign(p,pca(p.x,p.y,5,15)))
+            .filter(p=>p.vert>0.8 && p.iso<0.7 && p.s>=0.12*ref && p.sd>5 && (!ac || (p.mx-ac.cx)*side>8));
+          if(window.GSIR_DEBUG) console.log('hwbc',ear,f,JSON.stringify(bk.slice(0,4).map(p=>({dx:Math.round(p.mx-xf),d:+hwDb(cal,p.my).toFixed(1),s:Math.round(p.s),iso:+p.iso.toFixed(2),v:+p.vert.toFixed(2),sd:+p.sd.toFixed(1)}))));
+          let bc=null;
+          for(const p of bk.sort((a,b)=>b.s-a.s)){ const ext=hwVExt(m,w,h,p.mx,p.my,-side); const d=hwDb(cal,p.my);
+            if(acD!==null ? d>acD+6 : p.s<0.4*ref) continue;        // Bone แย่กว่า Air ไม่ได้ · ไม่มี Air ต้องชัดมาก
+            bc={p,ext,d}; break; }
+          if(bc){ const masked = bc.ext ? bc.ext.bracket : true;
+            out[ear][f].BC=hwMk(bc.d,masked,false,{kind:'bracket'}); out[ear][f].BC.unsure = out[ear][f].BC.unsure || bc.p.s<0.3*ref || !bc.ext;
+            dbg.push({ear,type:'BC',f,x:bc.p.mx,y:hwYof(cal,bc.d),m:masked,hw:1}); }
+        }
+        if(window.GSIR_DEBUG) console.log('hwac',ear,f,JSON.stringify(colPk[f].slice(0,4).map(p=>({dx:Math.round(p.mx-xf),d:+hwDb(cal,p.my).toFixed(1),s:Math.round(p.s),iso:+p.iso.toFixed(2)}))),'ref',Math.round(ref));
+      });
+    });
+    return {th:out,dbg};
+  }
+  const HW_BF=[500,1000,2000,4000];
+  function hwMk(d,m,nr,p){ const v=Math.round(d/5)*5, off=Math.abs(d-v);
+    return {v:Math.max(-10,Math.min(120,v)),m:!!m,nr:!!nr,unsure:off>1.6||p.kind==='blob'||(p.kind==='bracket'||p.kind==='chev')&&p.amb,raw:Math.round(d*10)/10}; }
+  /* ความสูงของเส้นตั้งที่จุดนั้น + ดูว่ามีขาแนวนอนที่ปลายบน/ล่าง (วงเล็บ) หรือไม่ (บั้ง) */
+  function hwVExt(m,w,h,cx,cy,dir){   // dir = ทิศที่ขาวงเล็บยื่นไป (+1 ขวา / -1 ซ้าย)
+    const X=Math.round(cx); let t=null,u=null;
+    const rowInk=y=>{ let k=0; for(let x=X-3;x<=X+3;x++) if(x>=0&&x<w&&y>=0&&y<h&&m[y*w+x]>0.25) k++; return k; };
+    for(let y=Math.round(cy);y>=Math.round(cy)-24;y--){ if(rowInk(y)) t=y; else if(t!==null&&rowInk(y-1)===0&&rowInk(y-2)===0) break; }
+    for(let y=Math.round(cy);y<=Math.round(cy)+24;y++){ if(rowInk(y)) u=y; else if(u!==null&&rowInk(y+1)===0&&rowInk(y+2)===0) break; }
+    if(t===null||u===null||u-t<10) return null;
+    /* ปลายบน/ล่าง: หมึกแนวนอนยาวกว่ากลางเส้น → วงเล็บ */
+    const xa=dir>0?X-2:X-8, xb=dir>0?X+8:X+2;
+    const wid=y=>{ let a=1e9,b=-1; for(let x=xa;x<=xb;x++){ for(let yy=y-2;yy<=y+2;yy++) if(x>=0&&x<w&&yy>=0&&yy<h&&m[yy*w+x]>0.25){ if(x<a)a=x; if(x>b)b=x; } } return b<0?0:b-a+1; };
+    const wTop=wid(t+1), wBot=wid(u-1), wMid=wid(Math.round((t+u)/2));
+    if(window.GSIR_DEBUG) console.log('vext',Math.round(cx),Math.round(cy),t,u,wTop,wBot,wMid);
+    return {top:t,bot:u,mid:(t+u)/2,bracket:Math.max(wTop,wBot) >= wMid+3};
+  }
+  /* รูปทรงของก้อนหมึก: ring (วงปิด) · x (เส้นไขว้กลาง) · bracket ([ ]) · chev (< >) */
+  function hwShape(m,w,h,cx0,cy0,R){
+    const W2=R*2+9, o=Math.floor(W2/2), ink=new Uint8Array(W2*W2);
+    let n=0,sx=0,sy=0,x0=W2,x1=-1,y0=W2,y1=-1;
+    for(let j=0;j<W2;j++) for(let i=0;i<W2;i++){ const x=Math.round(cx0)+i-o, y=Math.round(cy0)+j-o; if(x<0||y<0||x>=w||y>=h) continue;
+      if(m[y*w+x]>0.25){ ink[j*W2+i]=1; if(Math.abs(i-o)<=R+2&&Math.abs(j-o)<=R+2){ n++; sx+=i; sy+=j; if(i<x0)x0=i; if(i>x1)x1=i; if(j<y0)y0=j; if(j>y1)y1=j; } } }
+    if(!n) return {kind:'blob',cx:cx0,cy:cy0,hole:0,ctr:0,lv:0,rv:0};
+    /* ปิดช่องว่างเล็กๆ ของเส้นลายมือ แล้ว flood fill พื้นจากขอบ → พื้นที่ที่ไปไม่ถึง = รูกลางวง */
+    const dil=new Uint8Array(W2*W2); for(let j=0;j<W2;j++) for(let i=0;i<W2;i++){ if(!ink[j*W2+i]) continue; for(let b=-2;b<=2;b++) for(let a=-2;a<=2;a++){ const ii=i+a, jj=j+b; if(ii>=0&&jj>=0&&ii<W2&&jj<W2) dil[jj*W2+ii]=1; } }
+    const seen=new Uint8Array(W2*W2), q=[]; for(let i=0;i<W2;i++){ q.push(i,(W2-1)*W2+i,i*W2,i*W2+W2-1); }
+    while(q.length){ const p=q.pop(); if(seen[p]||dil[p]) continue; seen[p]=1; const i=p%W2, j=(p-i)/W2; if(i>0)q.push(p-1); if(i<W2-1)q.push(p+1); if(j>0)q.push(p-W2); if(j<W2-1)q.push(p+W2); }
+    let hole=0, hx=0, hy=0; for(let p=0;p<W2*W2;p++) if(!seen[p]&&!dil[p]){ hole++; const i=p%W2; hx+=i; hy+=(p-i)/W2; }
+    const bw=x1-x0+1, bh=y1-y0+1, mx=sx/n, my=sy/n;
+    /* หมึกตรงกลาง (กากบาทมีจุดไขว้) */
+    let c=0; for(let j=Math.round(my)-3;j<=Math.round(my)+3;j++) for(let i=Math.round(mx)-3;i<=Math.round(mx)+3;i++) if(j>=0&&i>=0&&j<W2&&i<W2&&ink[j*W2+i]) c++;
+    const ctr=c/49;
+    /* สัดส่วนความสูงที่มีหมึกในแถบซ้ายสุด/ขวาสุดของก้อน — วงเล็บมีเส้นตั้งยาว บั้งมีแค่จุดยอด */
+    const vspan=(ia,ib)=>{ let t=1e9,u=-1; for(let j=y0;j<=y1;j++) for(let i=ia;i<=ib;i++) if(ink[j*W2+i]){ if(j<t)t=j; if(j>u)u=j; } return u<0?0:(u-t+1)/bh; };
+    const ew=Math.max(2,Math.round(bw*0.25)), lv=vspan(x0,x0+ew-1), rv=vspan(x1-ew+1,x1);
+    let kind;
+    if(hole>=12 && bw>8 && bh>8) kind='ring';
+    else if(ctr>0.22 && bw>bh*0.55) kind='x';
+    else if(bh>=bw*1.15) kind = (Math.max(lv,rv)>0.72) ? 'bracket' : 'chev';
+    else kind='blob';
+    const amb = kind==='bracket'||kind==='chev' ? Math.abs(Math.max(lv,rv)-0.72)<0.12 : false;
+    /* ตำแหน่งแนวตั้ง: วง/กากบาท = จุดศูนย์กลางหมึก · วงเล็บ/บั้ง = กึ่งกลางความสูง */
+    const cyLocal = (kind==='ring'&&hole) ? hy/hole : (kind==='bracket'||kind==='chev') ? (y0+y1)/2 : my;
+    const cxLocal = (kind==='ring'&&hole) ? hx/hole : mx;
+    return {kind,amb,hole,ctr,lv,rv,bw,bh,cx:Math.round(cx0)-o+cxLocal,cy:Math.round(cy0)-o+cyLocal};
+  }
+  async function analyzeHW(img){
+    const src=toImageData(img,2000);
+    const g=findHWGraph(src);
+    if(!g) return {ok:false,err:'หากราฟของฟอร์มเขียนมือไม่เจอ — ถ่ายให้เห็นกราฟทั้งกรอบ ไม่เอียงมาก'};
+    const Hinv=homography([[0,0],[HWW,0],[HWW,HWH],[0,HWH]],g.corners); if(!Hinv) return {ok:false,err:'ดัดภาพไม่สำเร็จ'};
+    const N=normalize(warp(src,Hinv,-6,-6,HWW+12,HWH+12));
+    const cal=hwCalibrate(N);
+    if(!cal.ok) return {ok:false,err:'เจอกรอบกราฟแต่หาเส้นความถี่/เส้น dB ไม่ครบ — ถ่ายใหม่ให้เห็นกราฟชัดทั้งกรอบ'};
+    if(window.GSIR_DEBUG) console.log('hwcal',JSON.stringify(g.corners),g.nLines,JSON.stringify(cal.xs.map(Math.round)),JSON.stringify(cal.ys.map(Math.round)));
+    const gr=readHW(N,cal);
+    return {ok:true,hw:true,th:gr.th,speech:{},dbg:gr.dbg,N,cal};
+  }
+
   async function analyze(img){
     const src=toImageData(img,2400);
     const g=findGraph(src);
@@ -4476,10 +4775,19 @@ const GSIR = (function(){
     for(let i=0;i<N.w*N.h;i++){ id.data[i*4]=Math.min(255,N.R[i]*235); id.data[i*4+1]=Math.min(255,N.G[i]*235); id.data[i*4+2]=Math.min(255,N.B[i]*235); id.data[i*4+3]=255; }
     cx.putImageData(id,0,0);
     res.dbg.forEach(p=>{ cx.strokeStyle=p.ear==='R'?'rgba(220,0,0,.9)':'rgba(0,70,220,.9)'; cx.lineWidth=2;
-      cx.beginPath(); if(p.type==='AC') cx.arc(p.x,p.y,19,0,7); else { const dx=p.ear==='R'?-11:11; cx.rect(p.x+dx-10,p.y-16,20,32); } cx.stroke(); });
+      cx.beginPath(); if(p.type==='AC') cx.arc(p.x,p.y,19,0,7); else { const dx=p.hw?0:(p.ear==='R'?-11:11); cx.rect(p.x+dx-10,p.y-16,20,32); } cx.stroke(); });
     return cv;
   }
-  return {analyze,previewCanvas,FR,BF};
+  /* เลือกตัวอ่านเอง: ลองใบปริ้น GSI ก่อน ถ้าไม่ใช่/อ่านได้น้อย ลองใบเขียนมือ แล้วเอาอันที่ได้จุด Air มากกว่า */
+  async function analyzeAuto(img){
+    const cnt=r=>r&&r.ok?['R','L'].reduce((a,e)=>a+Object.values(r.th[e]).filter(c=>c&&c.AC).length,0):-1;
+    let g=null; try{ g=await analyze(img); }catch(e){ console.warn(e); }
+    if(g&&g.ok&&cnt(g)>=4) return g;
+    let hw=null; try{ hw=await analyzeHW(img); }catch(e){ console.warn(e); }
+    if(cnt(hw)>cnt(g)) return hw;
+    return (g&&g.ok)?g:(hw&&hw.ok?hw:(g||hw||{ok:false,err:'อ่านรูปไม่ได้'}));
+  }
+  return {analyze,analyzeHW,analyzeAuto,previewCanvas,FR,BF};
 })();
 
 /* ══ 📷 ปุ่ม "ถ่ายรูปใบผล" ในหน้า Audiogram → อ่านด้วย GSIR → กล่องตรวจค่า → ใส่ลงกราฟ + Speech ══ */
@@ -4540,7 +4848,7 @@ async function gsiHandleFile(file){
   try{
     const img=new Image(); img.src=url; await img.decode();
     await new Promise(r=>setTimeout(r,60));            // ให้หน้าจอวาดวงหมุนก่อนเริ่มคำนวณหนัก
-    const res=await GSIR.analyze(img);
+    const res=await GSIR.analyzeAuto(img);
     if(!res.ok){ gsiShowError(res.err); return; }
     _gsiLast=res; gsiRenderReview(res);
   }catch(e){ console.error(e); gsiShowError('อ่านรูปไม่สำเร็จ ('+(e&&e.message||e)+')'); }
@@ -4563,6 +4871,7 @@ function gsiRenderReview(res){
   let h='';
   h+='<canvas class="gm-prev" id="gsiPrev"></canvas>';
   h+=`<p class="gm-note">วงสีแดง/น้ำเงินบนภาพ = จุดที่โปรแกรมอ่านได้ · ช่อง <b class="y">สีเหลือง</b> = ไม่แน่ใจ ให้ดูกับใบจริง · แก้ตัวเลขในตารางได้ก่อนกดใส่ลงกราฟ</p>`;
+  if(res.hw) h+='<p class="gm-note" style="color:#b45309;background:#fffbeb;padding:8px 10px;border-radius:8px">✍️ <b>ใบเขียนมือ</b> — อ่านตำแหน่ง O X [ ] จากหมึกแดง/น้ำเงิน · ลายมือวางไม่ตรงเส้นพอดี ค่าอาจคลาด 5 dB · <b>ไม่อ่าน</b> △ □ (masked ของ Air), ลูกศร NR และตัวเลข Speech — ตรวจทุกจุดก่อนกด</p>';
   if(res.small) h+='<p class="gm-note" style="color:#b45309">⚠️ กราฟในรูปเล็กไป (ถ่ายไกล) อาจอ่านตกบางจุด — ถ่ายใกล้ขึ้นให้กราฟกว้างอย่างน้อยครึ่งหนึ่งของจอจะแม่นกว่า</p>';
   h+='<div class="gm-pta" id="gsiPta"></div>';
   h+='<div style="overflow-x:auto"><table class="gm-t"><thead><tr><th>Hz</th><th class="r">ขวา · Air</th><th class="r">ขวา · Bone</th><th class="l">ซ้าย · Air</th><th class="l">ซ้าย · Bone</th></tr></thead><tbody>';
@@ -4577,7 +4886,7 @@ function gsiRenderReview(res){
   h+='</tbody></table></div>';
   const sp=res.speech||{};
   const spv=(e,k)=>{ const o=sp[e]; return o&&o[k]!=null?o[k]:''; };
-  h+='<div class="gm-sub">Speech (จากตารางขวามือของใบ)</div>';
+  h+='<div class="gm-sub">'+(res.hw?'Speech (ใบเขียนมือ — พิมพ์ค่าเองได้ที่นี่)':'Speech (จากตารางขวามือของใบ)')+'</div>';
   h+='<div class="gm-sp"><span></span><b>SRT (dB)</b><b>SRS ระดับที่ตรวจ (dB)</b><b>SRS %</b><b>SL = SRS − SRT</b>';
   ['R','L'].forEach(e=>{ const uns=sp[e]&&sp[e].unsure?' uns':'';
     h+=`<b style="color:${e==='R'?'#c8102e':'#1452c4'}">${e==='R'?'ขวา':'ซ้าย'}</b>
@@ -4587,7 +4896,7 @@ function gsiRenderReview(res){
       <span id="gsi_sl_${e}" style="font-weight:700;text-align:center"></span>`; });
   h+='</div>';
   if(has) h+='<p class="gm-note" style="margin-top:12px;color:#b45309">⚠️ เคสนี้มีค่า Audiogram อยู่แล้ว — กดใส่ลงกราฟจะ<b>แทนที่ค่าเดิมทั้งหมด</b> (กด ↶ ย้อนกลับได้)</p>';
-  h+='<p class="gm-note" style="margin-top:8px">อ่านจากสีและตำแหน่งของสัญลักษณ์บนใบของ GSI Suite (ไม่ใช้ AI) · ตอนนี้ยังจูนจากใบตัวอย่างใบเดียว — สัญลักษณ์ Masked ([ ] △ □) และ NR ให้ตรวจทุกครั้ง</p>';
+  h+= res.hw ? '<p class="gm-note" style="margin-top:8px">อ่านแบบไม่ใช้ AI · จูนจากฟอร์ม AUDIOGRAM ของ รพ.ศูนย์การแพทย์ มฟล. (FM-MD-ENT-001) ใบตัวอย่างใบเดียว</p>' : '<p class="gm-note" style="margin-top:8px">อ่านจากสีและตำแหน่งของสัญลักษณ์บนใบของ GSI Suite (ไม่ใช้ AI) · สัญลักษณ์ Masked และ NR ให้ตรวจทุกครั้ง</p>';
   body.innerHTML=h;
   try{ const pc=GSIR.previewCanvas(res), cv=document.getElementById('gsiPrev'); cv.width=pc.width; cv.height=pc.height; cv.getContext('2d').drawImage(pc,0,0); }catch(e){}
   body.querySelectorAll('input').forEach(el=>el.addEventListener('input',gsiUpdateSummary));
@@ -4611,7 +4920,7 @@ function gsiUpdateSummary(){
   const {th,sp}=gsiRead();
   const avg3=e=>{ let s=0,c=0; PTA_FREQS.forEach(fr=>{ const n=num(th[fr][e+'AC'].v); if(n!==null){ s+=n; c++; } }); return c?Math.round(s/c):'–'; };
   const pe=document.getElementById('gsiPta');
-  if(pe) pe.innerHTML=`เทียบกับใบจริงก่อนกด: <b style="color:#c8102e">AC PTA ขวา ${avg3('R')} dB</b> · <b style="color:#1452c4">ซ้าย ${avg3('L')} dB</b> <span style="color:#64748b">(ใบของ GSI พิมพ์ไว้ใต้กราฟ — ถ้าไม่ตรง แปลว่ามีจุดอ่านผิด)</span>`;
+  if(pe) pe.innerHTML=`เทียบกับใบจริงก่อนกด: <b style="color:#c8102e">AC PTA ขวา ${avg3('R')} dB</b> · <b style="color:#1452c4">ซ้าย ${avg3('L')} dB</b> <span style="color:#64748b">${_gsiLast&&_gsiLast.hw?'(เทียบกับช่อง Average loss 500–2000 Hz ในใบ)':'(ใบของ GSI พิมพ์ไว้ใต้กราฟ — ถ้าไม่ตรง แปลว่ามีจุดอ่านผิด)'}</span>`;
   ['R','L'].forEach(e=>{ const el=document.getElementById('gsi_sl_'+e); if(!el) return; const o=sp[e];
     el.textContent = (o.srt!==null&&o.srs!==null) ? ((o.srs-o.srt>=0?'+':'')+(o.srs-o.srt)) : '–'; });
 }
@@ -5169,7 +5478,7 @@ function audiogramSectionBody(){
 
       <div class="subhead">กราฟ Audiogram</div>
       <div class="gsi-photo-bar">
-        <button type="button" class="gsi-photo-btn" id="btnGsiPhoto" title="ถ่ายรูปใบผลที่ปริ้นจาก GSI Suite แล้วอ่านค่าลงกราฟ + Speech ให้อัตโนมัติ">📷 ถ่ายรูปใบผล GSI</button>
+        <button type="button" class="gsi-photo-btn" id="btnGsiPhoto" title="ถ่ายรูปใบผล (ใบปริ้นจาก GSI Suite หรือใบเขียนมือด้วยปากกาแดง/น้ำเงิน) แล้วอ่านค่าลงกราฟให้อัตโนมัติ">📷 ถ่ายรูปใบผล Audiogram</button>
         <label class="gsi-photo-alt">หรือ <u>เลือกรูปจากเครื่อง</u><input type="file" accept="image/*" id="inpGsiPhotoFile" hidden></label>
         <input type="file" accept="image/*" capture="environment" id="inpGsiPhotoCam" hidden>
       </div>
@@ -7655,6 +7964,21 @@ let _fullCache = {};
 const FULLCACHE_MAX = 1000;
 try{ _outbox = JSON.parse(localStorage.getItem(OUTBOX_KEY)||'[]'); }catch(e){ _outbox = []; }
 try{ _fullCache = JSON.parse(localStorage.getItem(FKEY)||'{}'); }catch(e){ _fullCache = {}; }
+/* ══ ปกป้องข้อมูลคนไข้: บัญชีทั่วไปไม่เก็บประวัติข้ามวันไว้ในเครื่อง (เพิ่ม 7 พ.ย. 69) ══
+   เซิร์ฟเวอร์ส่งเฉพาะเคส "ของวันนี้" ให้บัญชีทั่วไปอยู่แล้ว (ดู Apps Script) — ตรงนี้ล้างแคชประวัติที่ค้างในเครื่องทิ้ง
+   บัญชีใหญ่สุด (HF_SUPER_USERNAME) เท่านั้นที่เก็บ/ดูย้อนหลังได้ทั้งหมด */
+const HF_SUPER_USERNAME = 'TitiwutNav';   /* ← บัญชีหลัก เปลี่ยนชื่อตรงนี้ (ต้องตรงกับ SUPER_USERNAME ใน Apps Script) */
+function hfIsSuperUser(){ try{ return String(localStorage.getItem('hcs_username')||'').trim().toLowerCase() === HF_SUPER_USERNAME.trim().toLowerCase(); }catch(e){ return false; } }
+(function(){
+  try{
+    if(hfIsSuperUser() || !localStorage.getItem('hcs_token')) return;   // บัญชีหลัก หรือยังไม่ล็อกอิน → ไม่ล้าง
+    _fullCache = {};
+    localStorage.removeItem(FKEY);
+    localStorage.removeItem(KEY + '_records');
+    localStorage.removeItem(KEY + '_records_owner');
+    localStorage.removeItem(KEY + '_localtrash');
+  }catch(e){}
+})();
 /* ══ ย้ายแคชข้อมูลเต็มไปเก็บใน IndexedDB (เพิ่ม 17 ต.ค. 69) ══
    localStorage ของ Safari/iPhone จุได้ 5 MB และนับตัวอักษรไทยเป็น 2 ไบต์ — ข้อมูลเต็ม 811 ราย (~2.3 ล้านตัวอักษร ≈ 4.7 MB)
    จึงเขียนไม่ลง ระบบตัดแคชเหลือ 200 ราย + รายชื่อก็บันทึกลงเครื่องไม่ได้ → มือถือต้องรอเซิร์ฟเวอร์ทุกครั้ง
@@ -7688,6 +8012,10 @@ let _fullIdbReady = null;   /* Promise ระหว่างเปิด Indexed
 let _fullIdbOk = false;
 if(typeof indexedDB !== 'undefined'){
   _fullIdbReady = _idbKV.get(FKEY).then(stored=>{
+    if(!hfIsSuperUser() && localStorage.getItem('hcs_token')){   // บัญชีทั่วไป: ไม่ดึงประวัติเก่าจาก IndexedDB + ล้างทิ้ง
+      _fullCache = {};
+      return _idbKV.set(FKEY, {});
+    }
     if(stored && typeof stored === 'object'){
       Object.keys(stored).forEach(id=>{
         const c = _fullCache[id], s2 = stored[id];
@@ -11665,6 +11993,31 @@ document.addEventListener('DOMContentLoaded', init);
   }
   /* ── เปิดให้สคริปต์ส่วนกรอกข้อมูล/รายการผู้ป่วย (คนละ scope) เรียกใช้ตัวเชื่อมต่อ Apps Script ชุดเดียวกันนี้ได้ ── */
   window.hcsApi = { postAction: postAction, getAuthUrl: getAuthUrl };
+  /* ══ จำกัดการดูย้อนหลังฝั่งหน้าเว็บ (เพิ่ม 7 พ.ย. 69) ══
+     บัญชีที่ไม่ใช่บัญชีหลัก (TitiwutNav) → กรองผลจากเซิร์ฟเวอร์ให้เหลือเฉพาะเคสที่บันทึก "วันนี้" (เวลาไทย)
+     ใช้คู่กับตัวกรองใน Apps Script — ตัวนี้ทำให้หน้าจอเห็นเฉพาะวันนี้ทันที ส่วน Apps Script กันไม่ให้ข้อมูลเก่าถูกส่งมาเลย */
+  (function(){
+    var SUPER = 'titiwutnav';
+    function isSuper(){ try{ return String(localStorage.getItem('hcs_username')||'').trim().toLowerCase() === SUPER; }catch(e){ return false; } }
+    function dayKey(v){
+      if(v === '' || v == null) return '';
+      var d = new Date(String(v)); if(isNaN(d.getTime())) return '';
+      try{ return new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Bangkok', year:'numeric', month:'2-digit', day:'2-digit'}).format(d); }catch(e){ return ''; }
+    }
+    function isToday(v){ var k = dayKey(v); return !!k && k === dayKey(new Date().toISOString()); }
+    var LIST_ACTIONS = { listRecords:'_savedAt', exportRecords:'_savedAt', getRecordsBulk:'_savedAt', listTrash:'deletedAt' };
+    var raw = window.hcsApi.postAction;
+    window.hcsApi.postAction = function(action, payload, _try){
+      return raw(action, payload, _try).then(function(res){
+        if(isSuper() || !res || res.status !== 'ok') return res;
+        var f = LIST_ACTIONS[action];
+        if(f && Array.isArray(res.records)) res.records = res.records.filter(function(r){ return r && isToday(r[f]); });
+        if(action === 'getRecord' && res.record && !isToday(res.record._savedAt))
+          return { status:'error', message:'ไม่มีสิทธิ์ดูข้อมูลย้อนหลัง (เฉพาะบัญชีหลักเท่านั้น)' };
+        return res;
+      });
+    };
+  })();
 
   var isBootstrap = false;
 
@@ -11763,6 +12116,9 @@ document.addEventListener('DOMContentLoaded', init);
     location.reload();
   }
   document.getElementById('ubLogoutBtn').addEventListener('click', doLogout);
+  /* ปิดเบราว์เซอร์แล้วเปิดใหม่ → สคริปต์หัวไฟล์ล้าง token ในเครื่องแล้ว ส่งไปลบ session ที่เซิร์ฟเวอร์ด้วย (เพิ่ม 7 พ.ย. 69) */
+  window.hcsRevokeToken = function(t){ if(t) postAction('logout', {token:t}); };
+  try{ var _staleTk = sessionStorage.getItem('hcs_stale_token'); if(_staleTk){ sessionStorage.removeItem('hcs_stale_token'); window.hcsRevokeToken(_staleTk); } }catch(e){}
 
   /* ══════════════ บัญชีผู้ใช้: แนะนำตั้งรหัสใหม่ + เลือกรพ.ที่จะเข้าดู (เพิ่ม 5 ต.ค. 69) ══════════════ */
   var ALL_HOSP = '__ALL__';
